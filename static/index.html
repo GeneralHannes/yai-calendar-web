@@ -1,0 +1,1426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>if(navigator.standalone)document.documentElement.classList.add("ios-app");</script>
+<script>try{var t=localStorage.getItem("sk_theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<meta name="theme-color" content="#1e2030">
+<script src="/static/local-api.js"></script>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Odin's Journal">
+<title>Odin&rsquo;s Journal</title>
+<!--
+  Odin's Journal — future planned events (deliveries, bills, staff schedule,
+  promotions). Its own app in its own space on purpose: separate from Odin's
+  Vault's admin/inventory workflow, so it can be opened, bookmarked and used
+  on its own without any of Vault's tab-switching machinery. Reads/writes
+  only /api/journal/*, and shares nothing with Vault except the PIN
+  (localStorage `sk_token`) and the same visual language.
+-->
+<link rel="preload" href="/static/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* Self-hosted Marcellus + Archivo (latin, latin-ext), from Google Fonts — served from the shop computer so
+   pages never wait on the internet for a font, and look the same when the internet is down. */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(/static/fonts/archivo-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Marcellus';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/static/fonts/marcellus-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Marcellus';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/static/fonts/marcellus-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* iPhone home-screen app (status bar "black-translucent"): on a page shorter than the screen iOS sizes the page as if the
+   status-bar strip weren't there, so everything pinned to the bottom sat ~55pt higher on short tabs (Find, Rate) than on
+   long ones (Stock). Keeping every page at least screen + status bar tall pins the bottom to the same place everywhere. */
+html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
+@media (display-mode:standalone) { body { min-height:calc(100vh + env(safe-area-inset-top)); } }
+</style>
+<style>
+  :root { color-scheme:dark;
+          --bg:#1e2030; --card:#222436; --card-2:#2f334d; --fill:#2f334d; --fill-2:#3b4261;
+          --line:#3b4261; --ink:#c8d3f5; --muted:#828bb8;
+          --accent:#82aaff; --accent-soft:color-mix(in srgb,var(--k-act) 18%,transparent); --good:#c3e88d; --warn:#ff966c;
+          --good-soft:color-mix(in srgb,var(--k-money) 15%,transparent); --warn-soft:color-mix(in srgb,var(--k-warn) 16%,transparent);
+          --nav:color-mix(in srgb,var(--k-bg1) 74%,transparent); --radius:14px; --radius-lg:18px; --shadow:0 2px 10px rgba(0,0,0,.4);
+          --gold:#D4AF37;
+          --bifrost:linear-gradient(90deg,#D4AF37,#D98A3C,#8FA6BF,#8B7BC4,#5A6FC0);
+          /* same two materials as Odin's Vault: --glass (real blur) for the handful
+             of bounded surfaces here (clock, table, floating bars); --pane (no
+             blur) for the 42 calendar day cells, the one thing that repeats. */
+          --glass:linear-gradient(to bottom,color-mix(in srgb,var(--k-bg2) 66%,transparent),color-mix(in srgb,var(--k-bg2) 48%,transparent));
+          --pane:linear-gradient(to bottom,color-mix(in srgb,var(--k-bg2) 92%,transparent),color-mix(in srgb,var(--k-bg2) 80%,transparent));
+          --glass-blur:saturate(180%) blur(20px);
+          --glass-line:color-mix(in srgb,var(--k-ink) 11%,transparent);
+          --glass-edge:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.32);
+          --glass-lift:0 14px 38px -12px rgba(0,0,0,.62),0 2px 8px -3px rgba(0,0,0,.45);
+          --ambient:radial-gradient(1200px 760px at 6% -12%,color-mix(in srgb,var(--k-act) 11%,transparent),transparent 60%),
+                    radial-gradient(900px 640px at 104% 110%,color-mix(in srgb,var(--k-money) 5.5%,transparent),transparent 58%);
+          --ease-out:cubic-bezier(.16,1,.3,1); --ease-spring:cubic-bezier(.34,1.4,.64,1);
+          --ease-slide:cubic-bezier(.3,.8,.4,1); }
+  * { box-sizing:border-box; }
+  html { background:var(--bg); scroll-behavior:smooth; height:100%; }
+  body { margin:0; background:transparent; color:var(--ink); min-height:100dvh;
+         display:flex; flex-direction:column;
+         font:17px/1.47 "Archivo",-apple-system,"SF Pro Text",system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+         -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent; }
+  body::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; background:var(--ambient); }
+  button,input,textarea { font:inherit; color:inherit }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:6px; }
+
+  header { background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+           border-bottom:1px solid var(--glass-line); box-shadow:var(--glass-edge);
+           padding:.5rem .9rem; padding-top:max(.5rem, env(safe-area-inset-top));
+           padding-left:max(.9rem, env(safe-area-inset-left)); padding-right:max(.9rem, env(safe-area-inset-right));
+           display:flex; align-items:center; gap:.6rem; position:sticky; top:0; z-index:5; }
+  header::after { content:""; position:absolute; left:0; right:0; bottom:0; height:2px;
+                  background:var(--bifrost); background-size:200% 100%; opacity:.55; pointer-events:none;
+                  animation:bifrost 18s ease-in-out infinite alternate; }
+  @keyframes bifrost { to { background-position:-200% 0; } }
+  .ident { display:flex; align-items:center; gap:.5rem; min-width:0; }
+  .mark { flex:none; width:22px; height:22px; display:block; }
+  header h1 { margin:0; font-family:Marcellus,"Iowan Old Style",Georgia,serif;
+              font-size:.92rem; font-weight:400; letter-spacing:.09em; text-transform:uppercase;
+              color:var(--gold); opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .back { flex:none; margin-left:auto; text-decoration:none; color:var(--accent); font-size:.82rem; font-weight:600;
+          border:1px solid var(--glass-line); border-radius:8px; padding:.42rem .7rem; }
+  .back:active { background:var(--fill); }
+  @media (max-width:420px) { header h1 { font-size:.78rem; letter-spacing:.05em; } }
+
+  /* Bottom clearance depends on which floating bar(s) are showing: just the
+     actions bar in Agenda, both stacked in Calendar. Toggled via body class
+     in setJournalView() rather than reserving the (taller) worst case
+     always — that would just move the "empty gap" complaint into Agenda. */
+  main { max-width:720px; width:100%; margin:1.1rem auto; padding:0 1rem;
+         padding-bottom:calc(6.7rem + var(--foot-h,0px) + env(safe-area-inset-bottom));
+         padding-left:max(1rem, env(safe-area-inset-left)); padding-right:max(1rem, env(safe-area-inset-right));
+         flex:1; display:flex; flex-direction:column; min-height:0; }
+  body.jr-cal-view main { padding-bottom:calc(11.2rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
+  .view-title { font-family:Marcellus,"Iowan Old Style",Georgia,serif; font-size:1.2rem;
+                font-weight:400; letter-spacing:.005em; color:var(--ink); }
+  .row { display:flex; gap:.5rem; align-items:center; }
+  .muted { color:var(--muted); font-size:.9rem; }
+  .empty { color:var(--muted); padding:.6rem .2rem; }
+  .warn { color:var(--warn); } .good { color:var(--good); }
+  input, select, textarea { font:inherit; font-size:1rem; padding:.6rem .75rem; border-radius:11px;
+    width:100%; background:color-mix(in srgb,var(--k-bg3) 55%,transparent); color:var(--ink); border:1px solid var(--glass-line);
+    box-shadow:var(--glass-edge); transition:box-shadow .15s, border-color .15s; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent);
+    box-shadow:var(--glass-edge),0 0 0 3px var(--accent-soft); }
+  input::placeholder, textarea::placeholder { color:var(--muted); opacity:.7; }
+  input[type=checkbox] { width:auto; }
+  .field { display:flex; flex-direction:column; gap:.28rem; flex:1 1 8rem; min-width:0; }
+  .field > span { font-size:.74rem; color:var(--muted); font-weight:500; padding-left:.1rem; }
+  button.act { background:var(--accent); color:#fff; border:none; padding:.62rem 1.1rem; border-radius:12px;
+               cursor:pointer; font:inherit; font-size:1rem; font-weight:600;
+               box-shadow:var(--glass-edge),0 6px 18px -8px color-mix(in srgb,var(--k-act) 55%,transparent);
+               transition:opacity .15s, transform .2s var(--ease-spring); }
+  button.act:hover { opacity:.9; } button.act:active { transform:scale(.96); }
+  button.act:disabled { opacity:.4; cursor:default; }
+  button.mini { border:1px solid var(--glass-line); background:color-mix(in srgb,var(--k-bg3) 50%,transparent); color:var(--accent);
+                padding:.42rem .7rem; border-radius:9px; cursor:pointer; font-size:.88rem; font-weight:500;
+                box-shadow:var(--glass-edge); transition:background-color .15s var(--ease-out), transform .2s var(--ease-spring); }
+  button.mini:hover { background:var(--fill-2); }
+  button.mini:active { transform:scale(.96); }
+  .item-edit-actions { display:flex; gap:.5rem; justify-content:flex-end; margin-top:1rem; }
+  @media (max-width:600px) { .item-edit-actions button { flex:1; } }
+  .chip-lbl { background:var(--fill-2); border-radius:999px; padding:.1rem .5rem; }
+
+  /* ---- photo-free modal dialogs (add event / day detail / askInput / askConfirm) ---- */
+  .modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:25;
+              display:flex; align-items:center; justify-content:center; padding:1rem;
+              animation:overlayIn .22s ease both; }
+  .modal-card { background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+                border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift);
+                border-radius:20px; max-width:min(26rem,calc(100vw - 2rem)); width:100%;
+                max-height:calc(100dvh - 2rem); overflow:auto; padding:clamp(.85rem,3vw,1.2rem);
+                animation:popIn .4s var(--ease-out) both; }
+  .modal-card h2 { font-family:Marcellus,"Iowan Old Style",Georgia,serif; font-weight:400; margin:0 0 .7rem; }
+  @keyframes fadeIn { from{ opacity:0; } to{ opacity:1; } }
+  @keyframes popIn  { from{ opacity:0; transform:scale(.94) translateY(8px); } to{ opacity:1; transform:none; } }
+  @keyframes overlayIn { from{ opacity:0; } to{ opacity:1; } }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important;
+                             transition-duration:.001ms !important; scroll-behavior:auto !important; } }
+
+  /* ---- Odin's Journal ---- */
+  .jr-viewtoggle { display:flex; gap:.25rem; background:var(--fill); border-radius:10px; padding:3px; }
+  .jr-vt-btn { border:none; background:transparent; color:var(--muted); border-radius:7px;
+    padding:.5rem .75rem; cursor:pointer; font-size:.85rem; font-weight:600;
+    transition:background-color .15s var(--ease-out), color .15s var(--ease-out); }
+  .jr-vt-btn.active { background:var(--card); color:var(--accent); box-shadow:var(--shadow); }
+  .jr-showpast { display:flex; align-items:center; gap:.35rem; font-size:.82rem; margin-left:auto; white-space:nowrap; }
+  .jr-showpast input { width:auto; margin:0; }
+
+  .jr-day-group { margin-bottom:1.1rem; }
+  .jr-day-head { font-size:.95rem; font-weight:700; margin-bottom:.4rem; color:var(--ink); }
+  .jr-day-head .rel { color:var(--accent); }
+  .jr-table { display:grid; grid-template-columns:4.2rem 1fr 6rem 2.2rem 2.2rem; border-radius:12px; overflow:hidden;
+    background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift); }
+  .jr-table .jr-h { font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted);
+    background:var(--fill); padding:.4rem .5rem; border-bottom:1px solid var(--line); }
+  .jr-cell { padding:.55rem .5rem; border-bottom:1px solid var(--line); border-right:1px solid var(--line);
+    font-size:.88rem; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;
+    display:flex; align-items:center; transition:background-color .12s var(--ease-out); }
+  .jr-cell:hover, .jr-cell:active { background:var(--fill); }
+  .jr-cell.jr-time { font-variant-numeric:tabular-nums; color:var(--muted); }
+  .jr-cell.jr-title { font-weight:600; }
+  .jr-row.done .jr-title { color:var(--muted); text-decoration:line-through; }
+  .jr-cell.jr-cat { font-size:.76rem; }
+  .jr-cell.jr-check, .jr-cell.jr-del { justify-content:center; cursor:pointer; color:var(--muted); border-right:none; }
+  .jr-cell.jr-check.done { color:var(--good); }
+  .jr-cell.jr-del:hover { color:var(--warn); }
+  .jr-row:last-child .jr-cell { border-bottom:none; }
+  @media (max-width:640px) {
+    .jr-table { grid-template-columns:3.6rem 1fr 2.2rem 2.2rem; }
+    .jr-h.jr-h-cat, .jr-cell.jr-cat { display:none; }
+  }
+
+  .jr-clock { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap;
+    gap:.4rem .8rem; border-radius:10px; padding:.5rem .8rem; margin-bottom:.8rem;
+    background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift); }
+  .jr-clock-date { font-size:.85rem; color:var(--muted); }
+  .jr-clock-time { font-size:1.1rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink); }
+
+  .jr-cal-title { font-weight:700; font-size:1rem; flex:1; min-width:0; text-align:left; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; padding-left:.3rem; }
+  .jr-cal-nav-actions { display:flex; align-items:center; gap:.3rem; flex:none; }
+  #jr-cal-nav { gap:.35rem; }
+  #jr-cal-nav button#jr-cal-center-toggle { padding:.42rem .55rem; font-size:1.05rem; line-height:1; }
+  .jr-cal-dow { display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:.7rem;
+    color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.3rem; flex:none; }
+  /* "move the date sheets down until the bottom tabs" — the grid stretches to
+     fill whatever's left below the dow header, down to main's own bottom
+     padding (which already clears the floating bars), instead of leaving a
+     dead gap. grid-auto-rows:1fr splits that space evenly across whichever
+     row count the current window has (5 or 6 weeks). */
+  #jr-calendar { display:flex; flex-direction:column; flex:1; min-height:0; }
+  .jr-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr; gap:.3rem; flex:1; min-height:0; }
+  .jr-cal-day { position:relative; min-height:4.4rem; border-radius:10px;
+    background:var(--pane); border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--shadow);
+    display:flex; flex-direction:column; align-items:stretch;
+    padding:.25rem .3rem; gap:.15rem; cursor:pointer; font-size:.85rem; overflow:hidden;
+    transition:background-color .15s var(--ease-out); }
+  .jr-cal-day:hover { background:var(--fill); }
+  .jr-cal-day.other-month { opacity:.35; }
+  /* A day with something planned gets a static, more-noticeable ring — a
+     different visual channel (border/ring, not the pane fill) so an empty day
+     stays exactly the plain pane box it always was. Today outranks this: its
+     animated glow (below) overrides the shadow on the same element. */
+  .jr-cal-day.has-events { border-color:color-mix(in srgb,var(--k-act) 45%,transparent); box-shadow:var(--glass-edge),var(--shadow),0 0 0 1.5px var(--accent-soft); }
+  .jr-cal-day .jr-daynum { align-self:flex-start; font-size:.8rem; color:var(--ink); }
+  .jr-cal-day.today .jr-daynum { color:var(--gold); font-weight:700; }
+  @keyframes jrTodayGlow {
+    0%,100% { box-shadow:var(--glass-edge),var(--shadow),0 0 0 1px var(--gold),0 0 9px 1px rgba(212,175,55,.35); }
+    50%     { box-shadow:var(--glass-edge),var(--shadow),0 0 0 1.5px var(--gold),0 0 18px 5px rgba(212,175,55,.65); }
+  }
+  .jr-cal-day.today { border-color:var(--gold); animation:jrTodayGlow 2.4s ease-in-out 3; }   /* glows a few times, then rests (a box-shadow repaints every frame) */
+  .jr-cal-day .jr-preview { display:flex; flex-direction:column; gap:1px; min-width:0; }
+  .jr-cal-day .jr-ev { font-size:.62rem; line-height:1.25; padding:0 .2rem; border-radius:3px;
+    background:var(--accent-soft); color:var(--accent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .jr-cal-day .jr-ev.done { background:transparent; color:var(--muted); text-decoration:line-through; }
+  .jr-cal-day .jr-more { font-size:.6rem; color:var(--muted); padding:0 .2rem; }
+  @media (max-width:640px) { .jr-cal-day { min-height:3.4rem; } .jr-cal-day .jr-ev:nth-child(n+2) { display:none; } }
+
+  .jr-dd-ev { background:var(--fill); border:1px solid var(--line); border-radius:12px;
+    padding:.65rem .75rem; margin-bottom:.6rem; }
+  .jr-dd-ev.done { opacity:.65; }
+  .jr-dd-title { font-weight:700; font-size:1rem; cursor:pointer; }
+  .jr-dd-ev.done .jr-dd-title { text-decoration:line-through; color:var(--muted); }
+  .jr-dd-meta { display:flex; align-items:center; gap:.5rem; margin-top:.3rem; }
+  .jr-dd-time { font-variant-numeric:tabular-nums; font-size:.85rem; color:var(--muted); cursor:pointer; }
+  .jr-dd-meta .chip-lbl { font-size:.76rem; cursor:pointer; }
+  .jr-dd-notes { font-size:.85rem; margin-top:.4rem; cursor:pointer; }
+  .jr-dd-title:hover, .jr-dd-time:hover, .jr-dd-meta .chip-lbl:hover, .jr-dd-notes:hover { color:var(--accent); }
+  .jr-dd-actions { margin-top:.5rem; }
+
+  /* Both floating bars: always position:fixed (mobile AND desktop, same rule) —
+     the deliberate fix for a containing-block bug found twice in this codebase:
+     an ancestor with any transform/filter/backdrop-filter/animation touching
+     `transform` makes position:fixed relative to IT, not the viewport. Living as
+     a direct body-level sibling of <main>, with no such ancestor, sidesteps that
+     entirely rather than depending on one specific DOM path staying untouched. */
+  .jr-floatbar { position:fixed; left:50%; transform:translateX(-50%); z-index:22;
+    display:flex; align-items:center; gap:.5rem; width:min(28rem,calc(100% - 2rem));
+    border-radius:999px; padding:.5rem .6rem;
+    background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift); }
+  #jr-actions-bar { bottom:calc(1.1rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
+  #jr-actions-bar .act { flex:1; white-space:nowrap; }
+  /* Stacked above the actions bar with a real gap — tall enough to clear it
+     now that both bars got bigger touch targets; measured, not guessed
+     (the two used to overlap by ~20px). */
+  #jr-cal-nav { bottom:calc(6.5rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
+  #jr-cal-nav button.mini { flex:none; }
+  /* Rounder capsule buttons inside the floating bars specifically — matches
+     the fully-pill outer bar better than the site-wide .mini/.act radius. */
+  #jr-actions-bar .jr-vt-btn, #jr-actions-bar .act,
+  #jr-cal-nav button.mini { border-radius:999px; }
+  .jr-viewtoggle { border-radius:999px; }
+  #jr-cal-center-toggle.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  /* Bigger touch targets + text on a phone — the pill bars, the view-toggle,
+     the calendar nav and the agenda grid all read a little small at arm's
+     length; bump them up rather than leaving desktop-tuned sizing everywhere. */
+  @media (max-width:640px) {
+    .jr-floatbar { padding:.65rem .8rem; gap:.6rem; }
+    .jr-vt-btn { padding:.65rem .95rem; font-size:.95rem; }
+    #jr-actions-bar .act { padding:.9rem 1.1rem; font-size:1.08rem; }
+    #jr-cal-nav button.mini { padding:.6rem .9rem; font-size:1.02rem; }
+    .jr-cal-title { font-size:1.08rem; }
+    .jr-clock { padding:.65rem 1rem; }
+    .jr-clock-time { font-size:1.25rem; }
+    .jr-clock-date { font-size:.92rem; }
+    .jr-cell { font-size:.95rem; padding:.7rem .55rem; }
+    .jr-table .jr-h { font-size:.74rem; padding:.5rem .55rem; }
+    .view-title { font-size:1.35rem; }
+  }
+
+  #toast { position:fixed; bottom:calc(1.4rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); left:50%;
+           transform:translateX(-50%) translateY(14px); z-index:50;
+           background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+           border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift);
+           color:var(--k-hi); padding:.75rem 1.2rem; border-radius:14px;
+           opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out), transform .28s var(--ease-out); }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  /* phone: the Category column is hidden, so the tag moves under the note */
+  .jr-cat-m { display:none; font-size:.76rem; margin-top:.2rem; }
+  @media (max-width:640px) { .jr-cat-m { display:block; } }
+  .jr-cal-day.other-month.has-events { opacity:.7; }
+  /* phone cells are too narrow to read a title, so events show as bars; tapping the day opens them */
+  @media (max-width:640px) {
+    .jr-cal-day .jr-ev:nth-child(n+2) { display:block; }
+    .jr-cal-day .jr-ev { font-size:0; height:5px; padding:0; border-radius:99px; background:var(--accent); opacity:.85; }
+    .jr-cal-day .jr-ev.done { background:var(--muted); opacity:.4; text-decoration:none; }
+    .jr-cal-day .jr-preview { gap:3px; margin-top:.2rem; }
+    .jr-cal-day .jr-more { display:none; }
+  }
+
+  #jr-actions-bar .act, .jr-vt-btn { min-width:0; }
+  @media (max-width:360px) {
+    .jr-floatbar { flex-wrap:wrap; justify-content:center; border-radius:24px; padding:.5rem; gap:.4rem; }
+    .jr-vt-btn { padding:.55rem .7rem; font-size:.85rem; }
+    #jr-actions-bar .act { flex:1 1 100%; padding:.75rem .8rem; }
+    #jr-cal-nav { bottom:calc(8.6rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
+  }
+
+  /* short windows: shrink the floating bars so they don't cover the list, and leave room to scroll past them */
+  @media (max-height:520px) {
+    .jr-floatbar { padding:.3rem .45rem; gap:.35rem; }
+    #jr-actions-bar { bottom:calc(.5rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
+    .jr-vt-btn { padding:.4rem .7rem; font-size:.85rem; }
+    #jr-actions-bar .act { padding:.5rem .8rem; font-size:.95rem; }
+    #jr-cal-nav { bottom:calc(4rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
+    #jr-cal-nav button.mini { padding:.4rem .7rem; }
+    main { padding-bottom:calc(5rem + var(--foot-h,0px)); }
+    body.jr-cal-view main { padding-bottom:calc(8.5rem + var(--foot-h,0px)); }
+  }
+  @media (max-height:520px) and (max-width:360px) {
+    #jr-actions-bar .act { flex:1 1 0; }
+    #jr-cal-nav { bottom:calc(6.5rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
+  }
+  /* ================= Odin's Keep — shared system (v2) =================
+     IDENTICAL in static/index.html, pos.html and journal.html. Each app is a
+     self-contained file by design (no shared stylesheet), so this block is
+     copied, not imported — edit it in one file, paste it into the other two.
+     Everything here is namespaced --k-* / .keep-* so it can't collide with an
+     app's own tokens; each app maps its legacy names onto these just below.
+
+     Palette: tokyonight moon, verbatim. A hue means one thing, everywhere:
+       money green · quantity yellow · size cyan · price-tier teal ·
+       category magenta · interaction blue · destructive red · warning orange.
+     Gold is Odin's — the mark, the wordmark, today's date, curated shelves —
+     and nothing else. The Bifrost hairline appears once, under the bar. */
+  :root {
+    --k-hi:#fff; --k-on-act:#10121f; --k-bg0:#191b29; --k-bg1:#1e2030; --k-bg2:#222436; --k-bg3:#2f334d; --k-bg4:#3b4261;
+    --k-line:color-mix(in srgb,var(--k-ink) 10%,transparent); --k-line-2:color-mix(in srgb,var(--k-ink) 16%,transparent);
+    --k-ink:#c8d3f5; --k-muted:#828bb8; --k-faint:#636da6;
+    --k-money:#c3e88d; --k-qty:#ffc777; --k-size:#86e1fc; --k-tier:#4fd6be;
+    --k-cat:#c099ff; --k-act:#82aaff; --k-bad:#ff757f; --k-warn:#ff966c;
+    --k-act-soft:color-mix(in srgb,var(--k-act) 14%,transparent); --k-money-soft:color-mix(in srgb,var(--k-money) 13%,transparent);
+    --k-warn-soft:color-mix(in srgb,var(--k-warn) 14%,transparent); --k-bad-soft:color-mix(in srgb,var(--k-bad) 14%,transparent);
+    --k-gold:#d4af37; --k-gold-soft:rgba(212,175,55,.12);
+    --k-bifrost:linear-gradient(90deg,#d4af37,#d98a3c,#8fa6bf,#8b7bc4,#5a6fc0);
+    --k-font:"Archivo",-apple-system,"SF Pro Text",system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --k-display:Marcellus,"Iowan Old Style",Georgia,serif;
+    --k-r-sm:8px; --k-r:12px; --k-r-lg:16px;
+    --k-lift:0 1px 0 rgba(255,255,255,.04) inset,0 10px 28px -14px rgba(0,0,0,.7);
+    --ease-out:cubic-bezier(.16,1,.3,1); --ease-spring:cubic-bezier(.34,1.4,.64,1);
+    --ease-slide:cubic-bezier(.3,.8,.4,1);
+  }
+  /* ---- the suite bar: brand + app switcher, same in all three apps ---- */
+  .keep-bar { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; align-items:center;
+    column-gap:.75rem; row-gap:0; background:color-mix(in srgb,var(--k-bg0) 86%,transparent);
+    -webkit-backdrop-filter:saturate(160%) blur(18px); backdrop-filter:saturate(160%) blur(18px);
+    padding:.5rem max(.9rem,env(safe-area-inset-right)) .5rem max(.9rem,env(safe-area-inset-left));
+    padding-top:max(.5rem,env(safe-area-inset-top)); border-bottom:1px solid var(--k-line); }
+  .keep-bar::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; pointer-events:none;
+    background:var(--k-bifrost); background-size:200% 100%; opacity:.5;
+    animation:keepBifrost 18s ease-in-out infinite alternate; }
+  @keyframes keepBifrost { to { background-position:-200% 0; } }
+  .keep-brand { display:flex; align-items:center; gap:.45rem; flex:none; min-width:0; text-decoration:none; }
+  .keep-brand svg { width:22px; height:22px; flex:none; display:block; }
+  .keep-word { font:400 .8rem/1 var(--k-display); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--k-gold); opacity:.9; white-space:nowrap; }
+  /* The switcher doubles as the app's title: the current app is the lit
+     segment, with its name; the others are one tap away. */
+  .keep-switch { display:flex; align-items:center; gap:2px; flex:none; padding:3px; border-radius:11px;
+    background:var(--k-bg0); border:1px solid var(--k-line); }
+  .keep-switch a { display:flex; align-items:center; gap:.4rem; height:2.1rem; padding:0 .7rem; border-radius:8px;
+    color:var(--k-muted); text-decoration:none; font:600 .86rem/1 var(--k-font); white-space:nowrap;
+    transition:background-color .18s var(--ease-out), color .18s var(--ease-out), transform .15s var(--ease-spring); }
+  .keep-switch a svg { width:1.05rem; height:1.05rem; flex:none; }
+  .keep-switch a:hover { color:var(--k-ink); }
+  .keep-switch a:active { transform:scale(.95); }
+  .keep-switch a[aria-current="page"] { background:var(--k-bg3); color:var(--k-ink);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 8px -3px rgba(0,0,0,.6); }
+  .keep-switch a[aria-current="page"] svg { color:var(--k-gold); }
+  .keep-tools { margin-left:auto; display:flex; align-items:center; gap:.4rem; flex:none; min-width:0; }
+  /* phone: the other apps collapse to icons; the current one keeps its name */
+  @media (max-width:640px) {
+    .keep-bar { column-gap:.5rem; }
+    .keep-switch a:not([aria-current="page"]) { padding:0 .55rem; }
+    .keep-switch a:not([aria-current="page"]) span { display:none; }
+  }
+  @media (max-width:430px) { .keep-word { display:none; } }
+  /* shared figure style: every number lines up down a column */
+  .keep-num { font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+  @media (prefers-reduced-motion:reduce) { .keep-bar::after { animation:none; } }
+
+  /* ================= Odin's Journal — v2 layer =================
+     Last in the sheet so it wins ties. The shared suite bar replaces the old
+     header + "Journal" title (the switcher already names the app), and the
+     thin clock strip becomes the page's heading: today, set large. */
+  :root { --bg:var(--k-bg1); --card:var(--k-bg2); --card-2:var(--k-bg3); --fill:var(--k-bg3); --fill-2:var(--k-bg4);
+          --ink:var(--k-ink); --muted:var(--k-muted); --accent:var(--k-act); --accent-soft:var(--k-act-soft);
+          --good:var(--k-money); --warn:var(--k-warn); --gold:var(--k-gold); --bifrost:var(--k-bifrost);
+          --glass-line:var(--k-line); }
+  body { font-family:var(--k-font); font-size:16px; }
+  main { margin-top:1.4rem; }
+  button.act { color:var(--k-on-act); font-weight:700; }
+
+  .jr-clock { display:grid; grid-template-columns:1fr auto; align-items:end; gap:.2rem 1rem;
+    padding:1rem 1.15rem 1.05rem; margin-bottom:1rem; border-radius:var(--k-r-lg); }
+  .jr-clock-date { display:flex; flex-direction:column; gap:.2rem; color:var(--k-ink); min-width:0; }
+  .jr-clock-date .wd { font-size:.68rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--k-gold); }
+  .jr-clock-date .dm { font:400 1.55rem/1.1 var(--k-display); letter-spacing:.005em; }
+  .jr-clock-time { font-size:1.35rem; font-weight:700; color:var(--k-muted); letter-spacing:-.01em; }
+  @media (max-width:640px) { .jr-clock-date .dm { font-size:1.3rem; } .jr-clock-time { font-size:1.1rem; } }
+
+  .jr-showpast { padding:.35rem .7rem; border-radius:999px; border:1px solid var(--k-line); color:var(--k-muted);
+    cursor:pointer; user-select:none; }
+  .jr-showpast:has(input:checked) { color:var(--k-act); border-color:color-mix(in srgb,var(--k-act) 45%,transparent); background:var(--k-act-soft); }
+  .jr-day-head { font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--k-muted); }
+  .jr-day-head .rel { color:var(--k-gold); }
+  .jr-table { border-radius:var(--k-r); }
+  .jr-table .jr-h { font-size:.64rem; letter-spacing:.09em; font-weight:700; }
+
+  /* an empty agenda is the normal starting state, not an error — say what
+     goes here, in the space where it will go */
+  #jr-agenda-list > .empty { display:flex; flex-direction:column; align-items:center; gap:.35rem; text-align:center;
+    padding:2.4rem 1.2rem; border:1px dashed var(--k-line-2); border-radius:var(--k-r-lg); color:var(--k-muted); }
+  #jr-agenda-list > .empty::before { content:""; width:2.4rem; height:2.4rem; margin-bottom:.35rem; opacity:.7;
+    background:currentColor;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.5' rx='2'/%3E%3Cpath d='M3.5 9.5h17M8 3v4M16 3v4M12 13v4M10 15h4'/%3E%3C/svg%3E") center/contain no-repeat;
+            mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.5' rx='2'/%3E%3Cpath d='M3.5 9.5h17M8 3v4M16 3v4M12 13v4M10 15h4'/%3E%3C/svg%3E") center/contain no-repeat; }
+  .jr-cal-day { border-radius:9px; }
+  .jr-floatbar { background:color-mix(in srgb,var(--k-bg0) 82%,transparent); border-color:var(--k-line-2); }
+  .jr-vt-btn.active { background:var(--k-bg3); color:var(--k-ink); }
+
+  /* ================= Odin's Keep — motion (shared, v2) =================
+     IDENTICAL in index.html, pos.html and journal.html — edit once, paste
+     into the other two. Modelled on iOS: real springs rather than generic
+     ease curves, so things decelerate the way physical objects do and
+     settle instead of stopping dead.
+       --k-smooth  critically damped: panels, sheets, page content — no overshoot
+       --k-snappy  ~2% overshoot: toggles, sliding highlights, small moves
+       --k-bouncy  ~8% rebound: ONLY the spring-back when a press is released
+       --k-ios     the iOS sheet curve, for things that slide a long way
+       --k-exit    leaving is quicker and quieter than arriving
+     Springs are sampled into CSS linear(); a browser without it (iOS < 17.2)
+     falls back to the nearest cubic-bezier. The app's older three tokens
+     (--ease-out / --ease-spring / --ease-slide) are re-pointed here, so every
+     existing transition picks the springs up without being rewritten. */
+  :root {
+    --k-smooth:cubic-bezier(.2,.9,.25,1); --k-snappy:cubic-bezier(.25,1.1,.4,1); --k-bouncy:cubic-bezier(.3,1.35,.45,1);
+    --k-ios:cubic-bezier(.32,.72,0,1); --k-exit:cubic-bezier(.4,0,.9,.6);
+    --k-t-press:.09s; --k-t-quick:.28s; --k-t:.45s; --k-t-slow:.6s;
+  }
+  @supports (transition-timing-function:linear(0,1)) {
+    :root {
+      --k-smooth:linear(0, 0.025, 0.085, 0.165, 0.252, 0.341, 0.426, 0.505, 0.576, 0.64, 0.696, 0.744, 0.786, 0.822, 0.852, 0.877, 0.899, 0.916, 0.931, 0.944, 0.954, 0.962, 0.969, 0.975, 0.98, 0.983, 0.987, 0.989, 0.991, 0.993, 0.994, 0.995, 0.996, 0.997, 1);
+      --k-snappy:linear(0, 0.031, 0.108, 0.21, 0.324, 0.438, 0.546, 0.643, 0.728, 0.8, 0.859, 0.906, 0.942, 0.97, 0.99, 1.003, 1.012, 1.017, 1.019, 1.02, 1.019, 1.017, 1.015, 1.013, 1.011, 1.009, 1.007, 1.005, 1.004, 1.003, 1.002, 1.001, 1.001, 1, 1);
+      --k-bouncy:linear(0, 0.046, 0.158, 0.305, 0.462, 0.614, 0.748, 0.86, 0.947, 1.009, 1.05, 1.074, 1.083, 1.082, 1.074, 1.063, 1.05, 1.037, 1.025, 1.015, 1.007, 1.001, 0.997, 0.994, 0.993, 0.993, 0.993, 0.994, 0.995, 0.997, 0.998, 0.998, 0.999, 1, 1);
+    }
+  }
+  :root { --ease-out:var(--k-smooth); --ease-spring:var(--k-snappy); --ease-slide:var(--k-ios); }
+
+  @keyframes kFadeIn   { from { opacity:0; } }
+  @keyframes kFadeOut  { to   { opacity:0; } }
+  @keyframes kRise     { from { opacity:0; transform:translateY(10px); } }
+  @keyframes kReveal   { from { opacity:0; transform:translateY(-6px); } }
+  @keyframes kSheetIn  { from { opacity:0; transform:translateY(14px) scale(.965); } }
+  @keyframes kSheetOut { to   { opacity:0; transform:translateY(8px) scale(.975); } }
+  @keyframes kToastIn  { from { opacity:0; transform:translateX(-50%) translateY(18px) scale(.94); } }
+
+  /* ---- press: sink fast, spring back ----
+     The "in" is near-instant so a tap feels acknowledged under the finger;
+     the release rides the bouncy spring back to rest. */
+  .k-press, button.act, button.mini, a.mini, .chip, .keep-switch a, .add-seg button, .add-kind-btn,
+  .jr-vt-btn, .tile, .note, .step button, .paybtn, .go, .ghost, .xbtn, .add-photo-btn {
+    transition-property:transform, background-color, border-color, color, box-shadow, opacity;
+    transition-duration:var(--k-t-slow), .2s, .2s, .2s, .25s, .2s;
+    transition-timing-function:var(--k-bouncy), ease, ease, ease, ease, ease; }
+  .k-press:active, button.act:active:not(:disabled), button.mini:active, a.mini:active, .chip:active,
+  .keep-switch a:active, .add-seg button:active, .add-kind-btn:active, .jr-vt-btn:active,
+  .tile:active, .note:active, .step button:active, .paybtn:active:not([disabled]), .go:active:not([disabled]),
+  .ghost:active, .xbtn:active, .add-photo-btn:active {
+    transform:scale(.96); transition-duration:var(--k-t-press), .1s, .1s, .1s, .1s, .1s;
+    transition-timing-function:ease-out; }
+  .tile:active, .add-photo-btn:active, .add-kind-btn:active { transform:scale(.975); }
+
+  /* ---- sliding thumb for segmented controls (positioned by kThumbs() in JS) ---- */
+  .k-thumbed { position:relative; isolation:isolate; }
+  .k-thumb { position:absolute; left:0; top:0; z-index:-1; pointer-events:none; border-radius:8px;
+    background:var(--k-bg3); box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 8px -3px rgba(0,0,0,.6);
+    transition:transform var(--k-t) var(--k-snappy), width var(--k-t) var(--k-snappy), height var(--k-t) var(--k-snappy), opacity .2s;
+    will-change:transform,width; }
+  .k-thumbed.k-ready > .active, .k-thumbed.k-ready > [aria-current="page"] { background:transparent !important; box-shadow:none !important; }
+  .k-thumb.k-line { height:2px !important; border-radius:2px; background:var(--k-act); box-shadow:none; }
+
+  /* ---- toasts spring up, sheets settle, overlays fade ---- */
+  #toast.show, #toast.on { animation:kToastIn var(--k-t) var(--k-snappy) both; }
+
+  /* ---- between apps: the suite bar stays put, the page cross-fades ---- */
+  @view-transition { navigation:auto; }
+  .keep-bar { view-transition-name:keep-bar; }
+  ::view-transition-old(root) { animation:kFadeOut .18s var(--k-exit) both; }
+  ::view-transition-new(root) { animation:kRise .42s var(--k-smooth) both; }
+  ::view-transition-group(keep-bar) { animation-duration:.3s; }
+
+  @media (prefers-reduced-motion:reduce) {
+    .k-thumb { transition:none; }
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation:none !important; }
+  }
+
+  /* ================= Journal motion ================= */
+  .modal-ov { animation:kFadeIn .25s ease-out both; }
+  .modal-card { animation:kSheetIn var(--k-t) var(--k-smooth) both; }
+  .modal-ov.k-leaving { animation:kFadeOut .22s var(--k-exit) forwards; }
+  .modal-ov.k-leaving .modal-card { animation:kSheetOut .22s var(--k-exit) forwards; }
+  #jr-agenda, #jr-calendar { animation:kRise var(--k-t) var(--k-smooth) both; }
+  @keyframes kRiseR { from { opacity:0; transform:translateY(14px); } }
+  @keyframes kRiseC { from { opacity:0; transform:translateX(-50%) translateY(14px); } }
+  #jr-cal-nav, #jr-actions-bar { animation:kRiseC var(--k-t) var(--k-snappy) both; }
+  .jr-day-group { animation:kRise var(--k-t) var(--k-smooth) both; }
+  .jr-viewtoggle .k-thumb { border-radius:999px; }
+  .jr-cal-day { transition:background-color .2s ease, transform var(--k-t-slow) var(--k-bouncy); }
+  .jr-cal-day:active { transform:scale(.95); transition-duration:var(--k-t-press); }
+
+  /* motion pass: agenda days cascade in; the calendar fills in a quick wave */
+  @keyframes jrCell { from { opacity:0; transform:scale(.94); } }
+  .jr-day-group:nth-child(1){animation-delay:0ms}
+  .jr-day-group:nth-child(2){animation-delay:45ms}
+  .jr-day-group:nth-child(3){animation-delay:90ms}
+  .jr-day-group:nth-child(4){animation-delay:135ms}
+  .jr-day-group:nth-child(5){animation-delay:180ms}
+  .jr-day-group:nth-child(6){animation-delay:225ms}
+  .jr-day-group:nth-child(7){animation-delay:270ms}
+  .jr-day-group:nth-child(8){animation-delay:315ms}
+  .jr-day-group:nth-child(9){animation-delay:360ms}
+  .jr-day-group:nth-child(10){animation-delay:405ms}
+  .jr-day-group:nth-child(n+11){animation-delay:450ms}
+  .jr-cal-day { animation:jrCell .35s var(--k-smooth) backwards; }
+  .jr-cal-day:nth-child(1){animation-delay:0ms}
+  .jr-cal-day:nth-child(2){animation-delay:9ms}
+  .jr-cal-day:nth-child(3){animation-delay:18ms}
+  .jr-cal-day:nth-child(4){animation-delay:27ms}
+  .jr-cal-day:nth-child(5){animation-delay:36ms}
+  .jr-cal-day:nth-child(6){animation-delay:45ms}
+  .jr-cal-day:nth-child(7){animation-delay:54ms}
+  .jr-cal-day:nth-child(8){animation-delay:63ms}
+  .jr-cal-day:nth-child(9){animation-delay:72ms}
+  .jr-cal-day:nth-child(10){animation-delay:81ms}
+  .jr-cal-day:nth-child(11){animation-delay:90ms}
+  .jr-cal-day:nth-child(12){animation-delay:99ms}
+  .jr-cal-day:nth-child(13){animation-delay:108ms}
+  .jr-cal-day:nth-child(14){animation-delay:117ms}
+  .jr-cal-day:nth-child(15){animation-delay:126ms}
+  .jr-cal-day:nth-child(16){animation-delay:135ms}
+  .jr-cal-day:nth-child(17){animation-delay:144ms}
+  .jr-cal-day:nth-child(18){animation-delay:153ms}
+  .jr-cal-day:nth-child(19){animation-delay:162ms}
+  .jr-cal-day:nth-child(20){animation-delay:171ms}
+  .jr-cal-day:nth-child(21){animation-delay:180ms}
+  .jr-cal-day:nth-child(22){animation-delay:189ms}
+  .jr-cal-day:nth-child(23){animation-delay:198ms}
+  .jr-cal-day:nth-child(24){animation-delay:207ms}
+  .jr-cal-day:nth-child(25){animation-delay:216ms}
+  .jr-cal-day:nth-child(26){animation-delay:225ms}
+  .jr-cal-day:nth-child(27){animation-delay:234ms}
+  .jr-cal-day:nth-child(28){animation-delay:243ms}
+  .jr-cal-day:nth-child(29){animation-delay:252ms}
+  .jr-cal-day:nth-child(30){animation-delay:261ms}
+  .jr-cal-day:nth-child(31){animation-delay:270ms}
+  .jr-cal-day:nth-child(32){animation-delay:279ms}
+  .jr-cal-day:nth-child(33){animation-delay:288ms}
+  .jr-cal-day:nth-child(34){animation-delay:297ms}
+  .jr-cal-day:nth-child(35){animation-delay:306ms}
+  .jr-cal-day:nth-child(36){animation-delay:315ms}
+  .jr-cal-day:nth-child(37){animation-delay:324ms}
+  .jr-cal-day:nth-child(38){animation-delay:333ms}
+  .jr-cal-day:nth-child(39){animation-delay:342ms}
+  .jr-cal-day:nth-child(40){animation-delay:351ms}
+  .jr-cal-day:nth-child(41){animation-delay:360ms}
+  .jr-cal-day:nth-child(42){animation-delay:369ms}
+  .jr-cal-day:nth-child(n+43){animation-delay:378ms}
+  @media (prefers-reduced-motion:reduce) { .jr-cal-day { animation:none; } }
+
+/* embedded in a host's frame: the host has its own app switcher */
+html.embedded .keep-brand, html.embedded .keep-switch { display:none !important; }
+
+  /* ===== Themes — each only sets the --k-* palette; everything else (glass, tints, glows,
+     ambient wash) is color-mix()ed from these, so a theme is ~20 values. Chosen in Vault's
+     Settings, kept in localStorage 'sk_theme' (shared by Vault, POS and Journal). The default
+     Tokyo Night Moon is the plain :root above, with no data-theme. ===== */
+  :root[data-theme="daylight"] { color-scheme:light;
+    --k-bg0:#cfd4e3; --k-bg1:#e1e2e7; --k-bg2:#f1f2f7; --k-bg3:#dfe2ec; --k-bg4:#c5cadc;
+    --k-ink:#343b58; --k-hi:#16161e; --k-muted:#5f6a9c; --k-faint:#8189b0;
+    --k-money:#3f6b1f; --k-qty:#8a5a00; --k-size:#00678a; --k-tier:#0c7d68; --k-cat:#7a3fd1;
+    --k-act:#2e7de9; --k-bad:#d1243f; --k-warn:#b45309; --k-on-act:#ffffff;
+    --k-gold:#9a7608; --gold:#9a7608; --shot-a:#dde1ee; --shot-b:#cdd3e4;
+    --glass-edge:inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(40,50,90,.07);
+    --glass-lift:0 14px 36px -16px rgba(50,62,110,.30),0 2px 8px -3px rgba(50,62,110,.16);
+    --k-lift:0 1px 0 rgba(255,255,255,.7) inset,0 8px 22px -14px rgba(50,62,110,.35);
+    --shadow:0 2px 10px rgba(50,62,110,.18); }
+  :root[data-theme="gruvbox"] { color-scheme:dark;
+    --k-bg0:#1b1d1e; --k-bg1:#282828; --k-bg2:#32302f; --k-bg3:#3c3836; --k-bg4:#504945;
+    --k-ink:#ebdbb2; --k-hi:#fbf1c7; --k-muted:#a89984; --k-faint:#7c6f64;
+    --k-money:#b8bb26; --k-qty:#fabd2f; --k-size:#83a598; --k-tier:#8ec07c; --k-cat:#d3869b;
+    --k-act:#83a598; --k-bad:#fb4934; --k-warn:#fe8019; --k-on-act:#1d2021;
+    --k-gold:#d4af37; --gold:#d4af37; --shot-a:#2c2a28; --shot-b:#1d1c1b; }
+  :root[data-theme="nord"] { color-scheme:dark;
+    --k-bg0:#242933; --k-bg1:#2e3440; --k-bg2:#3b4252; --k-bg3:#434c5e; --k-bg4:#4c566a;
+    --k-ink:#d8dee9; --k-hi:#eceff4; --k-muted:#9ba7bc; --k-faint:#7886a0;
+    --k-money:#a3be8c; --k-qty:#ebcb8b; --k-size:#88c0d0; --k-tier:#8fbcbb; --k-cat:#b48ead;
+    --k-act:#81a1c1; --k-bad:#bf616a; --k-warn:#d08770; --k-on-act:#2e3440;
+    --k-gold:#d4af37; --gold:#d4af37; --shot-a:#2b3340; --shot-b:#20262f; }
+  :root[data-theme="rose-pine"] { color-scheme:dark;
+    --k-bg0:#12101b; --k-bg1:#191724; --k-bg2:#1f1d2e; --k-bg3:#26233a; --k-bg4:#403d52;
+    --k-ink:#e0def4; --k-hi:#f7f5ff; --k-muted:#908caa; --k-faint:#6e6a86;
+    --k-money:#8fd0a0; --k-qty:#f6c177; --k-size:#9ccfd8; --k-tier:#5aa9c4; --k-cat:#c4a7e7;
+    --k-act:#ebbcba; --k-bad:#eb6f92; --k-warn:#ea9a97; --k-on-act:#191724;
+    --k-gold:#d4af37; --gold:#d4af37; --shot-a:#241f33; --shot-b:#171424; }
+  :root[data-theme="odin-black"] { color-scheme:dark;
+    --k-bg0:#000000; --k-bg1:#06060a; --k-bg2:#101015; --k-bg3:#1a1a22; --k-bg4:#2b2b36;
+    --k-ink:#e8e6df; --k-hi:#ffffff; --k-muted:#9d998c; --k-faint:#6f6b60;
+    --k-money:#7fd49a; --k-qty:#e7c15a; --k-size:#7cc8e8; --k-tier:#4fd6be; --k-cat:#b69cff;
+    --k-act:#d9b64a; --k-bad:#ff6b6b; --k-warn:#ff9a5c; --k-on-act:#0b0b0e;
+    --k-gold:#d4af37; --gold:#d4af37; --shot-a:#14141b; --shot-b:#08080c; }
+  :root[data-theme="forest"] { color-scheme:dark;
+    --k-bg0:#0d1512; --k-bg1:#13201b; --k-bg2:#1a2a24; --k-bg3:#243730; --k-bg4:#33493f;
+    --k-ink:#d5e6dc; --k-hi:#f1fbf5; --k-muted:#8fa89b; --k-faint:#688075;
+    --k-money:#a6e07a; --k-qty:#f0c870; --k-size:#7fd6e0; --k-tier:#4fd6a8; --k-cat:#c9a0e8;
+    --k-act:#6fcf97; --k-bad:#ff7a7a; --k-warn:#f2994a; --k-on-act:#0d1512;
+    --k-gold:#d4af37; --gold:#d4af37; --shot-a:#18281f; --shot-b:#0e1914; }
+
+  /* ---- phone: the suite bar keeps just the logo; its app switcher lives in a strip along the bottom ---- */
+  :root { --foot-h:0px; }
+  #keepfoot { display:none; }
+  @media (max-width:800px) {
+    :root { --foot-h:3.8rem; --tap:2.9rem; }
+    .foot-t { will-change:translate,scale; scale:1 calc(1 - var(--sq,0) * .22); transform-origin:50% 100%; }
+    /* physics: under a fast scroll the bar squashes down onto the bottom edge and its contents squeeze in; a spring
+       (driven by the scroll script) lets it rebound past rest and settle. --sq is set on the bars only, never :root. */
+    .foot-t > * { scale:calc(1 - var(--sqi,0) * .14) calc(1 + var(--sqi,0) * .12); transform-origin:50% 100%; }
+    /* and each tab's icon dips with it, then hops on the rebound */
+    .foot-t > * > svg, .foot-t > * > .ic, .foot-t > * > a > svg { translate:0 calc(var(--sqi,0) * 5px); }
+    html.foot-push .foot-t { transition:translate .18s cubic-bezier(.2,.8,.3,1); }
+    html.foot-snap .foot-t { transition:translate .62s cubic-bezier(.34,1.45,.64,1); }   /* spring: overshoots a little and settles */
+    @media (prefers-reduced-motion:reduce) { html.foot-push .foot-t, html.foot-snap .foot-t { transition:none; } }
+    header.keep-bar .keep-switch { display:none; }
+    #keepfoot { position:fixed; left:0; right:0; bottom:0; z-index:45; display:flex; align-items:center;
+      justify-content:flex-start; height:calc(var(--foot-h) + env(safe-area-inset-bottom));
+      padding:0 max(.6rem,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(1.6rem,env(safe-area-inset-left));
+      background:color-mix(in srgb,var(--k-bg0) 86%,transparent);
+      -webkit-backdrop-filter:saturate(160%) blur(18px); backdrop-filter:saturate(160%) blur(18px);
+      border-top:1px solid var(--k-line); }
+    /* the same strip as Odin's Vault (vault.css, the --tap pass): 46px targets, icon-only, 3.8rem tall — so the
+       switcher doesn't change size or shape when you move between the apps */
+    #keepfoot { gap:.35rem; }
+    #keepfoot .keep-switch { gap:.25rem; }
+    #keepfoot .keep-switch a { height:var(--tap); min-width:var(--tap); padding:0; border-radius:14px; justify-content:center; }
+    #keepfoot .keep-switch a:not([aria-current="page"]) { padding:0; }
+    #keepfoot .keep-switch a span { display:none; }
+    #keepfoot .keep-switch a svg { width:22px; height:22px; }
+    /* floating island, the same as Odin's Vault's app strip: shrink-wrapped, inset from the edges, on the right */
+    body #keepfoot { left:auto; right:max(.6rem,env(safe-area-inset-right)); bottom:calc(.55rem + env(safe-area-inset-bottom));
+      height:auto; padding:.25rem; border-radius:22px; border:1px solid var(--k-line);
+      box-shadow:0 1px 0 color-mix(in srgb,#fff 6%,transparent) inset,0 16px 36px -14px rgba(0,0,0,.72),0 3px 10px -4px rgba(0,0,0,.45);
+      background:var(--k-bg2); }
+    :root { --foot-h:4.7rem; --tap:2.9rem; }   /* the island (~4rem) + its gap below: what the page keeps clear above it */
+    /* right-hand bias: everything along the bottom sits where the right thumb rests */
+    #keepfoot { justify-content:flex-end; padding-right:max(.8rem,env(safe-area-inset-right)); }
+    .jr-floatbar { left:auto; right:max(.8rem,env(safe-area-inset-right)); transform:none; width:min(22rem,calc(100% - 1.6rem)); }
+    #jr-cal-nav, #jr-actions-bar { animation-name:kRiseR; transform:translateY(calc(var(--sq,0) * var(--foot-h) * .22)); }   /* ride down as the strip squashes */
+  }
+  html.embedded { --foot-h:0px; }
+  html.embedded #keepfoot { display:none !important; }
+  /* taps always land: an overlay that is animating out never swallows them, and nothing waits on a double-tap check */
+  .k-leaving, .k-leaving * { pointer-events:none !important; }
+  button, a, summary, label, select, input[type="checkbox"], input[type="radio"], [onclick], [role="button"], .tile, .prod, .chip { touch-action:manipulation; }
+
+  /* ---- performance: nothing repaints on an idle page ----
+     The header's gold line animated background-position: a main-thread restyle + repaint 60 times a second,
+     forever, on every page. Same look, now slid by transform (the GPU does it, the page does nothing).
+     Rank and badge shimmers play when they appear, then rest, instead of repainting every frame forever. */
+  .keep-bar, .top { overflow-x:clip; }
+  .keep-bar::after, .top::after { right:auto; width:300%; background-size:66.667% 100%; background-repeat:repeat-x;
+    animation:kbSlide 18s ease-in-out 2 alternate; will-change:transform; }   /* sweeps there and back once, then rests: an idle page does no work */
+  @keyframes kbSlide { to { transform:translateX(-66.667%); } }
+  @media (max-width:800px), (pointer:coarse) { .keep-bar::after, .top::after { animation:none; } }   /* phones: still gold line */
+  .rank.rank-diamond, .b-holo { animation-iteration-count:2; }
+  @media (prefers-reduced-motion:reduce) { .keep-bar::after, .top::after { animation:none; } }
+</style>
+<script>
+/* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
+   (Odin's Vault's tab, or any future host), this page drops its own app
+   switcher. Runs in <head> so the chrome never flashes in. */
+if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.documentElement.classList.add('embedded');
+</script>
+</head>
+<body>
+<main>
+  <div class="jr-clock" id="jr-clock">
+    <div class="jr-clock-date" id="jr-clock-date"></div>
+    <div class="jr-clock-time" id="jr-clock-time"></div>
+  </div>
+
+  <div id="jr-agenda">
+    <div class="row" style="margin-bottom:.6rem;flex-wrap:wrap;gap:.5rem">
+      <label class="muted jr-showpast" style="margin-left:auto"><input type="checkbox" id="jr-show-past" onchange="renderAgenda()"> show past</label>
+    </div>
+    <div id="jr-agenda-list"><span class="empty">Loading&hellip;</span></div>
+  </div>
+
+  <div id="jr-calendar" style="display:none">
+    <div class="jr-cal-dow" id="jr-cal-dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+    <div class="jr-cal-grid" id="jr-cal-grid"></div>
+  </div>
+</main>
+
+<!-- Always reachable near the bottom of the screen, thumb-distance on a phone —
+     not just at the top of a page that can scroll a long agenda out of reach. -->
+<div class="jr-floatbar" id="jr-actions-bar">
+  <div class="jr-viewtoggle" data-k-thumb>
+    <button class="jr-vt-btn active" id="jr-view-agenda-btn" onclick="setJournalView('agenda')">Agenda</button>
+    <button class="jr-vt-btn" id="jr-view-calendar-btn" onclick="setJournalView('calendar')">Calendar</button>
+  </div>
+  <button class="act" onclick="openAddEvent()">&plus; Add event</button>
+</div>
+<div class="jr-floatbar" id="jr-cal-nav" style="display:none">
+  <span class="jr-cal-title" id="jr-cal-title"></span>
+  <button class="mini" id="jr-cal-center-toggle" onclick="toggleCalCenter()" title="Experimental: keep today centered instead of a fixed month grid">&#8857;</button>
+  <div class="jr-cal-nav-actions" id="jr-cal-nav-actions">
+    <button class="mini" onclick="calShiftMonth(-1)" aria-label="Previous month">&lsaquo;</button>
+    <button class="mini" onclick="calShiftMonth(1)" aria-label="Next month">&rsaquo;</button>
+    <button class="mini" onclick="calGoToday()">Today</button>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ---- Odin's Keep motion helpers (shared, identical in all three apps) ----
+// dismiss(): play an overlay's exit before removing it. The id is dropped at
+// once, so code that reopens the same dialog never finds the leaving copy.
+const K_REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
+function dismiss(el, ms){
+  if(!el || el.dataset.kLeaving) return;
+  el.dataset.kLeaving='1'; el.removeAttribute('id'); el.style.pointerEvents='none';
+  if(K_REDUCED.matches){ el.remove(); return; }
+  el.classList.add('k-leaving'); setTimeout(()=>el.remove(), ms||230);
+}
+// kThumb(): a segmented control's highlight slides to the active option
+// instead of jumping. Any element with data-k-thumb gets one; a
+// MutationObserver follows the .active class, so call sites don't change.
+function kThumb(box){
+  let th=box.querySelector(':scope > .k-thumb');
+  const line=box.dataset.kThumb==='line';
+  if(!th){
+    th=document.createElement('span'); th.className='k-thumb'+(line?' k-line':''); box.prepend(th);
+    box.classList.add('k-thumbed');
+    new MutationObserver(ms=>{ if(ms.some(m=>m.target!==th)) requestAnimationFrame(()=>kThumb(box)); })
+      .observe(box,{subtree:true,attributes:true,attributeFilter:['class','style','aria-current']});
+    // also re-measure when the control itself appears or resizes (a tab that was hidden at load)
+    if(window.ResizeObserver) new ResizeObserver(()=>kThumb(box)).observe(box);
+  }
+  const act=box.querySelector(':scope > .active, :scope > [aria-current="page"]');
+  // read every measurement first, then write: interleaving them forces a fresh layout per read
+  const w=act?act.offsetWidth:0, h=w?act.offsetHeight:0, x=w?act.offsetLeft:0, y=w?act.offsetTop:0;
+  if(!w){ th.style.opacity='0'; return; }
+  const inset=line?10:0, first=!box.classList.contains('k-ready');
+  if(first) th.style.transition='none';
+  th.style.width=(w-2*inset)+'px';
+  if(!line) th.style.height=h+'px';
+  th.style.transform=`translate(${x+inset}px,${line?y+h-5:y}px)`;
+  th.style.opacity='1';
+  // first placement lands without sliding; transitions come back after it has painted (no forced layout)
+  if(first){ box.classList.add('k-ready'); requestAnimationFrame(()=>requestAnimationFrame(()=>{ th.style.transition=''; })); }
+}
+function kThumbs(){ document.querySelectorAll('[data-k-thumb]').forEach(kThumb); }
+addEventListener('resize', ()=>kThumbs());
+addEventListener('load', ()=>kThumbs());
+if(document.fonts) document.fonts.ready.then(()=>kThumbs());
+
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => (s??'').toString().replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ---- auth: optional PIN (JOURNAL_TOKEN on the server), remembered on this device. ----
+let TOKEN = new URLSearchParams(location.search).get('token') || localStorage.getItem('sk_token') || '';
+if(TOKEN){ try{ localStorage.setItem('sk_token', TOKEN); }catch(_){} }
+
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+
+async function api(path, opts={}){
+  opts.headers = Object.assign({}, opts.headers||{}, TOKEN?{'X-Token':TOKEN}:{});
+  const r = await fetch(path, opts);
+  if(r.status===401){ TOKEN=''; localStorage.removeItem('sk_token'); askToken(); throw new Error('password required'); }
+  if(!r.ok){ let d; try{ d=(await r.json()).detail; }catch(_){} throw new Error(d || r.statusText); }
+  return r.json();
+}
+// On-page PIN screen (NOT a native prompt — iOS home-screen web apps block prompt()/alert()).
+function askToken(){
+  if(document.getElementById('pin-ov')) return;
+  const ov=document.createElement('div'); ov.id='pin-ov';
+  ov.style.cssText='position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;'
+    +'background:var(--bg);padding:1.5rem;animation:fadeIn .2s ease both';
+  ov.innerHTML='<div style="width:100%;max-width:17rem;text-align:center">'
+    +'<svg viewBox="0 0 24 24" style="width:2.6rem;height:2.6rem;margin-bottom:.5rem" aria-hidden="true">'
+    +'<circle cx="12" cy="12" r="9" fill="none" stroke="#D4AF37" stroke-width="1.7"/><path d="M4 12h16" stroke="#D4AF37" stroke-width="1.7"/></svg>'
+    +'<h2 style="margin:0 0 1rem;font-size:1.15rem;font-weight:700">Enter shop PIN</h2>'
+    +'<input id="pin-inp" type="tel" inputmode="numeric" autocomplete="off" placeholder="PIN" '
+    +'style="font-size:1.5rem;text-align:center;letter-spacing:.35em">'
+    +'<button class="act" id="pin-go" style="margin-top:.75rem;width:100%">Unlock</button>'
+    +'<div id="pin-err" style="margin-top:.55rem;color:var(--warn);font-size:.85rem;min-height:1.1em"></div></div>';
+  document.body.appendChild(ov);
+  const inp=ov.querySelector('#pin-inp'), go=ov.querySelector('#pin-go'), err=ov.querySelector('#pin-err');
+  const submit=async()=>{ const pin=(inp.value||'').trim(); if(!pin) return;
+    go.disabled=true; err.textContent='Checking…';
+    try{
+      const r=await fetch('/api/journal/events',{headers:{'X-Token':pin}});
+      if(!r.ok){ err.textContent='Wrong PIN — try again'; inp.value=''; inp.focus(); go.disabled=false; return; }
+      TOKEN=pin; try{ localStorage.setItem('sk_token',pin); }catch(_){}
+      dismiss(ov); loadJournal();
+    }catch(e){ err.textContent='Connection problem — try again'; go.disabled=false; }
+  };
+  go.onclick=submit;
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
+  setTimeout(()=>{ try{ inp.focus(); }catch(_){} }, 60);
+}
+async function checkAuth(){ try{ const a = await (await fetch('/api/auth')).json(); if(a.required && !TOKEN) askToken(); }catch(_){} }
+
+// On-page confirm/prompt replacements.
+function askConfirm(msg){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;'
+      +'background:rgba(0,0,0,.5);padding:1.5rem;animation:fadeIn .15s ease both';
+    ov.innerHTML='<div style="width:100%;max-width:20rem;background:var(--bg);border:1px solid var(--line);'
+      +'border-radius:12px;padding:1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.35)">'
+      +'<div style="font-size:.98rem;line-height:1.4;margin-bottom:1rem;white-space:pre-wrap">'+esc(msg)+'</div>'
+      +'<div style="display:flex;gap:.5rem"><button class="mini" id="ac-no" style="flex:1">Cancel</button>'
+      +'<button class="act" id="ac-yes" style="flex:1">OK</button></div></div>';
+    document.body.appendChild(ov);
+    const done=v=>{ document.removeEventListener('keydown',onKey); dismiss(ov); resolve(v); };
+    const onKey=e=>{ if(e.key==='Escape') done(false); };
+    ov.querySelector('#ac-no').onclick=()=>done(false);
+    ov.querySelector('#ac-yes').onclick=()=>done(true);
+    ov.onclick=e=>{ if(e.target===ov) done(false); };
+    document.addEventListener('keydown', onKey);
+    setTimeout(()=>{ try{ ov.querySelector('#ac-yes').focus(); }catch(_){} }, 30);
+  });
+}
+function askInput(msg, def){
+  def = (def==null) ? '' : String(def);
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;'
+      +'background:rgba(0,0,0,.5);padding:1.5rem;animation:fadeIn .15s ease both';
+    ov.innerHTML='<div style="width:100%;max-width:20rem;background:var(--bg);border:1px solid var(--line);'
+      +'border-radius:12px;padding:1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.35)">'
+      +'<div style="font-size:.95rem;line-height:1.4;margin-bottom:.7rem;white-space:pre-wrap">'+esc(msg)+'</div>'
+      +'<input id="ai-inp" style="width:100%;font-size:1.05rem;text-align:center">'
+      +'<div style="display:flex;gap:.5rem;margin-top:.8rem"><button class="mini" id="ai-no" style="flex:1">Cancel</button>'
+      +'<button class="act" id="ai-yes" style="flex:1">OK</button></div></div>';
+    document.body.appendChild(ov);
+    const inp=ov.querySelector('#ai-inp'); inp.value=def;
+    const done=v=>{ document.removeEventListener('keydown',onKey); dismiss(ov); resolve(v); };
+    const onKey=e=>{ if(e.key==='Escape') done(null); };
+    ov.querySelector('#ai-no').onclick=()=>done(null);
+    ov.querySelector('#ai-yes').onclick=()=>done(inp.value);
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); done(inp.value); } });
+    ov.onclick=e=>{ if(e.target===ov) done(null); };
+    document.addEventListener('keydown', onKey);
+    setTimeout(()=>{ try{ inp.focus(); inp.select(); }catch(_){} }, 30);
+  });
+}
+
+// =================== Odin's Journal ===================
+let JOURNAL_EVENTS = [];
+let JR_VIEW = localStorage.getItem('sk_journal_view') || 'agenda';
+let JR_CAL_YEAR, JR_CAL_MONTH; // 0-based month, like Date's own convention
+(function(){ const d=new Date(); JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth(); })();
+
+const jrToday = () => jrISO(new Date());
+// Local-calendar-day ISO string — never toISOString(), which is UTC and can
+// land on the wrong day near midnight in this timezone.
+function jrISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+// en-GB dates by hand, the same text the browser gives: every toLocaleDateString call builds a
+// formatter (the clock alone asked for three a second) and the first one loads the Intl engine.
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sept','Oct','Nov','Dec'];
+const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const p2=n=>String(n).padStart(2,'0');
+const dayMonthYear=d=>`${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;   // 10 October 2026
+function jrDayLabel(iso){
+  const today=jrToday();
+  if(iso===today) return '<span class="rel">Today</span>';
+  const t=new Date(today+'T00:00:00'), d=new Date(iso+'T00:00:00');
+  const diffDays=Math.round((d-t)/86400000);
+  if(diffDays===1) return '<span class="rel">Tomorrow</span>';
+  if(diffDays===-1) return '<span class="rel">Yesterday</span>';
+  return `${DAY_NAMES[d.getDay()].slice(0,3)} ${d.getDate()} ${MON[d.getMonth()]}`;   // Sat 10 Oct
+}
+function jrTimeLabel(t){ return t ? t.slice(0,5) : '—'; }
+
+async function loadJournal(){
+  try{ JOURNAL_EVENTS = await api('/api/journal/events'); }
+  catch(e){ toast('Error loading Journal: '+e.message); JOURNAL_EVENTS=[]; }
+  setJournalView(JR_VIEW, true);
+  startJrClock();
+}
+let JR_CLOCK_TIMER=null;
+function startJrClock(){
+  stopJrClock();
+  updateJrClock();
+  JR_CLOCK_TIMER=setInterval(updateJrClock, 1000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) updateJrClock(); });   // right time the moment it's back
+}
+function stopJrClock(){ if(JR_CLOCK_TIMER){ clearInterval(JR_CLOCK_TIMER); JR_CLOCK_TIMER=null; } }
+function updateJrClock(){
+  if(document.hidden) return;                              // nobody's looking: don't tick
+  const d=new Date();
+  const dateEl=$('#jr-clock-date'), timeEl=$('#jr-clock-time');
+  if(dateEl){
+    const wd=DAY_NAMES[d.getDay()], dm=dayMonthYear(d);
+    if(dateEl.dataset.v!==wd+dm){ dateEl.dataset.v=wd+dm; dateEl.innerHTML='<span class="wd">'+wd+'</span><span class="dm">'+dm+'</span>'; }
+  }
+  if(timeEl) timeEl.textContent = `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
+}
+function setJournalView(v, skipSave){
+  JR_VIEW=v;
+  if(!skipSave) try{ localStorage.setItem('sk_journal_view', v); }catch(_){}
+  $('#jr-view-agenda-btn').classList.toggle('active', v==='agenda');
+  $('#jr-view-calendar-btn').classList.toggle('active', v==='calendar');
+  $('#jr-agenda').style.display = v==='agenda' ? '' : 'none';
+  $('#jr-calendar').style.display = v==='calendar' ? '' : 'none';
+  $('#jr-cal-nav').style.display = v==='calendar' ? '' : 'none';
+  document.body.classList.toggle('jr-cal-view', v==='calendar');
+  if(v==='agenda') renderAgenda(); else renderCalendar();
+}
+
+function renderAgenda(){
+  const showPast = $('#jr-show-past')?.checked;
+  const today = jrToday();
+  const events = JOURNAL_EVENTS.filter(e => showPast || e.event_date >= today);
+  const box = $('#jr-agenda-list');
+  if(!events.length){ box.innerHTML = '<div class="empty">'+(showPast?'No events yet.':'Nothing planned.')+'<span class="muted">Deliveries, bills, shifts and promotions go here — tap “+ Add event”.</span></div>'; return; }
+  const groups = {};
+  for(const e of events){ (groups[e.event_date] = groups[e.event_date] || []).push(e); }
+  const dates = Object.keys(groups).sort();
+  box.innerHTML = dates.map(date => `
+    <div class="jr-day-group" data-iso="${date}">
+      <div class="jr-day-head">${jrDayLabel(date)}</div>
+      <div class="jr-table">
+        <div class="jr-h">Time</div><div class="jr-h">Title</div><div class="jr-h jr-h-cat">Category</div><div class="jr-h"></div><div class="jr-h"></div>
+        ${groups[date].map(e => `
+          <div class="jr-row${e.done?' done':''}" style="display:contents">
+            <div class="jr-cell jr-time" onclick="editEventTime(${e.id})">${jrTimeLabel(e.event_time)}</div>
+            <div class="jr-cell jr-title" style="flex-direction:column;align-items:flex-start;white-space:normal">
+              <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
+              <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ note'}</div>
+              <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
+            </div>
+            <div class="jr-cell jr-cat" onclick="editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
+            <div class="jr-cell jr-check${e.done?' done':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}">${e.done?'✓':'○'}</div>
+            <div class="jr-cell jr-del" onclick="deleteEventRow(${e.id})" title="Delete">✕</div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function jrEvent(id){ return JOURNAL_EVENTS.find(e=>e.id===id); }
+async function jrPatch(id, patch){
+  try{
+    const updated = await api('/api/journal/events/'+id, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)});
+    const i = JOURNAL_EVENTS.findIndex(e=>e.id===id);
+    if(i>=0) JOURNAL_EVENTS[i]=updated;
+    if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar();
+  }catch(e){ toast('Error: '+e.message); }
+}
+async function editEventTime(id){
+  const e=jrEvent(id); if(!e) return;
+  const v=await askInput('Time (HH:MM, blank = all-day):', e.event_time?e.event_time.slice(0,5):'');
+  if(v===null) return;
+  const t=v.trim();
+  if(t && !/^\d{1,2}:\d{2}$/.test(t)){ toast('Use HH:MM, e.g. 09:00'); return; }
+  await jrPatch(id, {event_time: t || null});
+}
+async function editEventTitle(id){
+  const e=jrEvent(id); if(!e) return;
+  const v=await askInput('Event title:', e.title);
+  if(v===null) return;
+  if(!v.trim()){ toast('Title cannot be blank'); return; }
+  await jrPatch(id, {title: v.trim()});
+}
+async function editEventNotes(id){
+  const e=jrEvent(id); if(!e) return;
+  const v=await askInput('Notes:', e.notes||'');
+  if(v===null) return;
+  await jrPatch(id, {notes: v.trim()});
+}
+async function editEventCategory(id){
+  const e=jrEvent(id); if(!e) return;
+  const v=await askInput('Category (e.g. Restock, Bill, Staff):', e.category||'');
+  if(v===null) return;
+  await jrPatch(id, {category: v.trim()});
+}
+async function toggleEventDone(id){
+  const e=jrEvent(id); if(!e) return;
+  try{
+    const updated=await api('/api/journal/events/'+id+'/done',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({done:!e.done})});
+    const i=JOURNAL_EVENTS.findIndex(x=>x.id===id); if(i>=0) JOURNAL_EVENTS[i]=updated;
+    renderAgenda();
+  }catch(err){ toast('Error: '+err.message); }
+}
+async function deleteEventRow(id){
+  const e=jrEvent(id); if(!e) return;
+  if(!await askConfirm('Delete "'+e.title+'"?')) return;
+  try{
+    await api('/api/journal/events/'+id,{method:'DELETE'});
+    JOURNAL_EVENTS = JOURNAL_EVENTS.filter(x=>x.id!==id);
+    if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar();
+    toast('Deleted');
+  }catch(err){ toast('Error: '+err.message); }
+}
+
+async function openAddEvent(prefillDate){
+  const ov=document.createElement('div'); ov.className='modal-ov';
+  const card=document.createElement('div'); card.className='modal-card'; card.style.cssText='max-width:24rem;width:100%';
+  const today=jrToday();
+  card.innerHTML=`<h2>＋ Add event</h2>
+    <label class="field" style="margin-bottom:.5rem"><span>Date</span><input id="ae-date" type="date" value="${prefillDate||today}"></label>
+    <label class="field" style="margin-bottom:.5rem"><span>Time <span class="muted">(optional)</span></span><input id="ae-time" type="time"></label>
+    <label class="field" style="margin-bottom:.5rem"><span>Title</span><input id="ae-title" placeholder="e.g. Restock: Angkor Beer" autocomplete="off"></label>
+    <label class="field" style="margin-bottom:.5rem"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" placeholder="Restock, Bill, Staff…" autocomplete="off"></label>
+    <label class="field" style="margin-bottom:.85rem"><span>Notes <span class="muted">(optional)</span></span><input id="ae-notes" autocomplete="off"></label>
+    <div class="item-edit-actions">
+      <button class="mini" id="ae-cancel">Cancel</button>
+      <button class="act" id="ae-save">Add event</button>
+    </div>`;
+  ov.appendChild(card); document.body.appendChild(ov);
+  ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
+  card.querySelector('#ae-cancel').onclick=()=>dismiss(ov);
+  card.querySelector('#ae-save').onclick=async()=>{
+    const title=card.querySelector('#ae-title').value.trim();
+    const event_date=card.querySelector('#ae-date').value;
+    if(!title){ toast('Title is required'); return; }
+    if(!event_date){ toast('Date is required'); return; }
+    try{
+      const created=await api('/api/journal/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        event_date, title,
+        event_time: card.querySelector('#ae-time').value || null,
+        category: card.querySelector('#ae-cat').value.trim() || null,
+        notes: card.querySelector('#ae-notes').value.trim() || null,
+      })});
+      JOURNAL_EVENTS.push(created);
+      dismiss(ov); toast('Event added');
+      if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar();
+    }catch(e){ toast('Error: '+e.message); }
+  };
+  setTimeout(()=>{ try{ card.querySelector('#ae-title').focus(); }catch(_){} }, 30);
+}
+
+function calShiftMonth(n){
+  JR_CAL_MONTH += n;
+  if(JR_CAL_MONTH<0){ JR_CAL_MONTH=11; JR_CAL_YEAR--; }
+  if(JR_CAL_MONTH>11){ JR_CAL_MONTH=0; JR_CAL_YEAR++; }
+  renderCalendar();
+}
+function calGoToday(){
+  const d=new Date(); JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth();
+  renderCalendar();
+}
+// Experiment: keep today permanently in the middle row instead of anchoring
+// the grid to a calendar month. Toggled on-page so both can be compared
+// directly rather than committing to one — flip it back off any time.
+let JR_CAL_CENTER = localStorage.getItem('sk_journal_cal_center') === '1';
+function toggleCalCenter(){
+  JR_CAL_CENTER = !JR_CAL_CENTER;
+  try{ localStorage.setItem('sk_journal_cal_center', JR_CAL_CENTER ? '1' : '0'); }catch(_){}
+  renderCalendar();
+}
+function renderCalendar(){
+  const today = jrToday();
+  const byDate = {};
+  for(const e of JOURNAL_EVENTS){ (byDate[e.event_date] = byDate[e.event_date] || []).push(e); }
+  const MAX_PREVIEW = 2;
+
+  const toggleBtn = $('#jr-cal-center-toggle'); if(toggleBtn) toggleBtn.classList.toggle('active', JR_CAL_CENTER);
+  const navActions = $('#jr-cal-nav-actions'); if(navActions) navActions.style.display = JR_CAL_CENTER ? 'none' : '';
+
+  const dowEl = $('#jr-cal-dow'); if(dowEl) dowEl.style.display = JR_CAL_CENTER ? 'none' : '';
+
+  let gridStart, cellCount, inMonthOf;
+  if(JR_CAL_CENTER){
+    // Today sits in the literal center box of the grid (index 17 of 35 — 17
+    // days either side), not just its own weekday column — so columns no
+    // longer line up with fixed weekdays, which is why the S/M/T/.../S header
+    // is hidden in this mode rather than shown lying about what it labels.
+    const t = new Date(today+'T00:00:00');
+    gridStart = new Date(t); gridStart.setDate(t.getDate() - 17);
+    cellCount = 35;
+    inMonthOf = null; // no single "current month" to dim against in this mode
+    $('#jr-cal-title').textContent = `${t.getDate()} ${MON[t.getMonth()]} ${t.getFullYear()}`;
+  } else {
+    const firstOfMonth = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1);
+    const startDow = firstOfMonth.getDay(); // 0=Sun
+    gridStart = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1 - startDow);
+    cellCount = 42;
+    inMonthOf = JR_CAL_MONTH;
+    $('#jr-cal-title').textContent = MONTH_NAMES[JR_CAL_MONTH].slice(0,3)+' '+JR_CAL_YEAR;
+  }
+
+  let html='';
+  for(let i=0;i<cellCount;i++){
+    const d = new Date(gridStart); d.setDate(gridStart.getDate()+i);
+    const iso = jrISO(d);
+    const inMonth = inMonthOf===null ? true : d.getMonth()===inMonthOf;
+    const dayEvents = byDate[iso] || [];
+    const shown = dayEvents.slice(0, MAX_PREVIEW);
+    const extra = dayEvents.length - shown.length;
+    const preview = dayEvents.length ? `<div class="jr-preview">
+      ${shown.map(e=>`<span class="jr-ev${e.done?' done':''}">${esc(e.title)}</span>`).join('')}
+      ${extra>0?`<span class="jr-more">+${extra} more</span>`:''}
+    </div>` : '';
+    html += `<div class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${dayEvents.length?' has-events':''}" onclick="calDayClick('${iso}',this)">
+      <span class="jr-daynum">${d.getDate()}</span>${preview}
+    </div>`;
+  }
+  $('#jr-cal-grid').innerHTML=html;
+}
+function calDayClick(iso,cell){ openDayDetail(iso,cell); }
+
+// Pressing a calendar day pops up its full detail, editable in place — reuses
+// the exact same editEvent*/toggleEventDone/deleteEventRow functions the
+// Agenda grid cells use, so there is one true edit path, not two.
+function openDayDetail(iso,fromCell){
+  const ov=document.createElement('div'); ov.className='modal-ov'; ov.style.zIndex='26';
+  const card=document.createElement('div'); card.className='modal-card'; card.style.cssText='max-width:26rem;width:100%;max-height:85vh;overflow:auto';
+  const dl=new Date(iso+'T00:00:00'), dateLabel = `${DAY_NAMES[dl.getDay()]}, ${dayMonthYear(dl)}`;
+  const render=()=>{
+    const events = JOURNAL_EVENTS.filter(e=>e.event_date===iso)
+      .sort((a,b)=>(a.event_time||'').localeCompare(b.event_time||''));
+    card.innerHTML = `<h2 style="margin-bottom:.7rem">${dateLabel}</h2>
+      ${events.length ? events.map(e=>`
+        <div class="jr-dd-ev${e.done?' done':''}" data-id="${e.id}">
+          <div class="jr-dd-title" data-act="title">${esc(e.title)}</div>
+          <div class="jr-dd-meta">
+            <span class="jr-dd-time" data-act="time">${jrTimeLabel(e.event_time)}</span>
+            <span class="chip-lbl" data-act="cat">${e.category?esc(e.category):'+ category'}</span>
+          </div>
+          <div class="muted jr-dd-notes" data-act="notes">${e.notes?esc(e.notes):'+ add notes'}</div>
+          <div class="row jr-dd-actions">
+            <button class="mini" data-act="done">${e.done?'✓ Done':'Mark done'}</button>
+            <button class="mini" data-act="del" style="color:var(--warn);margin-left:auto">Delete</button>
+          </div>
+        </div>`).join('') : '<div class="empty">No events yet.</div>'}
+      <button class="act" id="dd-add" style="width:100%;margin-top:.7rem">＋ Add event on this day</button>
+      <div class="item-edit-actions"><button class="mini" id="dd-close">Close</button></div>`;
+    card.querySelectorAll('.jr-dd-ev').forEach(row=>{
+      const id=+row.dataset.id;
+      const on=(sel,fn)=>{ const el=row.querySelector(sel); if(el) el.onclick=async()=>{ await fn(id); render(); }; };
+      on('[data-act="title"]', editEventTitle);
+      on('[data-act="time"]', editEventTime);
+      on('[data-act="cat"]', editEventCategory);
+      on('[data-act="notes"]', editEventNotes);
+      on('[data-act="done"]', toggleEventDone);
+      on('[data-act="del"]', deleteEventRow);
+    });
+    card.querySelector('#dd-add').onclick=()=>{ close(); openAddEvent(iso); };
+    card.querySelector('#dd-close').onclick=()=>close();
+  };
+  // Pop out: the card grows out of the date square that was pressed (and shrinks back into it on close),
+  // overshooting a touch like it was lifted off the calendar. Transform + opacity only.
+  const fromBox=()=>fromCell&&fromCell.isConnected&&!K_REDUCED.matches?fromCell.getBoundingClientRect():null;
+  const toCell=(r,c)=>{ const s=r.width/c.width;
+    return `translate(${(r.left+r.width/2)-(c.left+c.width/2)}px,${(r.top+r.height/2)-(c.top+c.height/2)}px) scale(${s.toFixed(3)})`; };
+  let closing=false;
+  const close=()=>{ if(closing) return; closing=true; const r=fromBox();
+    if(!r||!card.animate){ dismiss(ov); return; }
+    const c=card.getBoundingClientRect();
+    ov.animate([{opacity:1},{opacity:0}],{duration:240,easing:'ease-in',fill:'forwards'});
+    card.animate([{transform:'none',opacity:1},{transform:toCell(r,c),opacity:0}],{duration:240,easing:'cubic-bezier(.4,0,.9,.6)',fill:'forwards'});
+    fromCell.animate?.([{transform:'scale(1.1)'},{transform:'none'}],{duration:420,easing:'cubic-bezier(.34,1.5,.64,1)'});
+    setTimeout(()=>ov.remove(),240); };
+  render();
+  ov.appendChild(card); document.body.appendChild(ov);
+  ov.onclick=e=>{ if(e.target===ov) close(); };
+  const r=fromBox();
+  if(r&&card.animate){
+    card.style.animation='none';
+    const c=card.getBoundingClientRect();
+    card.animate([{transform:toCell(r,c),opacity:.4,borderRadius:'40px'},{opacity:1,offset:.35},{transform:'none',opacity:1,borderRadius:'20px'}],
+      {duration:520,easing:'cubic-bezier(.34,1.3,.64,1)'});
+    [...card.children].forEach((k,i)=>k.animate([{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'none'}],
+      {duration:260,delay:120+i*30,easing:'ease-out',fill:'backwards'}));
+    fromCell.animate?.([{transform:'none'},{transform:'scale(1.12)',offset:.4},{transform:'scale(.98)'}],{duration:300,easing:'ease-out'});
+  }
+}
+
+checkAuth();
+loadJournal();
+</script>
+<script>
+// Phone: the bottom bars resist an ordinary scroll and get out of the way of a fast or long one.
+//  - scroll fast (a flick)                 -> they hide at once, mid-swipe, no resistance
+//  - keep scrolling down for ~1.5 screens  -> they hide anyway, however slowly
+//  - anything less                         -> they sink a little, stiffening, and spring back when you stop
+//  - a short scroll back up, or the top/bottom of the page -> they come back, with a bounce
+// Read only from the page's own scroll events (they always fire, during the drag and the fling); touch
+// events aren't used, because phones stop sending them once the page starts scrolling.
+// Driven by the compositor-only `translate` property (no layout, no style recalc of the page).
+(function(){
+  const root=document.documentElement, last=new WeakMap();
+  // [selector, how far it travels]: 'off' = fully off the bottom edge, 'strip' = down by the strip's height
+  const TARGETS=[['#keepfoot','off'],['#jr-actions-bar','strip'],['#jr-cal-nav','strip']];
+  const active=()=>matchMedia('(max-width:800px)').matches&&!root.classList.contains('embedded');
+  let rem=parseFloat(getComputedStyle(root).fontSize)||16; const remPx=r=>r*rem;   // cached: no style read per scroll
+  //   FAST       scroll speed (px/s, downward) that hides them on the spot
+  //   RUN        px of continuous downward scrolling (as a fraction of the screen height) that hides them anyway
+  //   SHOW_PUSH  px of scrolling back up that brings them back
+  //   GIVE/STIFF while resisting, the bars sink at most GIVE of their travel, stiffening as they go
+  const FAST=1600, RUN=2.2, SHOW_PUSH=160, GIVE=.16, STIFF=420, WINDOW=100, BREAK=250;
+  let p=0, run=0, push=0, lastAt=0, timer=0, raf=0, els=[], isHidden=false, sc=[], scEl=null;
+  const collect=()=>{ els=[]; TARGETS.forEach(([sel,mode])=>document.querySelectorAll(sel).forEach(el=>{
+    el.classList.add('foot-t'); els.push({el,mode,ty:0,d:0,kids:[]}); })); };
+  const visTy=el=>{ const m=/(-?[\d.]+)px\s*$/.exec(getComputedStyle(el).translate||''); return m?+m[1]:0; };   // where it is now, mid-transition included
+  const followD=o=>{ const r=o.el.getBoundingClientRect(); return Math.max(0,innerHeight-remPx(.9)-(r.bottom-visTy(o.el))); };
+  const measure=()=>els.forEach(o=>{
+    if(!o.el.offsetHeight){ o.d=0; return; }
+    o.d=o.mode==='strip'?remPx(2.9):o.mode==='follow'?followD(o):Math.max(0,innerHeight-(o.el.getBoundingClientRect().top-visTy(o.el)))+2; });
+  const paint=()=>{ raf=0;
+    const on=active(), q=on?p:0;
+    els.forEach(o=>{
+      if(o.mode==='follow'&&!o.d&&q&&o.el.offsetHeight) o.d=followD(o);   // appeared while the bars were away (e.g. switched tab)
+      const t=(on&&!(o.el.classList.contains('float-island')&&o.el.matches(':focus-within')))?q*o.d:0;
+      if(t===o.ty) return; o.ty=t; o.el.style.translate=t?'0 '+t.toFixed(1)+'px':''; }); };
+  const put=v=>{ p=v; if(!raf) raf=requestAnimationFrame(paint); };
+  // 'push' = a short follow while resisting; 'snap' = the bouncy spring to rest. Swapping the
+  // transition mid-flight carries on from where the bar is, so nothing ever jumps.
+  const mode=m=>{ root.classList.toggle('foot-push',m==='push'); root.classList.toggle('foot-snap',m==='snap'); };
+  const settle=hidden=>{ isHidden=hidden; run=0; push=0; sc=[]; mode('snap'); put(hidden?1:0); };
+  // downward speed (px/s) over the last WINDOW ms of scroll samples
+  const speed=()=>{ if(sc.length<2) return 0; const [t1,y1]=sc[sc.length-1];
+    let i=sc.length-2; while(i>0&&t1-sc[i-1][0]<=WINDOW) i--;
+    const [t0,y0]=sc[i]; return t1>t0?(y1-y0)/(t1-t0)*1000:0; };
+  // physics: the bars squash under the scroll's speed — a damped spring chasing a target set by how fast you
+  // scroll, so they squeeze harder the faster you go and bounce back (overshooting a touch) when you stop.
+  // Runs on rAF only while moving; writes one custom property on the bars (not :root, so no page-wide restyle).
+  const RM=matchMedia('(prefers-reduced-motion: reduce)'), SQ_FULL=1300, SQ_K=260, SQ_C=15;
+  // Each tab (each child of a bar) gets its own --sqi, read from the bar's squash a few frames back — the further
+  // from the right edge (the first tab, where the thumb is), the later — so a ripple runs across the tabs.
+  const LAG=2, hist=[], setv=(el,k,v)=>{ if(el['_'+k]===v) return; el['_'+k]=v; v?el.style.setProperty(k,v):el.style.removeProperty(k); };
+  let sq=0, sqV=0, sqT=0, sqAt=0, sqRaf=0, sqLast=0;
+  const sqStep=t=>{ const dt=sqLast?Math.min(1/30,(t-sqLast)/1000):1/60; sqLast=t;
+    if(performance.now()-sqAt>90) sqT=0;                              // scrolling stopped: let go, spring back
+    sqV+=(SQ_K*(sqT-sq)-SQ_C*sqV)*dt; sq=Math.max(-.5,Math.min(1.2,sq+sqV*dt));
+    hist.unshift(+sq.toFixed(3)); if(hist.length>48) hist.length=48;
+    const still=!sqT&&Math.abs(sqV)<.02&&hist.every(h=>Math.abs(h)<.003);
+    els.forEach(o=>{ setv(o.el,'--sq',still?0:hist[0]);
+      o.kids.forEach((k,j)=>setv(k,'--sqi',still?0:hist[Math.min(hist.length-1,j*LAG)])); });
+    if(still){ sq=sqV=0; sqLast=0; sqRaf=0; hist.length=0; } else sqRaf=requestAnimationFrame(sqStep); };
+  const squash=v=>{ if(RM.matches) return; sqT=Math.min(1,Math.max(0,v)/SQ_FULL); sqAt=performance.now();
+    if(!sqRaf){ sqLast=0; els.forEach(o=>o.kids=[...o.el.children].filter(k=>k.offsetWidth)); sqRaf=requestAnimationFrame(sqStep); } };   // visible tabs, in their current order
+  addEventListener('resize',()=>{ rem=parseFloat(getComputedStyle(root).fontSize)||16; measure(); put(p); });
+  // Coming back to the page (from Journal/POS via the back-forward cache, or from another app): the bars show again.
+  // Left hidden they'd stay hidden until a scroll up, which reads as the bottom bar having vanished.
+  addEventListener('pageshow',e=>{ if(e.persisted&&(p||isHidden)) settle(false); });
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&(p||isHidden)) settle(false); });
+  collect(); measure();
+  last.set(document.scrollingElement||root,(document.scrollingElement||root).scrollTop);
+  // A page that can't scroll (the calendar) or is already at its end still takes the finger's push: the bars
+  // sink a little and squash with the finger's speed, then bounce back on release. Never hides them.
+  // Off (2026-10-20): on a page too short to scroll every drag sank the bars and bounced them back past rest, so the bottom
+  // moved on tabs that aren't page-sized. The bars now stay put there; set true to bring the push back.
+  const PUSH_SHORT=false;
+  let tY=null, tT=0, tPush=0;
+  document.addEventListener('touchstart',e=>{ tPush=0; tY=e.touches.length===1&&!e.target.closest?.('.modal-ov,.drawer,.lightbox,#tabbar')?e.touches[0].clientY:null; tT=performance.now(); },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!PUSH_SHORT||tY==null||!active()||isHidden) return;
+    const y=e.touches[0].clientY, now=performance.now(), dy=tY-y, dt=Math.max(1,now-tT); tY=y; tT=now;   // dy>0: finger moving up
+    const se=document.scrollingElement||root, max=se.scrollHeight-se.clientHeight;
+    if(max>80&&se.scrollTop<max-1){ tPush=0; return; }                // the page is scrolling: the scroll handler has it
+    tPush=Math.max(0,tPush+dy); if(!tPush) return;
+    if(tPush===dy) measure();
+    mode('push'); put(GIVE*(1-Math.exp(-tPush/STIFF))); squash(Math.max(0,dy/dt*1000)*1.4);
+  },{passive:true});
+  const tEnd=()=>{ tY=null; if(tPush){ tPush=0; settle(isHidden); } };
+  document.addEventListener('touchend',tEnd,{passive:true}); document.addEventListener('touchcancel',tEnd,{passive:true});
+  document.addEventListener('scroll',e=>{
+    if(!active()){ if(p||isHidden){ isHidden=false; run=push=0; put(0); } return; }
+    const t=e.target, el=(t===document||t===document.documentElement||t===document.body)?(document.scrollingElement||root):t;
+    if(!el) return;
+    const max=el.scrollHeight-el.clientHeight;
+    const y=Math.max(0,Math.min(el.scrollTop,max));                  // ignore iOS rubber-banding
+    const prev=last.has(el)?last.get(el):y; last.set(el,y);
+    if(max<=80){ if(p||isHidden) settle(false); return; }             // not worth hiding the bars for
+    if(y<=0){ if(p||isHidden) settle(false); return; }                // back at the top: always shown
+    const dy=y-prev, now=performance.now(), gap=now-lastAt; lastAt=now;
+    if(isHidden){                                                     // hidden: a short scroll back up brings them back
+      push=dy<0?push-dy:0; if(push>=SHOW_PUSH) settle(false); }
+    else {
+      if(el!==scEl||gap>BREAK||dy<0){ scEl=el; sc=[]; run=0; }        // a new run: other scroller, a pause, or a change of direction
+      sc.push([now,y]); if(sc.length>20) sc.shift(); squash(speed());
+      if(dy>0) run+=dy;
+      if(!run) measure();
+      if(speed()>=FAST||run>=RUN*innerHeight) settle(true);           // fast, or far: out of the way
+      else if(run>0){ mode('push'); put(GIVE*(1-Math.exp(-run/STIFF))); }   // resist
+    }
+    clearTimeout(timer);
+    timer=setTimeout(()=>{                                            // stopped: spring back to rest (or show, at the very bottom)
+      settle(y+el.clientHeight>=el.scrollHeight-4?false:isHidden); },140);
+  },{passive:true,capture:true});
+})();
+</script>
+<script>/* offline app shell (static/sw.js): registers only on a trusted certificate; a new version shows a tap-to-reload pill */
+if("serviceWorker" in navigator&&window.isSecureContext&&!/[?&]nosw\b/.test(location.search)){
+  addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});
+  /* a new version that lands in the first seconds after opening, before anything was touched, just loads: a home-screen app
+   would otherwise open the previous copy every time after an update */
+  ["pointerdown","keydown"].forEach(function(t){addEventListener(t,function(){window.__kTouched=1;},{once:true,capture:true});});
+  navigator.serviceWorker.addEventListener("message",function(e){ if(!e.data||e.data.type!=="odin:updated"||document.getElementById("k-upd"))return;
+    if(performance.now()<6000&&!window.__kTouched){location.reload();return;}
+    var b=document.createElement("button");b.id="k-upd";b.type="button";b.textContent="New version — tap to reload";
+    b.style.cssText="position:fixed;left:50%;top:calc(.7rem + env(safe-area-inset-top));transform:translateX(-50%);z-index:99;border:0;border-radius:999px;padding:.55rem 1rem;font:600 .85rem system-ui,sans-serif;background:#82aaff;color:#16182a;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer";
+    b.onclick=function(){location.reload();};document.body.appendChild(b);});
+}</script>
+</body>
+</html>
