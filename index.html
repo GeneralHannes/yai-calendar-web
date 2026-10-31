@@ -190,15 +190,6 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
   .back:active { background:var(--fill); }
   @media (max-width:420px) { header h1 { font-size:.78rem; letter-spacing:.05em; } }
 
-  /* Bottom clearance depends on which floating bar(s) are showing: just the
-     actions bar in Agenda, both stacked in Calendar. Toggled via body class
-     in setJournalView() rather than reserving the (taller) worst case
-     always — that would just move the "empty gap" complaint into Agenda. */
-  main { max-width:720px; width:100%; margin:1.1rem auto; padding:0 1rem;
-         padding-bottom:calc(6.7rem + var(--foot-h,0px) + env(safe-area-inset-bottom));
-         padding-left:max(1rem, env(safe-area-inset-left)); padding-right:max(1rem, env(safe-area-inset-right));
-         flex:1; display:flex; flex-direction:column; min-height:0; }
-  body.jr-cal-view main { padding-bottom:calc(11.2rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
   .view-title { font-family:Marcellus,"Iowan Old Style",Georgia,serif; font-size:1.2rem;
                 font-weight:400; letter-spacing:.005em; color:var(--ink); }
   .row { display:flex; gap:.5rem; align-items:center; }
@@ -280,18 +271,6 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
     .jr-h.jr-h-cat, .jr-cell.jr-cat { display:none; }
   }
 
-  .jr-clock { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap;
-    gap:.4rem .8rem; border-radius:10px; padding:.5rem .8rem; margin-bottom:.8rem;
-    background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
-    border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift); }
-  .jr-clock-date { font-size:.85rem; color:var(--muted); }
-  .jr-clock-time { font-size:1.1rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink); }
-
-  .jr-cal-title { font-weight:700; font-size:1rem; flex:1; min-width:0; text-align:left; white-space:nowrap;
-    overflow:hidden; text-overflow:ellipsis; padding-left:.3rem; }
-  .jr-cal-nav-actions { display:flex; align-items:center; gap:.3rem; flex:none; }
-  #jr-cal-nav { gap:.35rem; }
-  #jr-cal-nav button#jr-cal-center-toggle { padding:.42rem .55rem; font-size:1.05rem; line-height:1; }
   .jr-cal-dow { display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:.7rem;
     color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.3rem; flex:none; }
   /* "move the date sheets down until the bottom tabs" — the grid stretches to
@@ -301,86 +280,6 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
      row count the current window has (5 or 6 weeks). */
   #jr-calendar { display:flex; flex-direction:column; flex:1; min-height:0; }
   .jr-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr; gap:.3rem; flex:1; min-height:0; }
-  .jr-cal-day { position:relative; min-height:4.4rem; border-radius:10px;
-    background:var(--pane); border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--shadow);
-    display:flex; flex-direction:column; align-items:stretch;
-    padding:.25rem .3rem; gap:.15rem; cursor:pointer; font-size:.85rem; overflow:hidden;
-    transition:background-color .15s var(--ease-out); }
-  .jr-cal-day:hover { background:var(--fill); }
-  .jr-cal-day.other-month { opacity:.35; }
-  /* A day with something planned gets a static, more-noticeable ring — a
-     different visual channel (border/ring, not the pane fill) so an empty day
-     stays exactly the plain pane box it always was. Today outranks this: its
-     animated glow (below) overrides the shadow on the same element. */
-  .jr-cal-day.has-events { border-color:color-mix(in srgb,var(--k-act) 45%,transparent); box-shadow:var(--glass-edge),var(--shadow),0 0 0 1.5px var(--accent-soft); }
-  .jr-cal-day .jr-daynum { align-self:flex-start; font-size:.8rem; color:var(--ink); }
-  .jr-cal-day.today .jr-daynum { color:var(--gold); font-weight:700; }
-  @keyframes jrTodayGlow {
-    0%,100% { box-shadow:var(--glass-edge),var(--shadow),0 0 0 1px var(--gold),0 0 9px 1px rgba(212,175,55,.35); }
-    50%     { box-shadow:var(--glass-edge),var(--shadow),0 0 0 1.5px var(--gold),0 0 18px 5px rgba(212,175,55,.65); }
-  }
-  .jr-cal-day.today { border-color:var(--gold); animation:jrTodayGlow 2.4s ease-in-out 3; }   /* glows a few times, then rests (a box-shadow repaints every frame) */
-  .jr-cal-day .jr-preview { display:flex; flex-direction:column; gap:1px; min-width:0; }
-  .jr-cal-day .jr-ev { font-size:.62rem; line-height:1.25; padding:0 .2rem; border-radius:3px;
-    background:var(--accent-soft); color:var(--accent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .jr-cal-day .jr-ev.done { background:transparent; color:var(--muted); text-decoration:line-through; }
-  .jr-cal-day .jr-more { font-size:.6rem; color:var(--muted); padding:0 .2rem; }
-  @media (max-width:640px) { .jr-cal-day { min-height:3.4rem; } .jr-cal-day .jr-ev:nth-child(n+2) { display:none; } }
-
-  .jr-dd-ev { background:var(--fill); border:1px solid var(--line); border-radius:12px;
-    padding:.65rem .75rem; margin-bottom:.6rem; }
-  .jr-dd-ev.done { opacity:.65; }
-  .jr-dd-title { font-weight:700; font-size:1rem; cursor:pointer; }
-  .jr-dd-ev.done .jr-dd-title { text-decoration:line-through; color:var(--muted); }
-  .jr-dd-meta { display:flex; align-items:center; gap:.5rem; margin-top:.3rem; }
-  .jr-dd-time { font-variant-numeric:tabular-nums; font-size:.85rem; color:var(--muted); cursor:pointer; }
-  .jr-dd-meta .chip-lbl { font-size:.76rem; cursor:pointer; }
-  .jr-dd-notes { font-size:.85rem; margin-top:.4rem; cursor:pointer; }
-  .jr-dd-title:hover, .jr-dd-time:hover, .jr-dd-meta .chip-lbl:hover, .jr-dd-notes:hover { color:var(--accent); }
-  .jr-dd-actions { margin-top:.5rem; }
-
-  /* Both floating bars: always position:fixed (mobile AND desktop, same rule) —
-     the deliberate fix for a containing-block bug found twice in this codebase:
-     an ancestor with any transform/filter/backdrop-filter/animation touching
-     `transform` makes position:fixed relative to IT, not the viewport. Living as
-     a direct body-level sibling of <main>, with no such ancestor, sidesteps that
-     entirely rather than depending on one specific DOM path staying untouched. */
-  .jr-floatbar { position:fixed; left:50%; transform:translateX(-50%); z-index:22;
-    display:flex; align-items:center; gap:.5rem; width:min(28rem,calc(100% - 2rem));
-    border-radius:999px; padding:.5rem .6rem;
-    background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
-    border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift); }
-  #jr-actions-bar { bottom:calc(1.1rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
-  #jr-actions-bar .act { flex:1; white-space:nowrap; }
-  /* Stacked above the actions bar with a real gap — tall enough to clear it
-     now that both bars got bigger touch targets; measured, not guessed
-     (the two used to overlap by ~20px). */
-  #jr-cal-nav { bottom:calc(6.5rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
-  #jr-cal-nav button.mini { flex:none; }
-  /* Rounder capsule buttons inside the floating bars specifically — matches
-     the fully-pill outer bar better than the site-wide .mini/.act radius. */
-  #jr-actions-bar .jr-vt-btn, #jr-actions-bar .act,
-  #jr-cal-nav button.mini { border-radius:999px; }
-  .jr-viewtoggle { border-radius:999px; }
-  #jr-cal-center-toggle.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-
-  /* Bigger touch targets + text on a phone — the pill bars, the view-toggle,
-     the calendar nav and the agenda grid all read a little small at arm's
-     length; bump them up rather than leaving desktop-tuned sizing everywhere. */
-  @media (max-width:640px) {
-    .jr-floatbar { padding:.65rem .8rem; gap:.6rem; }
-    .jr-vt-btn { padding:.65rem .95rem; font-size:.95rem; }
-    #jr-actions-bar .act { padding:.9rem 1.1rem; font-size:1.08rem; }
-    #jr-cal-nav button.mini { padding:.6rem .9rem; font-size:1.02rem; }
-    .jr-cal-title { font-size:1.08rem; }
-    .jr-clock { padding:.65rem 1rem; }
-    .jr-clock-time { font-size:1.25rem; }
-    .jr-clock-date { font-size:.92rem; }
-    .jr-cell { font-size:.95rem; padding:.7rem .55rem; }
-    .jr-table .jr-h { font-size:.74rem; padding:.5rem .55rem; }
-    .view-title { font-size:1.35rem; }
-  }
-
   #toast { position:fixed; bottom:calc(1.4rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); left:50%;
            transform:translateX(-50%) translateY(14px); z-index:50;
            background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
@@ -391,39 +290,6 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
   /* phone: the Category column is hidden, so the tag moves under the note */
   .jr-cat-m { display:none; font-size:.76rem; margin-top:.2rem; }
   @media (max-width:640px) { .jr-cat-m { display:block; } }
-  .jr-cal-day.other-month.has-events { opacity:.7; }
-  /* phone cells are too narrow to read a title, so events show as bars; tapping the day opens them */
-  @media (max-width:640px) {
-    .jr-cal-day .jr-ev:nth-child(n+2) { display:block; }
-    .jr-cal-day .jr-ev { font-size:0; height:5px; padding:0; border-radius:99px; background:var(--accent); opacity:.85; }
-    .jr-cal-day .jr-ev.done { background:var(--muted); opacity:.4; text-decoration:none; }
-    .jr-cal-day .jr-preview { gap:3px; margin-top:.2rem; }
-    .jr-cal-day .jr-more { display:none; }
-  }
-
-  #jr-actions-bar .act, .jr-vt-btn { min-width:0; }
-  @media (max-width:360px) {
-    .jr-floatbar { flex-wrap:wrap; justify-content:center; border-radius:24px; padding:.5rem; gap:.4rem; }
-    .jr-vt-btn { padding:.55rem .7rem; font-size:.85rem; }
-    #jr-actions-bar .act { flex:1 1 100%; padding:.75rem .8rem; }
-    #jr-cal-nav { bottom:calc(8.6rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
-  }
-
-  /* short windows: shrink the floating bars so they don't cover the list, and leave room to scroll past them */
-  @media (max-height:520px) {
-    .jr-floatbar { padding:.3rem .45rem; gap:.35rem; }
-    #jr-actions-bar { bottom:calc(.5rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
-    .jr-vt-btn { padding:.4rem .7rem; font-size:.85rem; }
-    #jr-actions-bar .act { padding:.5rem .8rem; font-size:.95rem; }
-    #jr-cal-nav { bottom:calc(4rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
-    #jr-cal-nav button.mini { padding:.4rem .7rem; }
-    main { padding-bottom:calc(5rem + var(--foot-h,0px)); }
-    body.jr-cal-view main { padding-bottom:calc(8.5rem + var(--foot-h,0px)); }
-  }
-  @media (max-height:520px) and (max-width:360px) {
-    #jr-actions-bar .act { flex:1 1 0; }
-    #jr-cal-nav { bottom:calc(6.5rem + var(--foot-h,0px) + env(safe-area-inset-bottom)); }
-  }
   /* ================= Odin's Keep — shared system (v2) =================
      IDENTICAL in static/index.html, pos.html and journal.html. Each app is a
      self-contained file by design (no shared stylesheet), so this block is
@@ -504,13 +370,6 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
   main { margin-top:1.4rem; }
   button.act { color:var(--k-on-act); font-weight:700; }
 
-  .jr-clock { display:grid; grid-template-columns:1fr auto; align-items:end; gap:.2rem 1rem;
-    padding:1rem 1.15rem 1.05rem; margin-bottom:1rem; border-radius:var(--k-r-lg); }
-  .jr-clock-date { display:flex; flex-direction:column; gap:.2rem; color:var(--k-ink); min-width:0; }
-  .jr-clock-date .wd { font-size:.68rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--k-gold); }
-  .jr-clock-date .dm { font:400 1.55rem/1.1 var(--k-display); letter-spacing:.005em; }
-  .jr-clock-time { font-size:1.35rem; font-weight:700; color:var(--k-muted); letter-spacing:-.01em; }
-  @media (max-width:640px) { .jr-clock-date .dm { font-size:1.3rem; } .jr-clock-time { font-size:1.1rem; } }
 
   .jr-showpast { padding:.35rem .7rem; border-radius:999px; border:1px solid var(--k-line); color:var(--k-muted);
     cursor:pointer; user-select:none; }
@@ -529,7 +388,6 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
     -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.5' rx='2'/%3E%3Cpath d='M3.5 9.5h17M8 3v4M16 3v4M12 13v4M10 15h4'/%3E%3C/svg%3E") center/contain no-repeat;
             mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15.5' rx='2'/%3E%3Cpath d='M3.5 9.5h17M8 3v4M16 3v4M12 13v4M10 15h4'/%3E%3C/svg%3E") center/contain no-repeat; }
   .jr-cal-day { border-radius:9px; }
-  .jr-floatbar { background:color-mix(in srgb,var(--k-bg0) 82%,transparent); border-color:var(--k-line-2); }
   .jr-vt-btn.active { background:var(--k-bg3); color:var(--k-ink); }
 
   /* ================= Odin's Keep — motion (shared, v2) =================
@@ -766,8 +624,6 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     :root { --foot-h:4.7rem; --tap:2.9rem; }   /* the island (~4rem) + its gap below: what the page keeps clear above it */
     /* right-hand bias: everything along the bottom sits where the right thumb rests */
     #keepfoot { justify-content:flex-end; padding-right:max(.8rem,env(safe-area-inset-right)); }
-    .jr-floatbar { left:auto; right:max(.8rem,env(safe-area-inset-right)); transform:none; width:min(22rem,calc(100% - 1.6rem)); }
-    #jr-cal-nav, #jr-actions-bar { animation-name:kRiseR; transform:translateY(calc(var(--sq,0) * var(--foot-h) * .22)); }   /* ride down as the strip squashes */
   }
   html.embedded { --foot-h:0px; }
   html.embedded #keepfoot { display:none !important; }
@@ -786,6 +642,138 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   @media (max-width:800px), (pointer:coarse) { .keep-bar::after, .top::after { animation:none; } }   /* phones: still gold line */
   .rank.rank-diamond, .b-holo { animation-iteration-count:2; }
   @media (prefers-reduced-motion:reduce) { .keep-bar::after, .top::after { animation:none; } }
+
+  /* ================= Layout v3: side rail · month on top · selected day below ================= */
+  html, body { height:100%; }
+  body { height:100dvh; min-height:0; overflow:hidden; }
+  .jr-shell { flex:1; min-height:0; display:flex; }
+
+  /* the side section: Calendar / Agenda, and Add event — nothing else */
+  .jr-rail { flex:none; width:11.5rem; display:flex; flex-direction:column; gap:.75rem;
+    padding:.9rem .7rem; padding-left:max(.7rem,env(safe-area-inset-left)); padding-bottom:max(.9rem,env(safe-area-inset-bottom));
+    border-right:1px solid var(--glass-line); background:color-mix(in srgb,var(--k-bg0) 55%,transparent);
+    animation:kRailIn var(--k-t) var(--k-smooth) both; }
+  @keyframes kRailIn { from { opacity:0; transform:translateX(-12px); } }
+  .jr-rail .jr-viewtoggle { flex-direction:column; gap:.2rem; border-radius:14px; padding:4px; }
+  .jr-rail .jr-viewtoggle .k-thumb { border-radius:10px; }
+  .jr-rail .jr-vt-btn { display:flex; align-items:center; gap:.6rem; padding:.62rem .7rem; border-radius:10px; font-size:.92rem; text-align:left; }
+  .jr-rail svg { width:20px; height:20px; flex:none; }
+  .jr-rail .jr-add { margin-top:auto; display:flex; align-items:center; justify-content:center; gap:.45rem;
+    padding:.75rem .7rem; border-radius:14px; color:var(--k-on-act); }
+  @media (max-width:760px), (max-height:520px) and (orientation:landscape) {
+    .jr-rail { width:4.1rem; padding:.7rem .45rem; padding-left:max(.45rem,env(safe-area-inset-left)); }
+    .jr-rail span { display:none; }
+    .jr-rail .jr-vt-btn { justify-content:center; padding:.75rem 0; }
+    .jr-rail .jr-add { padding:.85rem 0; border-radius:16px; }
+    .jr-rail svg { width:22px; height:22px; }
+  }
+
+  main { flex:1; min-width:0; min-height:0; max-width:none; margin:0; display:flex; flex-direction:column;
+    padding:.8rem clamp(.6rem,2vw,1.4rem); padding-right:max(clamp(.6rem,2vw,1.4rem),env(safe-area-inset-right));
+    padding-bottom:max(.8rem,env(safe-area-inset-bottom)); }
+  #jr-agenda { flex:1; min-height:0; overflow:auto; width:100%; max-width:760px; margin:0 auto; padding-bottom:1rem; }
+  .jr-agenda-head { margin-bottom:.7rem; }
+  .jr-agenda-head .view-title { margin:0; }
+  #jr-calendar { flex:1; min-height:0; display:flex; flex-direction:column; gap:.75rem; width:100%; max-width:1280px; margin:0 auto; }
+
+  /* top: the month */
+  .jr-top { flex:1 1 60%; min-height:15rem; display:flex; flex-direction:column; }
+  .jr-cal-head { display:flex; align-items:center; gap:.6rem; margin:0 0 .55rem; flex:none; }
+  .jr-month { margin:0; flex:1; min-width:0; font:400 clamp(1.45rem,3.2vw,2.1rem)/1.1 var(--k-display); color:var(--ink);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .jr-year { color:var(--gold); letter-spacing:.06em; font-size:.62em; }
+  .jr-cal-nav-actions { display:flex; gap:.3rem; flex:none; }
+  .jr-cal-nav-actions .mini { border-radius:999px; min-width:2.5rem; padding:.45rem .8rem; font-size:.95rem; }
+  .jr-cal-dow { margin-bottom:.35rem; font-size:.72rem; font-weight:600; }
+  .jr-cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr);
+    gap:clamp(2px,.45vw,6px); flex:1; min-height:0; }
+  .jr-cal-day { container-type:inline-size; position:relative; min-width:0; min-height:0; margin:0;
+    display:flex; flex-direction:column; align-items:stretch; gap:3px; padding:5px 6px; overflow:hidden; cursor:pointer;
+    font:inherit; color:var(--ink); text-align:left; border-radius:10px;
+    background:var(--pane); border:1px solid var(--glass-line); box-shadow:var(--glass-edge);
+    transition:background-color .2s ease, border-color .2s ease, box-shadow .25s ease, transform var(--k-t-slow) var(--k-bouncy); }
+  .jr-cal-day:hover { background:var(--fill); }
+  .jr-cal-day:active { transform:scale(.95); transition-duration:var(--k-t-press); }
+  .jr-cal-day.other-month { opacity:.38; }
+  .jr-cal-day.other-month.has-events { opacity:.6; }
+  .jr-dhead { display:flex; align-items:center; justify-content:space-between; gap:2px; flex:none; }
+  .jr-daynum { font-size:.98rem; font-weight:700; line-height:1; font-variant-numeric:tabular-nums;
+    display:inline-grid; place-items:center; min-width:1.75rem; height:1.75rem; margin:-2px 0 0 -3px; border-radius:999px; }
+  .jr-cal-day.today .jr-daynum { background:var(--gold); color:#1a1608; }
+  .jr-count { font-size:.66rem; font-weight:700; color:var(--accent); background:var(--accent-soft);
+    border-radius:999px; padding:.05rem .4rem; line-height:1.4; }
+  .jr-cal-day.sel { border-color:var(--accent); background:color-mix(in srgb,var(--k-act) 12%,var(--k-bg2));
+    box-shadow:var(--glass-edge),0 0 0 1.5px var(--accent),0 8px 22px -10px color-mix(in srgb,var(--k-act) 60%,transparent); }
+  .jr-cal-day.today:not(.sel) { border-color:color-mix(in srgb,var(--gold) 60%,transparent); }
+  .jr-preview { display:flex; flex-direction:column; gap:2px; min-width:0; min-height:0; overflow:hidden; }
+  .jr-ev { display:block; flex:none; font-size:.74rem; font-weight:600; line-height:1.3; padding:1px 5px; border-radius:5px; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink);
+    background:color-mix(in srgb,var(--k-act) 30%,transparent); border-left:3px solid var(--accent); }
+  .jr-ev.done { background:transparent; border-left-color:var(--muted); color:var(--muted); text-decoration:line-through; }
+  /* narrow cells (phones): a title can't be read, so each event becomes a bar; the day below has the details */
+  @container (max-width:74px) {
+    .jr-ev { font-size:0; height:5px; padding:0; border:0; border-radius:99px; background:var(--accent); }
+    .jr-ev.done { background:var(--muted); opacity:.5; }
+    .jr-count { display:none; }
+    .jr-daynum { font-size:.88rem; min-width:1.55rem; height:1.55rem; }
+  }
+  @keyframes jrCell { from { opacity:0; transform:scale(.94); } }
+  .jr-cal-day { animation:none; }
+  .jr-cal-grid.wave .jr-cal-day { animation:jrCell .35s var(--k-smooth) backwards; }
+
+  /* bottom: the selected day */
+  .jr-bottom { container-type:inline-size; flex:1 1 40%; min-height:9rem; overflow:auto; border-radius:18px; padding:clamp(.8rem,2vw,1.2rem);
+    background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift); }
+  .jr-day-headrow { display:flex; align-items:center; gap:.85rem; margin-bottom:.8rem; }
+  .jr-day-big { font:400 clamp(2.4rem,5vw,3.3rem)/1 var(--k-display); color:var(--gold); min-width:2.2ch; text-align:center; }
+  .jr-day-meta { flex:1; min-width:0; }
+  .jr-day-wd { font-size:1.12rem; font-weight:700; }
+  .jr-day-wd .rel { color:var(--accent); font-weight:600; }
+  .jr-day-my { color:var(--muted); font-size:.9rem; }
+  .jr-day-sum { flex:none; font-size:.8rem; color:var(--muted); text-align:right; }
+  .jr-day-sum b { display:block; font-size:1.3rem; color:var(--ink); line-height:1.1; }
+  .jr-day-list { display:flex; flex-direction:column; gap:.55rem; }
+  .jr-dcard { display:grid; grid-template-columns:5.2rem minmax(0,1fr) auto; gap:.75rem; align-items:start;
+    padding:.75rem .85rem; border-radius:14px; background:color-mix(in srgb,var(--k-bg3) 55%,transparent);
+    border:1px solid var(--glass-line); border-left:4px solid var(--accent); }
+  .jr-dcard.done { border-left-color:var(--muted); opacity:.7; }
+  .jr-dc-time { font-variant-numeric:tabular-nums; font-weight:700; font-size:1.02rem; cursor:pointer; padding-top:.05rem; }
+  .jr-dc-time.allday { font-size:.78rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; padding-top:.25rem; }
+  .jr-dc-title { font-size:1.05rem; font-weight:700; cursor:pointer; overflow-wrap:anywhere; }
+  .jr-dcard.done .jr-dc-title { text-decoration:line-through; color:var(--muted); }
+  .jr-dc-tags { margin-top:.3rem; display:flex; gap:.35rem; flex-wrap:wrap; }
+  .jr-dc-tags .chip-lbl { font-size:.76rem; cursor:pointer; }
+  .jr-dc-notes { margin-top:.35rem; font-size:.9rem; color:var(--muted); cursor:pointer; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .jr-dc-title:hover, .jr-dc-time:hover, .jr-dc-notes:hover, .jr-dc-tags .chip-lbl:hover { color:var(--accent); }
+  .jr-dc-acts { display:flex; gap:.3rem; }
+  .jr-dc-acts button { width:2.3rem; height:2.3rem; border-radius:999px; border:1px solid var(--glass-line); cursor:pointer;
+    background:color-mix(in srgb,var(--k-bg3) 50%,transparent); color:var(--muted); font-size:1rem;
+    transition:background-color .15s, color .15s, transform .2s var(--ease-spring); }
+  .jr-dc-acts button:active { transform:scale(.9); }
+  .jr-dc-acts .ok.on { color:var(--k-on-act); background:var(--good); border-color:transparent; }
+  .jr-dc-acts .del:hover { color:var(--warn); }
+  .jr-day-empty { color:var(--muted); padding:.4rem 0 .2rem; }
+  .jr-day-empty span { display:block; font-size:.85rem; opacity:.8; margin-top:.2rem; }
+  .jr-bottom.enter .jr-day-headrow, .jr-bottom.enter .jr-dcard, .jr-bottom.enter .jr-day-empty { animation:kRise var(--k-t) var(--k-smooth) both; }
+  .jr-bottom.enter .jr-dcard:nth-child(2) { animation-delay:40ms; } .jr-bottom.enter .jr-dcard:nth-child(3) { animation-delay:80ms; }
+  .jr-bottom.enter .jr-dcard:nth-child(4) { animation-delay:120ms; } .jr-bottom.enter .jr-dcard:nth-child(n+5) { animation-delay:160ms; }
+  /* the cards follow the panel's own width (narrow on a phone, or beside the month in landscape) */
+  @container (max-width:460px) {
+    .jr-dcard { grid-template-columns:3.6rem minmax(0,1fr); gap:.55rem; padding:.65rem .7rem; }
+    .jr-dc-acts { grid-column:2; }
+    .jr-day-sum { display:none; }
+    .jr-day-headrow { gap:.6rem; }
+  }
+  @media (max-width:560px) { .jr-cal-nav-actions .mini { min-width:2.2rem; padding:.4rem .6rem; } }
+  @media (max-height:640px) { .jr-top { min-height:12rem; } .jr-bottom { min-height:7rem; } }
+  /* a phone on its side: too short to stack, so the day sits beside the month */
+  @media (max-height:520px) and (orientation:landscape) {
+    #jr-calendar { flex-direction:row; }
+    .jr-top { flex:1 1 60%; min-height:0; }
+    .jr-bottom { flex:1 1 40%; min-height:0; }
+    .jr-day-big { font-size:2.2rem; }
+  }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
@@ -801,42 +789,41 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
     <span class="keep-word">Odin&rsquo;s Journal</span>
   </a>
 </header>
-<main>
-  <div class="jr-clock" id="jr-clock">
-    <div class="jr-clock-date" id="jr-clock-date"></div>
-    <div class="jr-clock-time" id="jr-clock-time"></div>
-  </div>
-
-  <div id="jr-agenda">
-    <div class="row" style="margin-bottom:.6rem;flex-wrap:wrap;gap:.5rem">
-      <label class="muted jr-showpast" style="margin-left:auto"><input type="checkbox" id="jr-show-past" onchange="renderAgenda()"> show past</label>
+<div class="jr-shell">
+  <!-- the small side section: only the two views and Add event -->
+  <nav class="jr-rail" aria-label="Journal">
+    <div class="jr-viewtoggle" data-k-thumb>
+      <button class="jr-vt-btn" id="jr-view-calendar-btn" onclick="setJournalView('calendar')" title="Calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
+      <button class="jr-vt-btn" id="jr-view-agenda-btn" onclick="setJournalView('agenda')" title="Agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".9" fill="currentColor"/><circle cx="4" cy="12" r=".9" fill="currentColor"/><circle cx="4" cy="18" r=".9" fill="currentColor"/></svg><span>Agenda</span></button>
     </div>
-    <div id="jr-agenda-list"><span class="empty">Loading&hellip;</span></div>
-  </div>
+    <button class="act jr-add" onclick="openAddEvent(JR_VIEW==='calendar'?JR_SEL:undefined)" title="Add event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add event</span></button>
+  </nav>
 
-  <div id="jr-calendar" style="display:none">
-    <div class="jr-cal-dow" id="jr-cal-dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
-    <div class="jr-cal-grid" id="jr-cal-grid"></div>
-  </div>
-</main>
+  <main>
+    <div id="jr-agenda" style="display:none">
+      <div class="row jr-agenda-head"><h2 class="view-title">Agenda</h2>
+        <label class="muted jr-showpast"><input type="checkbox" id="jr-show-past" onchange="renderAgenda()"> show past</label></div>
+      <div id="jr-agenda-list"><span class="empty">Loading&hellip;</span></div>
+    </div>
 
-<!-- Always reachable near the bottom of the screen, thumb-distance on a phone —
-     not just at the top of a page that can scroll a long agenda out of reach. -->
-<div class="jr-floatbar" id="jr-actions-bar">
-  <div class="jr-viewtoggle" data-k-thumb>
-    <button class="jr-vt-btn active" id="jr-view-agenda-btn" onclick="setJournalView('agenda')">Agenda</button>
-    <button class="jr-vt-btn" id="jr-view-calendar-btn" onclick="setJournalView('calendar')">Calendar</button>
-  </div>
-  <button class="act" onclick="openAddEvent()">&plus; Add event</button>
-</div>
-<div class="jr-floatbar" id="jr-cal-nav" style="display:none">
-  <span class="jr-cal-title" id="jr-cal-title"></span>
-  <button class="mini" id="jr-cal-center-toggle" onclick="toggleCalCenter()" title="Experimental: keep today centered instead of a fixed month grid">&#8857;</button>
-  <div class="jr-cal-nav-actions" id="jr-cal-nav-actions">
-    <button class="mini" onclick="calShiftMonth(-1)" aria-label="Previous month">&lsaquo;</button>
-    <button class="mini" onclick="calShiftMonth(1)" aria-label="Next month">&rsaquo;</button>
-    <button class="mini" onclick="calGoToday()">Today</button>
-  </div>
+    <div id="jr-calendar">
+      <!-- top: the month, sized to whatever space there is -->
+      <section class="jr-top" aria-label="Month">
+        <div class="jr-cal-head">
+          <h2 class="jr-month"><span id="jr-cal-month"></span> <span class="jr-year" id="jr-cal-year"></span></h2>
+          <div class="jr-cal-nav-actions">
+            <button class="mini" onclick="calShiftMonth(-1)" aria-label="Previous month">&lsaquo;</button>
+            <button class="mini" onclick="calGoToday()">Today</button>
+            <button class="mini" onclick="calShiftMonth(1)" aria-label="Next month">&rsaquo;</button>
+          </div>
+        </div>
+        <div class="jr-cal-dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+        <div class="jr-cal-grid" id="jr-cal-grid"></div>
+      </section>
+      <!-- bottom: everything on the selected day, and only that day -->
+      <section class="jr-bottom" id="jr-day" aria-live="polite"></section>
+    </div>
+  </main>
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
@@ -980,9 +967,10 @@ function askInput(msg, def){
 
 // =================== Odin's Journal ===================
 let JOURNAL_EVENTS = [];
-let JR_VIEW = localStorage.getItem('sk_journal_view') || 'agenda';
+let JR_VIEW = localStorage.getItem('sk_journal_view') || 'calendar';
 let JR_CAL_YEAR, JR_CAL_MONTH; // 0-based month, like Date's own convention
 (function(){ const d=new Date(); JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth(); })();
+let JR_SEL = null;   // the selected day (ISO); the bottom panel shows only this day
 
 const jrToday = () => jrISO(new Date());
 // Local-calendar-day ISO string — never toISOString(), which is UTC and can
@@ -1009,26 +997,8 @@ function jrTimeLabel(t){ return t ? t.slice(0,5) : '—'; }
 async function loadJournal(){
   try{ JOURNAL_EVENTS = await api('/api/journal/events'); }
   catch(e){ toast('Error loading Journal: '+e.message); JOURNAL_EVENTS=[]; }
+  if(!JR_SEL) JR_SEL=jrToday();
   setJournalView(JR_VIEW, true);
-  startJrClock();
-}
-let JR_CLOCK_TIMER=null;
-function startJrClock(){
-  stopJrClock();
-  updateJrClock();
-  JR_CLOCK_TIMER=setInterval(updateJrClock, 1000);
-  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) updateJrClock(); });   // right time the moment it's back
-}
-function stopJrClock(){ if(JR_CLOCK_TIMER){ clearInterval(JR_CLOCK_TIMER); JR_CLOCK_TIMER=null; } }
-function updateJrClock(){
-  if(document.hidden) return;                              // nobody's looking: don't tick
-  const d=new Date();
-  const dateEl=$('#jr-clock-date'), timeEl=$('#jr-clock-time');
-  if(dateEl){
-    const wd=DAY_NAMES[d.getDay()], dm=dayMonthYear(d);
-    if(dateEl.dataset.v!==wd+dm){ dateEl.dataset.v=wd+dm; dateEl.innerHTML='<span class="wd">'+wd+'</span><span class="dm">'+dm+'</span>'; }
-  }
-  if(timeEl) timeEl.textContent = `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
 }
 function setJournalView(v, skipSave){
   JR_VIEW=v;
@@ -1037,10 +1007,10 @@ function setJournalView(v, skipSave){
   $('#jr-view-calendar-btn').classList.toggle('active', v==='calendar');
   $('#jr-agenda').style.display = v==='agenda' ? '' : 'none';
   $('#jr-calendar').style.display = v==='calendar' ? '' : 'none';
-  $('#jr-cal-nav').style.display = v==='calendar' ? '' : 'none';
   document.body.classList.toggle('jr-cal-view', v==='calendar');
-  if(v==='agenda') renderAgenda(); else renderCalendar();
+  if(v==='agenda') renderAgenda(); else renderCalendar({wave:true, enter:true});
 }
+function jrRender(){ if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar(); }
 
 function renderAgenda(){
   const showPast = $('#jr-show-past')?.checked;
@@ -1078,7 +1048,7 @@ async function jrPatch(id, patch){
     const updated = await api('/api/journal/events/'+id, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)});
     const i = JOURNAL_EVENTS.findIndex(e=>e.id===id);
     if(i>=0) JOURNAL_EVENTS[i]=updated;
-    if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar();
+    jrRender();
   }catch(e){ toast('Error: '+e.message); }
 }
 async function editEventTime(id){
@@ -1113,7 +1083,7 @@ async function toggleEventDone(id){
   try{
     const updated=await api('/api/journal/events/'+id+'/done',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({done:!e.done})});
     const i=JOURNAL_EVENTS.findIndex(x=>x.id===id); if(i>=0) JOURNAL_EVENTS[i]=updated;
-    renderAgenda();
+    jrRender();
   }catch(err){ toast('Error: '+err.message); }
 }
 async function deleteEventRow(id){
@@ -1122,7 +1092,7 @@ async function deleteEventRow(id){
   try{
     await api('/api/journal/events/'+id,{method:'DELETE'});
     JOURNAL_EVENTS = JOURNAL_EVENTS.filter(x=>x.id!==id);
-    if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar();
+    jrRender();
     toast('Deleted');
   }catch(err){ toast('Error: '+err.message); }
 }
@@ -1158,7 +1128,7 @@ async function openAddEvent(prefillDate){
       })});
       JOURNAL_EVENTS.push(created);
       dismiss(ov); toast('Event added');
-      if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar();
+      if(JR_VIEW==='calendar') calSelect(created.event_date); else renderAgenda();
     }catch(e){ toast('Error: '+e.message); }
   };
   setTimeout(()=>{ try{ card.querySelector('#ae-title').focus(); }catch(_){} }, 30);
@@ -1168,253 +1138,83 @@ function calShiftMonth(n){
   JR_CAL_MONTH += n;
   if(JR_CAL_MONTH<0){ JR_CAL_MONTH=11; JR_CAL_YEAR--; }
   if(JR_CAL_MONTH>11){ JR_CAL_MONTH=0; JR_CAL_YEAR++; }
-  renderCalendar();
+  renderCalendar({wave:true, dir:n});
 }
-function calGoToday(){
-  const d=new Date(); JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth();
-  renderCalendar();
+function calGoToday(){ calSelect(jrToday()); }
+// Select a day: the month follows it, and the bottom panel switches to it.
+function calSelect(iso){
+  const d=new Date(iso+'T00:00:00'), dir=(d.getFullYear()-JR_CAL_YEAR)*12+d.getMonth()-JR_CAL_MONTH;
+  const changed=iso!==JR_SEL;
+  JR_SEL=iso; JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth();
+  renderCalendar({wave:!!dir, dir:Math.sign(dir), enter:changed});
 }
-// Experiment: keep today permanently in the middle row instead of anchoring
-// the grid to a calendar month. Toggled on-page so both can be compared
-// directly rather than committing to one — flip it back off any time.
-let JR_CAL_CENTER = localStorage.getItem('sk_journal_cal_center') === '1';
-function toggleCalCenter(){
-  JR_CAL_CENTER = !JR_CAL_CENTER;
-  try{ localStorage.setItem('sk_journal_cal_center', JR_CAL_CENTER ? '1' : '0'); }catch(_){}
-  renderCalendar();
-}
-function renderCalendar(){
+function calDayClick(iso){ calSelect(iso); }
+const jrByTime=(a,b)=>(a.event_time?1:0)-(b.event_time?1:0) || (a.event_time||'').localeCompare(b.event_time||'') || a.id-b.id;
+
+function renderCalendar(opt={}){
   const today = jrToday();
   const byDate = {};
   for(const e of JOURNAL_EVENTS){ (byDate[e.event_date] = byDate[e.event_date] || []).push(e); }
-  const MAX_PREVIEW = 2;
-
-  const toggleBtn = $('#jr-cal-center-toggle'); if(toggleBtn) toggleBtn.classList.toggle('active', JR_CAL_CENTER);
-  const navActions = $('#jr-cal-nav-actions'); if(navActions) navActions.style.display = JR_CAL_CENTER ? 'none' : '';
-
-  const dowEl = $('#jr-cal-dow'); if(dowEl) dowEl.style.display = JR_CAL_CENTER ? 'none' : '';
-
-  let gridStart, cellCount, inMonthOf;
-  if(JR_CAL_CENTER){
-    // Today sits in the literal center box of the grid (index 17 of 35 — 17
-    // days either side), not just its own weekday column — so columns no
-    // longer line up with fixed weekdays, which is why the S/M/T/.../S header
-    // is hidden in this mode rather than shown lying about what it labels.
-    const t = new Date(today+'T00:00:00');
-    gridStart = new Date(t); gridStart.setDate(t.getDate() - 17);
-    cellCount = 35;
-    inMonthOf = null; // no single "current month" to dim against in this mode
-    $('#jr-cal-title').textContent = `${t.getDate()} ${MON[t.getMonth()]} ${t.getFullYear()}`;
-  } else {
-    const firstOfMonth = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1);
-    const startDow = firstOfMonth.getDay(); // 0=Sun
-    gridStart = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1 - startDow);
-    cellCount = 42;
-    inMonthOf = JR_CAL_MONTH;
-    $('#jr-cal-title').textContent = MONTH_NAMES[JR_CAL_MONTH].slice(0,3)+' '+JR_CAL_YEAR;
-  }
+  const firstOfMonth = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1);
+  const gridStart = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1 - firstOfMonth.getDay());   // weeks start on Sunday
+  // 5 or 6 weeks, whichever the month needs, so the rows are as tall as they can be
+  const weeks = Math.ceil((firstOfMonth.getDay() + new Date(JR_CAL_YEAR, JR_CAL_MONTH+1, 0).getDate()) / 7);
+  $('#jr-cal-month').textContent = MONTH_NAMES[JR_CAL_MONTH];
+  $('#jr-cal-year').textContent = JR_CAL_YEAR;
 
   let html='';
-  for(let i=0;i<cellCount;i++){
+  for(let i=0;i<weeks*7;i++){
     const d = new Date(gridStart); d.setDate(gridStart.getDate()+i);
-    const iso = jrISO(d);
-    const inMonth = inMonthOf===null ? true : d.getMonth()===inMonthOf;
-    const dayEvents = byDate[iso] || [];
-    const shown = dayEvents.slice(0, MAX_PREVIEW);
-    const extra = dayEvents.length - shown.length;
-    const preview = dayEvents.length ? `<div class="jr-preview">
-      ${shown.map(e=>`<span class="jr-ev${e.done?' done':''}">${esc(e.title)}</span>`).join('')}
-      ${extra>0?`<span class="jr-more">+${extra} more</span>`:''}
-    </div>` : '';
-    html += `<div class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${dayEvents.length?' has-events':''}" onclick="calDayClick('${iso}',this)">
-      <span class="jr-daynum">${d.getDate()}</span>${preview}
-    </div>`;
+    const iso = jrISO(d), inMonth = d.getMonth()===JR_CAL_MONTH;
+    const evs = (byDate[iso] || []).slice().sort(jrByTime);
+    const label = `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}${evs.length?`, ${evs.length} event${evs.length>1?'s':''}`:''}`;
+    html += `<button type="button" class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${iso===JR_SEL?' sel':''}${evs.length?' has-events':''}"
+      onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
+      <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${evs.length?`<span class="jr-count">${evs.length}</span>`:''}</span>
+      ${evs.length?`<span class="jr-preview">${evs.map(e=>`<span class="jr-ev${e.done?' done':''}">${esc(e.title)}</span>`).join('')}</span>`:''}
+    </button>`;
   }
-  $('#jr-cal-grid').innerHTML=html;
+  const grid=$('#jr-cal-grid');
+  grid.classList.toggle('wave', !!opt.wave && !K_REDUCED.matches);
+  grid.innerHTML=html;
+  if(opt.dir && grid.animate && !K_REDUCED.matches)
+    grid.animate([{transform:`translateX(${opt.dir*28}px)`,opacity:.25},{transform:'none',opacity:1}],{duration:380,easing:'cubic-bezier(.16,1,.3,1)'});
+  renderDay(opt.enter);
 }
-function calDayClick(iso,cell){ openDayDetail(iso,cell); }
 
-// Pressing a calendar day pops up its full detail, editable in place — reuses
-// the exact same editEvent*/toggleEventDone/deleteEventRow functions the
-// Agenda grid cells use, so there is one true edit path, not two.
-function openDayDetail(iso,fromCell){
-  const ov=document.createElement('div'); ov.className='modal-ov'; ov.style.zIndex='26';
-  const card=document.createElement('div'); card.className='modal-card'; card.style.cssText='max-width:26rem;width:100%;max-height:85vh;overflow:auto';
-  const dl=new Date(iso+'T00:00:00'), dateLabel = `${DAY_NAMES[dl.getDay()]}, ${dayMonthYear(dl)}`;
-  const render=()=>{
-    const events = JOURNAL_EVENTS.filter(e=>e.event_date===iso)
-      .sort((a,b)=>(a.event_time||'').localeCompare(b.event_time||''));
-    card.innerHTML = `<h2 style="margin-bottom:.7rem">${dateLabel}</h2>
-      ${events.length ? events.map(e=>`
-        <div class="jr-dd-ev${e.done?' done':''}" data-id="${e.id}">
-          <div class="jr-dd-title" data-act="title">${esc(e.title)}</div>
-          <div class="jr-dd-meta">
-            <span class="jr-dd-time" data-act="time">${jrTimeLabel(e.event_time)}</span>
-            <span class="chip-lbl" data-act="cat">${e.category?esc(e.category):'+ category'}</span>
-          </div>
-          <div class="muted jr-dd-notes" data-act="notes">${e.notes?esc(e.notes):'+ add notes'}</div>
-          <div class="row jr-dd-actions">
-            <button class="mini" data-act="done">${e.done?'✓ Done':'Mark done'}</button>
-            <button class="mini" data-act="del" style="color:var(--warn);margin-left:auto">Delete</button>
-          </div>
-        </div>`).join('') : '<div class="empty">No events yet.</div>'}
-      <button class="act" id="dd-add" style="width:100%;margin-top:.7rem">＋ Add event on this day</button>
-      <div class="item-edit-actions"><button class="mini" id="dd-close">Close</button></div>`;
-    card.querySelectorAll('.jr-dd-ev').forEach(row=>{
-      const id=+row.dataset.id;
-      const on=(sel,fn)=>{ const el=row.querySelector(sel); if(el) el.onclick=async()=>{ await fn(id); render(); }; };
-      on('[data-act="title"]', editEventTitle);
-      on('[data-act="time"]', editEventTime);
-      on('[data-act="cat"]', editEventCategory);
-      on('[data-act="notes"]', editEventNotes);
-      on('[data-act="done"]', toggleEventDone);
-      on('[data-act="del"]', deleteEventRow);
-    });
-    card.querySelector('#dd-add').onclick=()=>{ close(); openAddEvent(iso); };
-    card.querySelector('#dd-close').onclick=()=>close();
-  };
-  // Pop out: the card grows out of the date square that was pressed (and shrinks back into it on close),
-  // overshooting a touch like it was lifted off the calendar. Transform + opacity only.
-  const fromBox=()=>fromCell&&fromCell.isConnected&&!K_REDUCED.matches?fromCell.getBoundingClientRect():null;
-  const toCell=(r,c)=>{ const s=r.width/c.width;
-    return `translate(${(r.left+r.width/2)-(c.left+c.width/2)}px,${(r.top+r.height/2)-(c.top+c.height/2)}px) scale(${s.toFixed(3)})`; };
-  let closing=false;
-  const close=()=>{ if(closing) return; closing=true; const r=fromBox();
-    if(!r||!card.animate){ dismiss(ov); return; }
-    const c=card.getBoundingClientRect();
-    ov.animate([{opacity:1},{opacity:0}],{duration:240,easing:'ease-in',fill:'forwards'});
-    card.animate([{transform:'none',opacity:1},{transform:toCell(r,c),opacity:0}],{duration:240,easing:'cubic-bezier(.4,0,.9,.6)',fill:'forwards'});
-    fromCell.animate?.([{transform:'scale(1.1)'},{transform:'none'}],{duration:420,easing:'cubic-bezier(.34,1.5,.64,1)'});
-    setTimeout(()=>ov.remove(),240); };
-  render();
-  ov.appendChild(card); document.body.appendChild(ov);
-  ov.onclick=e=>{ if(e.target===ov) close(); };
-  const r=fromBox();
-  if(r&&card.animate){
-    card.style.animation='none';
-    const c=card.getBoundingClientRect();
-    card.animate([{transform:toCell(r,c),opacity:.4,borderRadius:'40px'},{opacity:1,offset:.35},{transform:'none',opacity:1,borderRadius:'20px'}],
-      {duration:520,easing:'cubic-bezier(.34,1.3,.64,1)'});
-    [...card.children].forEach((k,i)=>k.animate([{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'none'}],
-      {duration:260,delay:120+i*30,easing:'ease-out',fill:'backwards'}));
-    fromCell.animate?.([{transform:'none'},{transform:'scale(1.12)',offset:.4},{transform:'scale(.98)'}],{duration:300,easing:'ease-out'});
-  }
+// The bottom panel: the selected day only, in full. Every field edits in place through the same
+// editEvent*/toggleEventDone/deleteEventRow the Agenda uses, so there is one edit path.
+function renderDay(enter){
+  const box=$('#jr-day'); if(!box) return;
+  const iso=JR_SEL||jrToday(), d=new Date(iso+'T00:00:00');
+  const evs=JOURNAL_EVENTS.filter(e=>e.event_date===iso).sort(jrByTime);
+  const done=evs.filter(e=>e.done).length;
+  const relHtml=jrDayLabel(iso), rel=relHtml.includes('class="rel"')?` <span class="rel">· ${relHtml.replace(/<[^>]+>/g,'')}</span>`:'';
+  box.innerHTML=`<div class="jr-day-headrow">
+      <div class="jr-day-big">${d.getDate()}</div>
+      <div class="jr-day-meta"><div class="jr-day-wd">${DAY_NAMES[d.getDay()]}${rel}</div>
+        <div class="jr-day-my">${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}</div></div>
+      <div class="jr-day-sum">${evs.length?`<b>${evs.length}</b>event${evs.length>1?'s':''}${done?` · ${done} done`:''}`:''}</div>
+    </div>
+    ${evs.length?`<div class="jr-day-list">${evs.map(e=>`
+      <article class="jr-dcard${e.done?' done':''}">
+        <div class="jr-dc-time${e.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="Change time">${e.event_time?e.event_time.slice(0,5):'All day'}</div>
+        <div>
+          <div class="jr-dc-title" onclick="editEventTitle(${e.id})" title="Rename">${esc(e.title)}</div>
+          <div class="jr-dc-tags"><span class="chip-lbl" onclick="editEventCategory(${e.id})">${e.category?esc(e.category):'+ category'}</span></div>
+          <div class="jr-dc-notes" onclick="editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ add notes'}</div>
+        </div>
+        <div class="jr-dc-acts">
+          <button class="ok${e.done?' on':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}" aria-label="${e.done?'Mark not done':'Mark done'}">✓</button>
+          <button class="del" onclick="deleteEventRow(${e.id})" title="Delete" aria-label="Delete">✕</button>
+        </div>
+      </article>`).join('')}</div>`
+    :`<div class="jr-day-empty">Nothing planned for this day.<span>Use “Add event” to put something on it.</span></div>`}`;
+  if(enter && !K_REDUCED.matches){ box.classList.remove('enter'); void box.offsetWidth; box.classList.add('enter'); box.scrollTop=0; }
 }
 
 checkAuth();
 loadJournal();
-</script>
-<script>
-// Phone: the bottom bars resist an ordinary scroll and get out of the way of a fast or long one.
-//  - scroll fast (a flick)                 -> they hide at once, mid-swipe, no resistance
-//  - keep scrolling down for ~1.5 screens  -> they hide anyway, however slowly
-//  - anything less                         -> they sink a little, stiffening, and spring back when you stop
-//  - a short scroll back up, or the top/bottom of the page -> they come back, with a bounce
-// Read only from the page's own scroll events (they always fire, during the drag and the fling); touch
-// events aren't used, because phones stop sending them once the page starts scrolling.
-// Driven by the compositor-only `translate` property (no layout, no style recalc of the page).
-(function(){
-  const root=document.documentElement, last=new WeakMap();
-  // [selector, how far it travels]: 'off' = fully off the bottom edge, 'strip' = down by the strip's height
-  const TARGETS=[['#keepfoot','off'],['#jr-actions-bar','strip'],['#jr-cal-nav','strip']];
-  const active=()=>matchMedia('(max-width:800px)').matches&&!root.classList.contains('embedded');
-  let rem=parseFloat(getComputedStyle(root).fontSize)||16; const remPx=r=>r*rem;   // cached: no style read per scroll
-  //   FAST       scroll speed (px/s, downward) that hides them on the spot
-  //   RUN        px of continuous downward scrolling (as a fraction of the screen height) that hides them anyway
-  //   SHOW_PUSH  px of scrolling back up that brings them back
-  //   GIVE/STIFF while resisting, the bars sink at most GIVE of their travel, stiffening as they go
-  const FAST=1600, RUN=2.2, SHOW_PUSH=160, GIVE=.16, STIFF=420, WINDOW=100, BREAK=250;
-  let p=0, run=0, push=0, lastAt=0, timer=0, raf=0, els=[], isHidden=false, sc=[], scEl=null;
-  const collect=()=>{ els=[]; TARGETS.forEach(([sel,mode])=>document.querySelectorAll(sel).forEach(el=>{
-    el.classList.add('foot-t'); els.push({el,mode,ty:0,d:0,kids:[]}); })); };
-  const visTy=el=>{ const m=/(-?[\d.]+)px\s*$/.exec(getComputedStyle(el).translate||''); return m?+m[1]:0; };   // where it is now, mid-transition included
-  const followD=o=>{ const r=o.el.getBoundingClientRect(); return Math.max(0,innerHeight-remPx(.9)-(r.bottom-visTy(o.el))); };
-  const measure=()=>els.forEach(o=>{
-    if(!o.el.offsetHeight){ o.d=0; return; }
-    o.d=o.mode==='strip'?remPx(2.9):o.mode==='follow'?followD(o):Math.max(0,innerHeight-(o.el.getBoundingClientRect().top-visTy(o.el)))+2; });
-  const paint=()=>{ raf=0;
-    const on=active(), q=on?p:0;
-    els.forEach(o=>{
-      if(o.mode==='follow'&&!o.d&&q&&o.el.offsetHeight) o.d=followD(o);   // appeared while the bars were away (e.g. switched tab)
-      const t=(on&&!(o.el.classList.contains('float-island')&&o.el.matches(':focus-within')))?q*o.d:0;
-      if(t===o.ty) return; o.ty=t; o.el.style.translate=t?'0 '+t.toFixed(1)+'px':''; }); };
-  const put=v=>{ p=v; if(!raf) raf=requestAnimationFrame(paint); };
-  // 'push' = a short follow while resisting; 'snap' = the bouncy spring to rest. Swapping the
-  // transition mid-flight carries on from where the bar is, so nothing ever jumps.
-  const mode=m=>{ root.classList.toggle('foot-push',m==='push'); root.classList.toggle('foot-snap',m==='snap'); };
-  const settle=hidden=>{ isHidden=hidden; run=0; push=0; sc=[]; mode('snap'); put(hidden?1:0); };
-  // downward speed (px/s) over the last WINDOW ms of scroll samples
-  const speed=()=>{ if(sc.length<2) return 0; const [t1,y1]=sc[sc.length-1];
-    let i=sc.length-2; while(i>0&&t1-sc[i-1][0]<=WINDOW) i--;
-    const [t0,y0]=sc[i]; return t1>t0?(y1-y0)/(t1-t0)*1000:0; };
-  // physics: the bars squash under the scroll's speed — a damped spring chasing a target set by how fast you
-  // scroll, so they squeeze harder the faster you go and bounce back (overshooting a touch) when you stop.
-  // Runs on rAF only while moving; writes one custom property on the bars (not :root, so no page-wide restyle).
-  const RM=matchMedia('(prefers-reduced-motion: reduce)'), SQ_FULL=1300, SQ_K=260, SQ_C=15;
-  // Each tab (each child of a bar) gets its own --sqi, read from the bar's squash a few frames back — the further
-  // from the right edge (the first tab, where the thumb is), the later — so a ripple runs across the tabs.
-  const LAG=2, hist=[], setv=(el,k,v)=>{ if(el['_'+k]===v) return; el['_'+k]=v; v?el.style.setProperty(k,v):el.style.removeProperty(k); };
-  let sq=0, sqV=0, sqT=0, sqAt=0, sqRaf=0, sqLast=0;
-  const sqStep=t=>{ const dt=sqLast?Math.min(1/30,(t-sqLast)/1000):1/60; sqLast=t;
-    if(performance.now()-sqAt>90) sqT=0;                              // scrolling stopped: let go, spring back
-    sqV+=(SQ_K*(sqT-sq)-SQ_C*sqV)*dt; sq=Math.max(-.5,Math.min(1.2,sq+sqV*dt));
-    hist.unshift(+sq.toFixed(3)); if(hist.length>48) hist.length=48;
-    const still=!sqT&&Math.abs(sqV)<.02&&hist.every(h=>Math.abs(h)<.003);
-    els.forEach(o=>{ setv(o.el,'--sq',still?0:hist[0]);
-      o.kids.forEach((k,j)=>setv(k,'--sqi',still?0:hist[Math.min(hist.length-1,j*LAG)])); });
-    if(still){ sq=sqV=0; sqLast=0; sqRaf=0; hist.length=0; } else sqRaf=requestAnimationFrame(sqStep); };
-  const squash=v=>{ if(RM.matches) return; sqT=Math.min(1,Math.max(0,v)/SQ_FULL); sqAt=performance.now();
-    if(!sqRaf){ sqLast=0; els.forEach(o=>o.kids=[...o.el.children].filter(k=>k.offsetWidth)); sqRaf=requestAnimationFrame(sqStep); } };   // visible tabs, in their current order
-  addEventListener('resize',()=>{ rem=parseFloat(getComputedStyle(root).fontSize)||16; measure(); put(p); });
-  // Coming back to the page (from Journal/POS via the back-forward cache, or from another app): the bars show again.
-  // Left hidden they'd stay hidden until a scroll up, which reads as the bottom bar having vanished.
-  addEventListener('pageshow',e=>{ if(e.persisted&&(p||isHidden)) settle(false); });
-  document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&(p||isHidden)) settle(false); });
-  collect(); measure();
-  last.set(document.scrollingElement||root,(document.scrollingElement||root).scrollTop);
-  // A page that can't scroll (the calendar) or is already at its end still takes the finger's push: the bars
-  // sink a little and squash with the finger's speed, then bounce back on release. Never hides them.
-  // Off (2026-10-20): on a page too short to scroll every drag sank the bars and bounced them back past rest, so the bottom
-  // moved on tabs that aren't page-sized. The bars now stay put there; set true to bring the push back.
-  const PUSH_SHORT=false;
-  let tY=null, tT=0, tPush=0;
-  document.addEventListener('touchstart',e=>{ tPush=0; tY=e.touches.length===1&&!e.target.closest?.('.modal-ov,.drawer,.lightbox,#tabbar')?e.touches[0].clientY:null; tT=performance.now(); },{passive:true});
-  document.addEventListener('touchmove',e=>{
-    if(!PUSH_SHORT||tY==null||!active()||isHidden) return;
-    const y=e.touches[0].clientY, now=performance.now(), dy=tY-y, dt=Math.max(1,now-tT); tY=y; tT=now;   // dy>0: finger moving up
-    const se=document.scrollingElement||root, max=se.scrollHeight-se.clientHeight;
-    if(max>80&&se.scrollTop<max-1){ tPush=0; return; }                // the page is scrolling: the scroll handler has it
-    tPush=Math.max(0,tPush+dy); if(!tPush) return;
-    if(tPush===dy) measure();
-    mode('push'); put(GIVE*(1-Math.exp(-tPush/STIFF))); squash(Math.max(0,dy/dt*1000)*1.4);
-  },{passive:true});
-  const tEnd=()=>{ tY=null; if(tPush){ tPush=0; settle(isHidden); } };
-  document.addEventListener('touchend',tEnd,{passive:true}); document.addEventListener('touchcancel',tEnd,{passive:true});
-  document.addEventListener('scroll',e=>{
-    if(!active()){ if(p||isHidden){ isHidden=false; run=push=0; put(0); } return; }
-    const t=e.target, el=(t===document||t===document.documentElement||t===document.body)?(document.scrollingElement||root):t;
-    if(!el) return;
-    const max=el.scrollHeight-el.clientHeight;
-    const y=Math.max(0,Math.min(el.scrollTop,max));                  // ignore iOS rubber-banding
-    const prev=last.has(el)?last.get(el):y; last.set(el,y);
-    if(max<=80){ if(p||isHidden) settle(false); return; }             // not worth hiding the bars for
-    if(y<=0){ if(p||isHidden) settle(false); return; }                // back at the top: always shown
-    const dy=y-prev, now=performance.now(), gap=now-lastAt; lastAt=now;
-    if(isHidden){                                                     // hidden: a short scroll back up brings them back
-      push=dy<0?push-dy:0; if(push>=SHOW_PUSH) settle(false); }
-    else {
-      if(el!==scEl||gap>BREAK||dy<0){ scEl=el; sc=[]; run=0; }        // a new run: other scroller, a pause, or a change of direction
-      sc.push([now,y]); if(sc.length>20) sc.shift(); squash(speed());
-      if(dy>0) run+=dy;
-      if(!run) measure();
-      if(speed()>=FAST||run>=RUN*innerHeight) settle(true);           // fast, or far: out of the way
-      else if(run>0){ mode('push'); put(GIVE*(1-Math.exp(-run/STIFF))); }   // resist
-    }
-    clearTimeout(timer);
-    timer=setTimeout(()=>{                                            // stopped: spring back to rest (or show, at the very bottom)
-      settle(y+el.clientHeight>=el.scrollHeight-4?false:isHidden); },140);
-  },{passive:true,capture:true});
-})();
 </script>
 <script>/* offline app shell (static/sw.js): registers only on a trusted certificate; a new version shows a tap-to-reload pill */
 if("serviceWorker" in navigator&&window.isSecureContext&&!/[?&]nosw\b/.test(location.search)){
