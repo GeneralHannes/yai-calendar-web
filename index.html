@@ -729,6 +729,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-cal-day { animation:none; }
   .jr-cal-grid.wave .jr-cal-day { animation:jrCell .35s var(--k-smooth) backwards; }
 
+  /* sideways drags belong to the swipe; up/down and pinch stay with the browser */
+  .jr-top, .jr-bottom { touch-action:pan-y pinch-zoom; }
   /* bottom: the selected day */
   .jr-bottom { container-type:inline-size; flex:1 1 40%; min-height:9rem; overflow:hidden; display:flex; flex-direction:column;
     border-radius:18px; padding:clamp(.7rem,2vw,1.1rem);
@@ -1192,7 +1194,7 @@ async function editEventCategory(id){
   await jrPatch(id, {category: v.trim()});
 }
 async function toggleEventDone(id){
-  const e=jrEvent(id); if(!e) return;
+  const e=jrEvent(id); if(!e || jrJustSwiped()) return;
   try{
     const updated=await api('/api/journal/events/'+id+'/done',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({done:!e.done})});
     const i=JOURNAL_EVENTS.findIndex(x=>x.id===id); if(i>=0) JOURNAL_EVENTS[i]=updated;
@@ -1201,7 +1203,7 @@ async function toggleEventDone(id){
   }catch(err){ toast('Error: '+err.message); }
 }
 async function deleteEventRow(id){
-  const e=jrEvent(id); if(!e) return;
+  const e=jrEvent(id); if(!e || jrJustSwiped()) return;
   if(!await askConfirm('Delete "'+e.title+'"?')) return;
   try{
     await api('/api/journal/events/'+id,{method:'DELETE'});
@@ -1266,36 +1268,53 @@ function calSelect(iso){
   JR_SEL=iso; JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth();
   renderCalendar({wave:!!dir, dir:Math.sign(dir), enter:changed, dayDir});
 }
-function calDayClick(iso){ calSelect(iso); }
+let jrJustSwiped=()=>false;
+// a removed square's click never reaches the document-level guard, so the day handler checks too
+function calDayClick(iso){ if(!jrJustSwiped()) calSelect(iso); }
 function calShiftDay(n){ const d=new Date((JR_SEL||jrToday())+'T00:00:00'); d.setDate(d.getDate()+n); calSelect(jrISO(d)); }
 // Swipe: on the month it does what the ‹ › buttons do; on the day panel it steps to the day before or after.
 // What's under the finger follows it while dragging, then either goes or springs back.
 (function(){
-  let s=null;
+  // A tap stays a tap: nothing is touched until the finger has clearly moved sideways (16px, mostly horizontal).
+  // The swipe areas are touch-action:pan-y, so the browser never takes a sideways drag over and cancels it.
+  let s=null, swipedAt=0;
   const reset=el=>{ if(!el) return; el.style.transition='transform .3s var(--k-smooth), opacity .3s ease'; el.style.transform=''; el.style.opacity='';
     setTimeout(()=>{ el.style.transition=''; },320); };
+  const finish=(dx,dy)=>{
+    const {day,el,axis}=s; s=null;
+    if(axis!=='x') return false;
+    if(el){ el.style.transform=''; el.style.opacity=''; }
+    if(!(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.4)){ reset(el); return false; }
+    swipedAt=Date.now();
+    if(day) calShiftDay(dx<0?1:-1); else calShiftMonth(dx<0?1:-1);
+    return true;
+  };
   document.addEventListener('touchstart',e=>{
-    s=null; if(JR_VIEW!=='calendar' || e.touches.length!==1) return;
+    s=null; if(JR_VIEW!=='calendar' || e.touches.length!==1 || document.querySelector('.modal-ov')) return;
     const top=e.target.closest?.('.jr-top'), day=!top && e.target.closest?.('.jr-bottom');
     if(!top && !day) return;
-    s={x:e.touches[0].clientX, y:e.touches[0].clientY, day:!!day, el:top?$('#jr-cal-grid'):day.querySelector('.jr-day-list,.jr-day-empty'), axis:null};
+    s={x:e.touches[0].clientX, y:e.touches[0].clientY, dx:0, dy:0, day:!!day, axis:null,
+       el:top?$('#jr-cal-grid'):day.querySelector('.jr-day-list,.jr-day-empty')};
   },{passive:true});
   document.addEventListener('touchmove',e=>{
     if(!s) return;
-    const dx=e.touches[0].clientX-s.x, dy=e.touches[0].clientY-s.y;
-    if(!s.axis && Math.hypot(dx,dy)>8) s.axis=Math.abs(dx)>Math.abs(dy)?'x':'y';
+    if(e.touches.length!==1){ if(s.axis==='x') reset(s.el); s=null; return; }   // a second finger: not a swipe
+    s.dx=e.touches[0].clientX-s.x; s.dy=e.touches[0].clientY-s.y;
+    if(!s.axis && Math.hypot(s.dx,s.dy)>16) s.axis=Math.abs(s.dx)>Math.abs(s.dy)*1.2?'x':'y';
     if(s.axis==='x' && s.el && !K_REDUCED.matches){ s.el.style.transition='none';
-      s.el.style.transform=`translateX(${dx*.45}px)`; s.el.style.opacity=String(Math.max(.35,1-Math.abs(dx)/400)); }
+      s.el.style.transform=`translateX(${s.dx*.45}px)`; s.el.style.opacity=String(Math.max(.35,1-Math.abs(s.dx)/400)); }
   },{passive:true});
+  // not passive: cancelling the end of a swipe stops the phone making a tap out of it at all
   document.addEventListener('touchend',e=>{
-    if(!s) return; const {x,y,day,el,axis}=s; s=null;
-    const t=e.changedTouches[0], dx=t.clientX-x, dy=t.clientY-y;
-    const go=axis==='x' && Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.4;
-    if(el){ el.style.transform=''; el.style.opacity=''; }
-    if(!go){ reset(el); return; }
-    if(day) calShiftDay(dx<0?1:-1); else calShiftMonth(dx<0?1:-1);
-  },{passive:true});
-  document.addEventListener('touchcancel',()=>{ if(s) reset(s.el); s=null; },{passive:true});
+    if(!s) return; const t=e.changedTouches[0];
+    if(finish(t.clientX-s.x, t.clientY-s.y) && e.cancelable) e.preventDefault();
+  },{passive:false});
+  // if the browser does cancel the touch, judge the swipe by how far it had got
+  document.addEventListener('touchcancel',()=>{ if(s) finish(s.dx,s.dy); },{passive:true});
+  // Backstop for a tap that still comes after a swipe: it goes to the square the finger started on, which the
+  // swipe has already redrawn away, and selecting that day would jump straight back to the old month.
+  jrJustSwiped=()=>Date.now()-swipedAt<400;
+  document.addEventListener('click',e=>{ if(jrJustSwiped()){ e.stopPropagation(); e.preventDefault(); } },true);
   document.addEventListener('keydown',e=>{
     if(JR_VIEW!=='calendar' || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('.modal-ov')) return;
     if(/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||'')) return;
