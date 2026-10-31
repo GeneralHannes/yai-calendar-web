@@ -487,7 +487,7 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
     .keep-switch a:not([aria-current="page"]) { padding:0 .55rem; }
     .keep-switch a:not([aria-current="page"]) span { display:none; }
   }
-  @media (max-width:430px) { .keep-word { display:none; } }
+  @media (max-width:430px) { .keep-word { display:inline; } }   /* the Journal is the only app: keep its name */
   /* shared figure style: every number lines up down a column */
   .keep-num { font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
   @media (prefers-reduced-motion:reduce) { .keep-bar::after { animation:none; } }
@@ -795,6 +795,12 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
 </script>
 </head>
 <body>
+<header class="keep-bar">
+  <a class="keep-brand" href="./" aria-label="Odin&rsquo;s Journal">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#D4AF37" stroke-width="1.7"/><path d="M4 12h16" stroke="#D4AF37" stroke-width="1.7"/></svg>
+    <span class="keep-word">Odin&rsquo;s Journal</span>
+  </a>
+</header>
 <main>
   <div class="jr-clock" id="jr-clock">
     <div class="jr-clock-date" id="jr-clock-date"></div>
