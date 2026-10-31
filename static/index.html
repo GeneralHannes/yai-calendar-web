@@ -687,7 +687,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr);
     gap:clamp(2px,.45vw,6px); flex:1; min-height:0; }
   .jr-cal-day { container-type:inline-size; position:relative; min-width:0; min-height:0; margin:0;
-    display:flex; flex-direction:column; align-items:stretch; gap:3px; padding:5px 6px; overflow:hidden; cursor:pointer;
+    display:flex; flex-direction:column; align-items:stretch; gap:2px; padding:4px 5px; overflow:hidden; cursor:pointer;
     font:inherit; color:var(--ink); text-align:left; border-radius:10px;
     background:var(--pane); border:1px solid var(--glass-line); box-shadow:var(--glass-edge);
     transition:background-color .2s ease, border-color .2s ease, box-shadow .25s ease, transform var(--k-t-slow) var(--k-bouncy); }
@@ -697,29 +697,34 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-cal-day.other-month.has-events { opacity:.6; }
   .jr-dhead { display:flex; align-items:center; justify-content:space-between; gap:2px; flex:none; }
   .jr-daynum { font-size:.98rem; font-weight:700; line-height:1; font-variant-numeric:tabular-nums;
-    display:inline-grid; place-items:center; min-width:1.75rem; height:1.75rem; margin:-2px 0 0 -3px; border-radius:999px; }
+    display:inline-grid; place-items:center; min-width:1.5rem; height:1.5rem; margin:-1px 0 0 -2px; border-radius:999px; }
   .jr-cal-day.today .jr-daynum { background:var(--gold); color:#1a1608; }
   .jr-count { font-size:.66rem; font-weight:700; color:var(--accent); background:var(--accent-soft);
     border-radius:999px; padding:.05rem .4rem; line-height:1.4; }
-  /* narrow cells only: the day has something on it, even when there's no room for its bars */
-  .jr-dot { display:none; width:7px; height:7px; border-radius:50%; background:var(--accent); flex:none; margin-right:1px; }
-  .jr-dot.done { background:var(--muted); }
   .jr-cal-day.sel { border-color:var(--accent); background:color-mix(in srgb,var(--k-act) 12%,var(--k-bg2));
     box-shadow:var(--glass-edge),0 0 0 1.5px var(--accent),0 8px 22px -10px color-mix(in srgb,var(--k-act) 60%,transparent); }
   .jr-cal-day.today:not(.sel) { border-color:color-mix(in srgb,var(--gold) 60%,transparent); }
-  .jr-preview { display:flex; flex-direction:column; gap:2px; min-width:0; min-height:0; overflow:hidden; }
-  .jr-ev { display:block; flex:none; font-size:.74rem; font-weight:600; line-height:1.3; padding:1px 5px; border-radius:5px; min-width:0;
+  .jr-preview { flex:1 1 0; display:flex; flex-direction:column; gap:2px; min-width:0; min-height:0; overflow:hidden; }
+  .jr-ev[hidden] { display:none !important; }
+  .jr-more { flex:none; font-size:.68rem; font-weight:700; color:var(--accent); line-height:1; white-space:nowrap; margin-left:auto; }
+  .jr-more[hidden] { display:none; }
+  .jr-dhead:has(.jr-more:not([hidden])) .jr-count { display:none; }   /* "+N" says it better than the total */
+  .jr-ev { display:block; flex:none; font-size:.72rem; font-weight:600; line-height:1.25; padding:1px 5px; border-radius:5px; min-width:0;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink);
     background:color-mix(in srgb,var(--k-act) 30%,transparent); border-left:3px solid var(--accent); }
   .jr-ev.done { background:transparent; border-left-color:var(--muted); color:var(--muted); text-decoration:line-through; }
   /* narrow cells (phones): a title can't be read, so each event becomes a bar; the day below has the details */
+  /* narrow cells (phones): the titles stay, just smaller and clipped instead of ellipsed, so more of each word shows */
   @container (max-width:74px) {
-    .jr-ev { font-size:0; height:5px; padding:0; border:0; border-radius:99px; background:var(--accent); }
-    .jr-ev.done { background:var(--muted); opacity:.5; }
+    .jr-ev { font-size:.6rem; line-height:1.22; padding:1px 2px 1px 3px; border-left-width:2px; border-radius:3px;
+      letter-spacing:-.015em; white-space:normal; overflow-wrap:anywhere; hyphens:auto;
+      display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+    .jr-preview.tight .jr-ev { display:block; white-space:nowrap; text-overflow:clip; }   /* clipped, not "…": one more letter shows */
     .jr-count { display:none; }
-    .jr-dot { display:block; }
-    .jr-daynum { font-size:.88rem; min-width:1.55rem; height:1.55rem; }
+    .jr-daynum { font-size:.88rem; min-width:1.5rem; height:1.5rem; }
   }
+  @container (max-width:52px) { .jr-ev { font-size:.56rem; padding:1px 1px 1px 2px; } }
+  @media (max-width:560px) { .jr-cal-day { padding:4px 3px; border-radius:8px; } .jr-cal-grid { gap:3px; } }
   @keyframes jrCell { from { opacity:0; transform:scale(.94); } }
   .jr-cal-day { animation:none; }
   .jr-cal-grid.wave .jr-cal-day { animation:jrCell .35s var(--k-smooth) backwards; }
@@ -770,12 +775,21 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   }
 
   @media (max-height:640px) { .jr-top { min-height:12rem; } .jr-bottom { min-height:7rem; } }
+  @media (min-width:761px) { .jr-top { flex-basis:66%; } .jr-bottom { flex-basis:34%; } }
   /* a phone on its side: too short to stack, so the day sits beside the month */
   @media (max-height:520px) and (orientation:landscape) {
-    .jr-split { flex-direction:row; }
-    .jr-top { flex:1 1 60%; min-height:0; }
-    .jr-bottom { flex:1 1 40%; min-height:0; }
+    /* month on the left at full height; the day and the month bar stacked on the right */
+    #jr-calendar { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); grid-template-rows:minmax(0,1fr) auto; gap:.5rem .75rem; }
+    .jr-split { display:contents; }
+    .jr-top { grid-column:1; grid-row:1 / 3; min-height:0; }
+    .jr-bottom { grid-column:2; grid-row:1; min-height:0; }
+    .jr-monthnav { grid-column:2; grid-row:2; justify-self:center; }
     .jr-day-big { font-size:2.2rem; }
+    .jr-month { font-size:1.35rem; }
+    .jr-cal-head { margin-bottom:.3rem; }
+    .jr-cal-dow { margin-bottom:.2rem; font-size:.66rem; }
+    .jr-cal-day { padding:3px 4px; gap:2px; }
+    .jr-daynum { font-size:.8rem !important; min-width:1.25rem !important; height:1.25rem !important; }
   }
 
   /* ---- bottom month bar ---- */
@@ -1250,7 +1264,7 @@ function renderCalendar(opt={}){
     const label = `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}${evs.length?`, ${evs.length} event${evs.length>1?'s':''}`:''}`;
     html += `<button type="button" class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${iso===JR_SEL?' sel':''}${evs.length?' has-events':''}"
       onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
-      <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${evs.length?`<span class="jr-count">${evs.length}</span><span class="jr-dot${evs.every(e=>e.done)?' done':''}"></span>`:''}</span>
+      <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${evs.length?`<span class="jr-more" hidden></span><span class="jr-count">${evs.length}</span>`:''}</span>
       ${evs.length?`<span class="jr-preview">${evs.map(e=>`<span class="jr-ev${e.done?' done':''}">${esc(e.title)}</span>`).join('')}</span>`:''}
     </button>`;
   }
@@ -1263,8 +1277,31 @@ function renderCalendar(opt={}){
   }
   // the day just picked springs a little, like it was pressed into place
   if(opt.enter && !opt.dir && !K_REDUCED.matches) grid.querySelector('.jr-cal-day.sel')?.classList.add('pick');
+  jrFitCells();
   renderDay(opt.enter);
 }
+
+// Each day shows as many event titles as its square can hold at the current size; the rest become "+N".
+// Runs after every render and whenever the grid changes size (rotation, window resize).
+function jrFitCells(){
+  document.querySelectorAll('#jr-cal-grid .jr-cal-day').forEach(cell=>{
+    const pv=cell.querySelector('.jr-preview'); if(!pv) return;
+    const evs=[...pv.children], more=cell.querySelector('.jr-more');
+    const limit=()=>pv.offsetTop+pv.clientHeight+1;
+    const fitting=()=>{ evs.forEach(e=>e.hidden=false); const l=limit(); let n=0;
+      for(const e of evs){ if(e.offsetTop+e.offsetHeight<=l) n++; else break; } return n; };
+    pv.classList.remove('tight');
+    let shown=fitting();
+    if(shown<evs.length){ pv.classList.add('tight'); shown=fitting(); }   // busy day: one line per title, more titles
+    evs.forEach((e,i)=>e.hidden=i>=shown);
+    more.hidden=shown>=evs.length; more.textContent=more.hidden?'':'+'+(evs.length-shown);
+  });
+}
+(function(){
+  let raf=0; const fit=()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; jrFitCells(); }); };
+  if(window.ResizeObserver) new ResizeObserver(fit).observe(document.getElementById('jr-cal-grid'));
+  if(document.fonts) document.fonts.ready.then(fit);
+})();
 
 // The bottom panel: the selected day only, in full. Every field edits in place through the same
 // editEvent*/toggleEventDone/deleteEventRow the Agenda uses, so there is one edit path.
