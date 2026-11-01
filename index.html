@@ -1060,6 +1060,13 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     /* the month and the day can trade places (jrSwapPanels) */
     body.jr-dayfirst .jr-bottom { order:-1; }
     .jr-day-headrow .jr-swap { display:grid; }
+    /* rigid: the month and the day fit the screen exactly and nothing scrolls or bounces. iOS rubber-bands a
+       page even when it fits, so the page itself is pinned; in the calendar the browser gets no panning at all
+       (swipes, taps and dragging events are all handled by the app). The Agenda list still scrolls. */
+    html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
+    body { position:fixed; inset:0; width:100%; }
+    #jr-calendar, .jr-top, .jr-bottom, .jr-rail { touch-action:none; }
+    #jr-agenda { touch-action:pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
     main { padding:.6rem .6rem calc(4rem + max(.6rem,env(safe-area-inset-bottom))); }
     #jr-agenda { padding-bottom:1rem; }
     #toast { bottom:calc(4.4rem + env(safe-area-inset-bottom)); }
@@ -1112,6 +1119,19 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     main > .jr-monthnav { animation:jrBarRise .55s var(--k-smooth) .12s both; }
   }
   @keyframes jrPanelRise { from { opacity:0; transform:translateX(-14px) scale(.98); } }
+
+  /* ================= "Get reminders" prompt (script: jrOfferReminders) ================= */
+  #jr-remind { position:fixed; z-index:40; left:50%; bottom:calc(1.2rem + env(safe-area-inset-bottom)); translate:-50% 0;
+    width:min(26rem, calc(100vw - 1.2rem)); display:flex; align-items:center; gap:.5rem; padding:.6rem .6rem .6rem .9rem;
+    border-radius:18px; border:1px solid var(--glass-line); background:var(--glass);
+    -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur); box-shadow:var(--glass-edge),var(--glass-lift);
+    animation:jrBarRise .5s var(--k-smooth) both; }
+  #jr-remind.leaving { animation:jrBarRise .25s var(--k-exit) reverse both; }
+  .jr-remind-txt { flex:1; min-width:0; display:flex; flex-direction:column; gap:.1rem; }
+  .jr-remind-txt b { font-size:.92rem; }
+  .jr-remind-txt span { font-size:.78rem; color:var(--muted); line-height:1.3; }
+  #jr-remind button { flex:none; border-radius:999px; padding:.5rem .85rem; }
+  @media (max-width:760px) and (orientation:portrait) { #jr-remind { bottom:calc(4.5rem + max(.6rem,env(safe-area-inset-bottom))); } }
   .jr-up-head { position:sticky; top:0; z-index:1; padding:.55rem .2rem .3rem; font-size:.68rem; font-weight:800; letter-spacing:.12em;
     text-transform:uppercase; color:var(--muted); background:linear-gradient(var(--k-bg0) 70%, transparent); }
   .jr-up-empty { padding:.4rem .2rem; font-size:.85rem; color:var(--muted); }
@@ -2138,10 +2158,72 @@ jrBead(document.getElementById('jr-monthnav'));
   addEventListener('keydown',e=>{ if(drag && e.key==='Escape') end(true); });
 })();
 
+// ---- reminders (web push; the backend sends them, src/reminders.ts) ----
+// A week and a day before each event, at the start of the working day. Offered once, from a small prompt,
+// on devices that can receive them: iPhone only from the home-screen app (iOS 16.4+), Android in Chrome.
+// Not in device-only mode — there's no server to send them. Once on, every start re-registers this device
+// with the backend in use, so switching backend carries reminders along.
+const JR_ISO=/^\d{4}-\d{2}-\d{2}$/;
+function jrOpenDay(iso){ if(!JR_ISO.test(iso||'')) return; if(JR_VIEW!=='calendar') setJournalView('calendar'); calSelect(iso); }
+navigator.serviceWorker?.addEventListener('message', e=>{ if(e.data?.type==='yai:open-day') jrOpenDay(e.data.date); });
+const jrB64=s=>{ const p='='.repeat((4-s.length%4)%4), b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(b,c=>c.charCodeAt(0)); };
+const jrPushable=()=>'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && window.isSecureContext;
+const jrIsIOS=()=>/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+async function jrPushKey(){ try{ return (await api('/api/push/key')).key; }catch(_){ return null; } }   // null: this backend has none
+async function jrSubscribe(test){
+  const key=await jrPushKey(); if(!key) return false;
+  const reg=await navigator.serviceWorker.ready;
+  let sub=await reg.pushManager.getSubscription();
+  if(sub && sub.options?.applicationServerKey){                     // made for another backend's key: start over
+    const had=btoa(String.fromCharCode(...new Uint8Array(sub.options.applicationServerKey))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    if(had!==key){ await sub.unsubscribe().catch(()=>{}); sub=null; }
+  }
+  sub ||= await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:jrB64(key)});
+  await api('/api/push/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON(), test:!!test})});
+  return true;
+}
+async function jrTurnOnReminders(){
+  jrReminderPrompt(false);
+  try{
+    const p=await Notification.requestPermission();
+    if(p!=='granted'){ toast('Reminders stay off — you can allow notifications in Settings'); return; }
+    toast(await jrSubscribe(true) ? 'Reminders on — a test one is on its way' : 'This server doesn’t send reminders');
+  }catch(e){ toast('Could not turn on reminders: '+e.message); }
+}
+function jrReminderPrompt(show, html){
+  let b=document.getElementById('jr-remind');
+  if(!show){ if(b){ b.classList.add('leaving'); setTimeout(()=>b.remove(),260); } return; }
+  if(b) return;
+  b=document.createElement('div'); b.id='jr-remind'; b.setAttribute('role','dialog'); b.setAttribute('aria-label','Reminders');
+  b.innerHTML=html; document.body.appendChild(b);
+  b.querySelector('[data-later]').onclick=()=>{ try{ localStorage.setItem('jr_remind_later', String(Date.now())); }catch(_){} jrReminderPrompt(false); };
+  b.querySelector('[data-on]')?.addEventListener('click', jrTurnOnReminders);
+}
+async function jrOfferReminders(){
+  if(JR_FROZEN) return;
+  if(!JR_API && window.JOURNAL_STATIC) return;                       // device-only: nobody to send them
+  try{ const t=+localStorage.getItem('jr_remind_later')||0; if(Date.now()-t<14*86400000) return; }catch(_){}
+  if(!jrPushable()){
+    // iPhone in Safari: it works once the app is on the home screen
+    if(jrIsIOS() && !navigator.standalone && await jrPushKey())
+      jrReminderPrompt(true, `<div class="jr-remind-txt"><b>Get reminders</b><span>On iPhone: tap Share, then “Add to Home Screen”, and open Yai Calendar from there.</span></div>
+        <button class="mini" data-later>Later</button>`);
+    return;
+  }
+  if(Notification.permission==='granted'){ jrSubscribe(false).catch(()=>{}); return; }   // already on: keep this backend in step
+  if(Notification.permission==='denied' || !(await jrPushKey())) return;
+  jrReminderPrompt(true, `<div class="jr-remind-txt"><b>Get reminders</b><span>A week and a day before each event, at 7:00 in working hours.</span></div>
+    <button class="mini" data-later>Later</button><button class="act" data-on>Turn on</button>`);
+}
+
 (async function boot(){
   await jrResolveApi();          // which backend, before anything is fetched
+  // opened from a reminder (or a link) on a particular day
+  const qd=new URLSearchParams(location.search).get('day');
+  if(JR_ISO.test(qd||'')){ JR_SEL=qd; const d=new Date(qd+'T00:00:00'); JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth(); JR_VIEW='calendar'; }
   checkAuth();
   await loadJournal();
+  setTimeout(()=>{ if(!document.getElementById('pin-ov')) jrOfferReminders(); }, 1500);
 })();
 // Everyone shares one calendar: every 10s, and whenever the app comes back to the front, fetch the events
 // again and redraw only if someone changed something. Never mid-form, and never behind the PIN screen.

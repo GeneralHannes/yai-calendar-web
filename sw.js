@@ -2,7 +2,7 @@
 // The page opens at once from the device and is refreshed in the background; a new version shows
 // "New version — tap to reload". Fonts never change under their URL, so they're kept. /api/* is never cached.
 
-const SHELL = "yai-shell-v23";            // bump to make every device drop its copy
+const SHELL = "yai-shell-v24";            // bump to make every device drop its copy
 // Paths are taken from the worker's own scope, so it works at "/" and under a sub-path (GitHub Pages).
 const BASE = new URL(self.registration.scope).pathname;
 const PAGES = [BASE, BASE + "journal"];
@@ -56,3 +56,31 @@ async function kept(req) {
   if (r.ok) await c.put(req, r.clone());
   return r;
 }
+
+// Reminders: the backend pushes { title, body, date, tag } a week and a day before events (src/reminders.ts).
+self.addEventListener("push", (e) => {
+  let m = {};
+  try { m = e.data ? e.data.json() : {}; } catch { m = { title: "Yai Calendar", body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(m.title || "Yai Calendar", {
+    body: m.body || "", tag: m.tag || undefined, renotify: !!m.tag,
+    icon: BASE + "static/icon-192.png", badge: BASE + "static/icon-192.png",
+    data: { date: m.date || "" },
+  }));
+});
+
+// Tapping one opens the app on that day (reusing an open window if there is one).
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const date = (e.notification.data && e.notification.data.date) || "";
+  const url = self.registration.scope + (date ? "?day=" + date : "");
+  e.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const w of wins) {
+      if (new URL(w.url).pathname.startsWith(BASE)) {
+        w.postMessage({ type: "yai:open-day", date });
+        return w.focus();
+      }
+    }
+    return self.clients.openWindow(url);
+  })());
+});
