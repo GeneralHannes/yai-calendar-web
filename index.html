@@ -917,6 +917,54 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   body.jr-frozen .jr-cell.jr-del { opacity:.4; pointer-events:none; }
   body.jr-frozen .jr-dc-title, body.jr-frozen .jr-dc-time, body.jr-frozen .jr-dc-notes { pointer-events:none; }
   body.jr-frozen .jr-dcard { border-top-style:dashed; }
+
+  /* ================= seamless month: one panel, shared hairlines, titles that run on =================
+     The days are joined into one grid instead of separate boxes. A title longer than its day runs on to
+     the right across the following days (jrFitCells gives it its own row there) and only wraps at the
+     calendar's edge, so every title is shown in full. */
+  .jr-cal-grid { gap:0; position:relative; border-radius:14px; background:var(--pane);
+    border:1px solid var(--glass-line); box-shadow:var(--glass-edge); }
+  .jr-cal-day { border:0; border-radius:0; box-shadow:none; background:transparent; overflow:visible;
+    border-right:1px solid var(--glass-line); border-bottom:1px solid var(--glass-line); }
+  .jr-cal-day:nth-child(7n) { border-right:0; }
+  .jr-cal-day:nth-last-child(-n+7) { border-bottom:0; }
+  .jr-cal-day:nth-child(1) { border-top-left-radius:13px; } .jr-cal-day:nth-child(7) { border-top-right-radius:13px; }
+  .jr-cal-day:nth-last-child(7) { border-bottom-left-radius:13px; } .jr-cal-day:last-child { border-bottom-right-radius:13px; }
+  .jr-cal-day:hover { background:var(--fill); }
+  .jr-cal-day:active { transform:none; background:var(--fill-2); }
+  @media (hover:hover) and (pointer:fine) { .jr-cal-day:hover, .jr-cal-day.sel:hover { transform:none; box-shadow:none; } }
+  /* days of the next/previous month: dimmed, but their titles (which may run on into this month) stay readable */
+  .jr-cal-day.other-month, .jr-cal-day.other-month.has-events { opacity:1; background:color-mix(in srgb,var(--k-bg0) 35%,transparent); }
+  .jr-cal-day.other-month .jr-dhead { opacity:.4; }
+  .jr-cal-day.other-month .jr-ev { opacity:.7; }
+  .jr-cal-day.today:not(.sel) { border-color:var(--glass-line); }
+  .jr-cal-day.sel, .jr-cal-day.sel:hover { border-color:var(--glass-line); background:color-mix(in srgb,var(--k-act) 14%,transparent);
+    box-shadow:inset 0 0 0 2px var(--accent); }
+  .jr-cal-day.sel.other-month { background:color-mix(in srgb,var(--k-act) 10%,transparent); }
+  .jr-glide { border-radius:0; box-shadow:inset 0 0 0 2px var(--accent), 0 0 16px color-mix(in srgb,var(--k-act) 40%,transparent); }
+  /* joined squares can't pop or scale; they light up instead */
+  @keyframes jrCellFade { from { opacity:0; } }
+  .jr-cal-grid.wave .jr-cal-day { animation-name:jrCellFade; }
+  @keyframes jrPickLight { from { background:color-mix(in srgb,var(--k-act) 38%,transparent); } }
+  .jr-cal-day.pick { animation:jrPickLight .6s var(--k-smooth); }
+
+  .jr-preview, .jr-preview.tight { overflow:visible; }
+  .jr-ev, .jr-preview.tight .jr-ev { position:relative; z-index:2; display:block; width:max-content; min-width:0; max-width:var(--room,100%);
+    white-space:nowrap; overflow:hidden; text-overflow:clip; -webkit-line-clamp:unset;
+    background:color-mix(in srgb,var(--k-act) 30%,var(--k-bg2)); box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .jr-ev.wrap { white-space:normal; overflow-wrap:anywhere; }        /* reached the calendar's edge: wrap */
+  .jr-ev.cut { text-overflow:ellipsis; }                               /* …or, short of rows, one line ending "…" */
+  .jr-ev.done { background:color-mix(in srgb,var(--muted) 14%,var(--k-bg2)); }
+  .jr-ev-gap { display:block; flex:none; pointer-events:none; }      /* a row kept free for a title running in from the left */
+  @container (max-width:74px) {
+    /* phones: slimmer rows so a square holds three titles, not two */
+    .jr-ev, .jr-preview.tight .jr-ev { display:block; white-space:nowrap; -webkit-line-clamp:unset; overflow-wrap:normal; hyphens:manual;
+      font-size:.6rem; line-height:1.25; padding:0 3px 0 3px; }
+    .jr-ev.wrap { white-space:normal; overflow-wrap:anywhere; }
+    .jr-preview { gap:1px; }
+    .jr-daynum { font-size:.82rem !important; min-width:1.3rem !important; height:1.3rem !important; }
+  }
+  @media (max-width:560px) { .jr-cal-day { padding:3px 3px 2px; gap:1px; } }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
@@ -1495,21 +1543,48 @@ function renderCalendar(opt={}){
   renderDay(opt.enter, opt.dayDir);
 }
 
-// Each day shows as many event titles as its square can hold at the current size; the rest become "+N".
-// Runs after every render and whenever the grid changes size (rotation, window resize).
+// Lays out the titles in the day squares. Runs after every render and whenever the grid changes size.
+// A title gets the width it needs: it runs on to the right across the following days of its week and only
+// wraps when it reaches the calendar's edge, so it's always shown in full. Each week is filled in rows
+// ("lanes"), left to right: a title running into later days keeps its lane there, so those days' own
+// titles go below it instead of under it. Titles that don't fit a square's height become "+N".
 function jrFitCells(){
-  document.querySelectorAll('#jr-cal-grid .jr-cal-day').forEach(cell=>{
-    const pv=cell.querySelector('.jr-preview'); if(!pv) return;
-    const evs=[...pv.children], more=cell.querySelector('.jr-more');
-    const limit=()=>pv.offsetTop+pv.clientHeight+1;
-    const fitting=()=>{ evs.forEach(e=>e.hidden=false); const l=limit(); let n=0;
-      for(const e of evs){ if(e.offsetTop+e.offsetHeight<=l) n++; else break; } return n; };
-    pv.classList.remove('tight');
-    let shown=fitting();
-    if(shown<evs.length){ pv.classList.add('tight'); shown=fitting(); }   // busy day: one line per title, more titles
-    evs.forEach((e,i)=>e.hidden=i>=shown);
-    more.hidden=shown>=evs.length; more.textContent=more.hidden?'':'+'+(evs.length-shown);
-  });
+  const grid=document.getElementById('jr-cal-grid'); if(!grid) return;
+  const cells=[...grid.querySelectorAll('.jr-cal-day')];
+  grid.querySelectorAll('.jr-ev-gap').forEach(g=>g.remove());
+  const gridW=grid.clientWidth;
+  for(let r=0; r<cells.length; r+=7){
+    const busy=[];                                   // busy[lane] = first column where that lane is free again
+    for(let c=0; c<7 && r+c<cells.length; c++){
+      const cell=cells[r+c], pv=cell.querySelector('.jr-preview'); if(!pv) continue;
+      const evs=[...pv.querySelectorAll('.jr-ev')], more=cell.querySelector('.jr-more');
+      const pad=parseFloat(getComputedStyle(cell).paddingLeft)||0, colW=cell.offsetWidth;
+      const room=Math.max(colW-2*pad, gridW-cell.offsetLeft-pad-3);   // from here to the calendar's right edge
+      pv.classList.remove('tight');
+      pv.style.setProperty('--room', room+'px');
+      evs.forEach(e=>{ e.hidden=false; e.classList.remove('wrap'); });
+      const gap=parseFloat(getComputedStyle(pv).rowGap)||0;
+      const laneH=evs[0].offsetHeight || 16, lanes=Math.max(0, Math.floor((pv.clientHeight+gap)/(laneH+gap)));
+      let lane=0, shown=0;
+      const firstFree=(from, n)=>{ let at=from; while(at<from+64 && [...Array(n).keys()].some(k=>(busy[at+k]||0)>c)) at++; return at; };
+      for(const e of evs){
+        e.classList.remove('cut');
+        if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
+        let lines=Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
+        let at=firstFree(lane, lines);
+        // no room for all its wrapped lines: one line to the edge, ending "…" (the day panel has it in full)
+        if(at+lines>lanes && lines>1){ e.classList.replace('wrap','cut'); lines=1; at=firstFree(lane, 1); }
+        if(at+lines>lanes) break;
+        for(let k=lane; k<at; k++){ const g=document.createElement('span'); g.className='jr-ev-gap'; g.style.height=laneH+'px'; e.before(g); }
+        // the first day it no longer reaches into (2px of breathing room before the next title)
+        const free=Math.floor((cell.offsetLeft+e.offsetLeft+e.offsetWidth+2)/colW)+1;
+        for(let k=0; k<lines; k++) busy[at+k]=free;
+        lane=at+lines; shown++;
+      }
+      evs.forEach((e,i)=>e.hidden=i>=shown);
+      more.hidden=shown>=evs.length; more.textContent=more.hidden?'':'+'+(evs.length-shown);
+    }
+  }
 }
 (function(){
   let raf=0; const fit=()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; jrFitCells(); }); };
