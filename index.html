@@ -729,6 +729,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-cal-day { animation:none; }
   .jr-cal-grid.wave .jr-cal-day { animation:jrCell .35s var(--k-smooth) backwards; }
 
+  .keep-bar.jr-bar-bare { padding:env(safe-area-inset-top) 0 0; min-height:0; border-bottom:0; }
   /* sideways drags belong to the swipe; up/down and pinch stay with the browser */
   .jr-top, .jr-bottom { touch-action:pan-y pinch-zoom; }
   /* bottom: the selected day */
@@ -878,12 +879,8 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
 </script>
 </head>
 <body>
-<header class="keep-bar">
-  <a class="keep-brand" href="./" aria-label="Odin&rsquo;s Journal">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#D4AF37" stroke-width="1.7"/><path d="M4 12h16" stroke="#D4AF37" stroke-width="1.7"/></svg>
-    <span class="keep-word">Odin&rsquo;s Journal</span>
-  </a>
-</header>
+<!-- no title: the bar is just the gold line along the top (and the space under the phone's status bar) -->
+<header class="keep-bar jr-bar-bare" aria-hidden="true"></header>
 <div class="jr-shell">
   <!-- the small side section: only the two views and Add event -->
   <nav class="jr-rail" aria-label="Journal">
@@ -1189,7 +1186,7 @@ async function editEventNotes(id){
 }
 async function editEventCategory(id){
   const e=jrEvent(id); if(!e) return;
-  const v=await askInput('Category (e.g. Restock, Bill, Staff):', e.category||'');
+  const v=await askInput('Category:', e.category||'');
   if(v===null) return;
   await jrPatch(id, {category: v.trim()});
 }
@@ -1221,8 +1218,8 @@ async function openAddEvent(prefillDate){
   card.innerHTML=`<h2>＋ Add event</h2>
     <label class="field" style="margin-bottom:.5rem"><span>Date</span><input id="ae-date" type="date" value="${prefillDate||today}"></label>
     <label class="field" style="margin-bottom:.5rem"><span>Time <span class="muted">(optional)</span></span><input id="ae-time" type="time"></label>
-    <label class="field" style="margin-bottom:.5rem"><span>Title</span><input id="ae-title" placeholder="e.g. Restock: Angkor Beer" autocomplete="off"></label>
-    <label class="field" style="margin-bottom:.5rem"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" placeholder="Restock, Bill, Staff…" autocomplete="off"></label>
+    <label class="field" style="margin-bottom:.5rem"><span>Title</span><input id="ae-title" autocomplete="off"></label>
+    <label class="field" style="margin-bottom:.5rem"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" autocomplete="off"></label>
     <label class="field" style="margin-bottom:.85rem"><span>Notes <span class="muted">(optional)</span></span><input id="ae-notes" autocomplete="off"></label>
     <div class="item-edit-actions">
       <button class="mini" id="ae-cancel">Cancel</button>
