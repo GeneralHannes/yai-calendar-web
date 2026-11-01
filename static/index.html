@@ -1119,11 +1119,17 @@ function jrDayLabel(iso){
 }
 function jrTimeLabel(t){ return t ? t.slice(0,5) : '—'; }
 
+// The month and the day are drawn straight away; the events fill in when they arrive, so a slow or
+// failed load never leaves an empty screen.
 async function loadJournal(){
+  if(!JR_SEL) JR_SEL=jrToday();
+  const first=!document.querySelector('#jr-cal-grid').children.length && !document.querySelector('#jr-agenda-list .jr-day-group');
+  if(first) setJournalView(JR_VIEW, true);
   try{ JOURNAL_EVENTS = await api('/api/journal/events'); }
   catch(e){ toast('Error loading Journal: '+e.message); JOURNAL_EVENTS=[]; }
-  if(!JR_SEL) JR_SEL=jrToday();
-  setJournalView(JR_VIEW, true);
+  if(!first) setJournalView(JR_VIEW, true);
+  else if(JR_VIEW==='calendar') renderCalendar({enter:true});   // the day's cards deal in as they arrive
+  else renderAgenda();
 }
 function setJournalView(v, skipSave){
   JR_VIEW=v;

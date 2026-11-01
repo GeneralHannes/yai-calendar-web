@@ -5,7 +5,8 @@
   const real = window.fetch.bind(window);
   const KEY = "journal_local_events";
   const DATE_RE = /^\d{4}-\d{2}-\d{2}$/, TIME_RE = /^\d{2}:\d{2}(:\d{2})?$/;
-  let mode = null;
+  // the static build sets JOURNAL_STATIC: there's no server to ask about, so don't wait on a request to find out
+  let mode = window.JOURNAL_STATIC ? Promise.resolve("local") : null;
 
   const hasServer = () =>
     mode || (mode = real("/api/auth").then((r) => r.json()).then((a) => (typeof a?.required === "boolean" ? "server" : "local"), () => "local"));
