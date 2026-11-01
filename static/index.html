@@ -1055,12 +1055,21 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
       display:grid; place-items:center; color:var(--k-on-act); }
     .jr-monthnav .jr-add svg { width:22px; height:22px; }
     body:not(.jr-cal-view) .jr-monthnav > button:not(.jr-add) { display:none; }   /* Agenda: just + */
+    /* the month and the day can trade places (jrSwapPanels) */
+    body.jr-dayfirst .jr-bottom { order:-1; }
+    .jr-day-headrow .jr-swap { display:grid; }
     main { padding:.6rem .6rem calc(4rem + max(.6rem,env(safe-area-inset-bottom))); }
     #jr-agenda { padding-bottom:1rem; }
     #toast { bottom:calc(4.4rem + env(safe-area-inset-bottom)); }
     #jr-frozen-bar { max-width:calc(100vw - 1rem); }
   }
   @keyframes jrBarRise { from { opacity:0; transform:translateY(18px) scale(.96); } }
+  .jr-swap { display:none; flex:none; margin-left:auto; place-items:center; width:2.3rem; height:2.3rem; border-radius:999px; cursor:pointer;
+    color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 50%,transparent); border:1px solid var(--glass-line); box-shadow:var(--glass-edge);
+    transition:color .2s, background-color .2s, rotate .45s var(--ease-spring), scale .15s; }
+  .jr-swap svg { width:18px; height:18px; }
+  .jr-swap:active { scale:.9; }
+  body.jr-dayfirst .jr-swap { rotate:180deg; color:var(--accent); }
   /* very narrow phones: the same line, a little tighter */
   @media (max-width:359px) and (orientation:portrait) {
     .jr-rail .jr-vt-btn { width:2.5rem; }
@@ -1622,8 +1631,34 @@ function calSelect(iso){
 }
 let jrJustSwiped=()=>false;
 let JR_EVDRAG=null, JR_GESTURE_AT=0;   // an event being dragged to another day; when a drag last ended
-// a removed square's click never reaches the document-level guard, so the day handler checks too
-function calDayClick(iso){ if(!jrJustSwiped()) calSelect(iso); }
+// a removed square's click never reaches the document-level guard, so the day handler checks too.
+// A second click on the same day within 400ms (double-click, or double-tap on a phone) adds an event on it.
+// Counted here rather than with dblclick: the first click redraws the month, so the browser never sees two
+// clicks on one element.
+let JR_LAST_DAYCLICK={iso:'', at:0};
+function calDayClick(iso){
+  if(jrJustSwiped()) return;
+  const now=Date.now(), again=JR_LAST_DAYCLICK.iso===iso && now-JR_LAST_DAYCLICK.at<400;
+  JR_LAST_DAYCLICK=again?{iso:'',at:0}:{iso, at:now};
+  if(again){ openAddEvent(iso); return; }
+  calSelect(iso);
+}
+
+// Phones held upright: the month and the selected day can trade places (the ⇅ button on the day panel).
+// Remembered on this device. The two slide past each other.
+function jrSwapPanels(){
+  const top=document.querySelector('.jr-top'), bot=document.querySelector('.jr-bottom');
+  const a=top.getBoundingClientRect(), b=bot.getBoundingClientRect();
+  const on=!document.body.classList.contains('jr-dayfirst');
+  document.body.classList.toggle('jr-dayfirst', on);
+  try{ localStorage.setItem('jr_dayfirst', on?'1':''); }catch(_){}
+  if(K_REDUCED.matches) return;
+  for(const [el,was] of [[top,a],[bot,b]]){
+    const now=el.getBoundingClientRect();
+    el.animate([{transform:`translateY(${was.top-now.top}px)`},{transform:'none'}],{duration:480,easing:'cubic-bezier(.2,.9,.25,1)'});
+  }
+}
+try{ if(localStorage.getItem('jr_dayfirst')) document.body.classList.add('jr-dayfirst'); }catch(_){}
 function calShiftDay(n){ const d=new Date((JR_SEL||jrToday())+'T00:00:00'); d.setDate(d.getDate()+n); calSelect(jrISO(d)); }
 // Swipe: on the month it does what the ‹ › buttons do; on the day panel it steps to the day before or after.
 // What's under the finger follows it while dragging, then either goes or springs back.
@@ -1804,6 +1839,8 @@ function renderDay(enter, dir){
       <div class="jr-day-meta"><div class="jr-day-wd">${DAY_NAMES[d.getDay()]}${rel}</div>
         <div class="jr-day-my">${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}</div></div>
       <div class="jr-day-sum">${evs.length?`<b>${evs.length}</b>event${evs.length>1?'s':''}${done?` · ${done} done`:''}`:''}</div>
+      <button type="button" class="jr-swap" onclick="jrSwapPanels()" title="Swap the month and this day" aria-label="Swap the month and this day">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></svg></button>
     </div>
     ${evs.length?`<div class="jr-day-list">${evs.map(e=>`
       <article class="jr-dcard k-shine${e.done?' done':''}" data-id="${e.id}">
