@@ -6,15 +6,22 @@
 <script>if(navigator.standalone)document.documentElement.classList.add("ios-app");
 /* iPhone only (not iPad or Android): its own safe-area layout, see "iPhone" in the styles */
 if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.add("ios-phone");
-/* iOS home-screen apps that run under the status bar are told the screen is shorter than it is, by about the
-   status bar's height, so anything pinned to the "bottom" stops that far above the real bottom. Measure the
-   gap (the real screen height minus what the page is given) into --vgap; the styles extend the page and the
-   bars down by it. 0 in Safari, on other phones, and once iOS stops doing it. */
+/* iOS home-screen apps that run under the status bar lay out pinned (position:fixed) elements in a frame that is
+   shorter than the screen, by about the status bar's height, so anything pinned to the "bottom" stops that far
+   above the real bottom (seen on iOS 26: window.innerHeight is the full screen, the pinned frame isn't). Measure
+   that frame with a hidden pinned element stretched top to bottom, and put the shortfall against the real screen
+   height into --vgap; the styles extend the page and the bars down by it. 0 in Safari, on other phones, and if
+   iOS stops doing it. */
 if(navigator.standalone&&/iPhone|iPod/.test(navigator.userAgent)){(function(){
   var h=document.documentElement;
-  function fix(){ var port=innerHeight>=innerWidth, s=port?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);
-    var g=Math.round(s-innerHeight); h.style.setProperty("--vgap",(g>0&&g<100?g:0)+"px"); }
+  function fix(){
+    var port=innerHeight>=innerWidth, s=port?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);
+    var p=document.createElement("div"); p.style.cssText="position:fixed;top:0;bottom:0;left:0;width:1px;visibility:hidden;pointer-events:none";
+    h.appendChild(p); var framed=p.getBoundingClientRect().height; p.remove();
+    var g=Math.round(s-Math.min(framed||innerHeight, innerHeight)); h.style.setProperty("--vgap",(g>0&&g<100?g:0)+"px");
+  }
   fix(); addEventListener("resize",fix); addEventListener("orientationchange",function(){ setTimeout(fix,350); });
+  addEventListener("DOMContentLoaded",fix); addEventListener("load",fix);
 })();}</script>
 <script>try{var t=localStorage.getItem("sk_theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <meta name="theme-color" content="#1e2030">
