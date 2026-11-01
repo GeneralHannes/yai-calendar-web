@@ -1065,6 +1065,9 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
        (swipes, taps and dragging events are all handled by the app). The Agenda list still scrolls. */
     html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
     body { position:fixed; inset:0; width:100%; }
+    /* exactly the screen, also as an installed app: the older home-screen rule (min-height: screen + notch,
+       from Odin's Keep) made the page taller than the screen and pushed the day panel under the tabs */
+    body, html.ios-app body { min-height:0; }
     #jr-calendar, .jr-top, .jr-bottom, .jr-rail { touch-action:none; }
     #jr-agenda { touch-action:pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
     main { padding:.6rem .6rem calc(4rem + max(.6rem,env(safe-area-inset-bottom))); }
