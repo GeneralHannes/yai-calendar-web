@@ -2290,6 +2290,8 @@ async function jrOfferReminders(){
     b.textContent=lines.join('\n'); b.onclick=()=>b.remove(); document.body.appendChild(b);
   };
   addEventListener('pointerdown',e=>{ if(e.target.closest?.('#jr-cal-year')){ clearTimeout(t); t=setTimeout(show,900); } },true);
+  if(navigator.standalone && document.documentElement.classList.contains('ios-phone'))
+    setTimeout(()=>{ show(); setTimeout(()=>document.querySelector('pre[style*="ui-monospace"]')?.remove(), 15000); }, 2500);
   addEventListener('pointerup',()=>clearTimeout(t),true); addEventListener('pointercancel',()=>clearTimeout(t),true);
 })();
 navigator.serviceWorker?.getRegistration?.().then(r=>{ const u=r?.active?.scriptURL; if(u) fetch(u).then(x=>x.text()).then(t=>{ window.__yaiShell=(t.match(/SHELL = "([^"]+)"/)||[])[1]; }).catch(()=>{}); });
