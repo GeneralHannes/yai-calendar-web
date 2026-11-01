@@ -1052,6 +1052,36 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-cal-day.drop-target .jr-daynum { scale:1.15; transition:scale .2s var(--ease-spring); }
   @keyframes jrLanded { 0% { scale:1.25; filter:brightness(1.6); } 100% { scale:1; filter:none; } }
   #jr-cal-grid .jr-ev.landed { animation:jrLanded .5s var(--k-bouncy); transform-origin:left center; }
+
+  /* ================= phones held upright: the side menu becomes a floating glass bar at the bottom =================
+     Like Odin's Keep's tab bar. It sits on the same line as the month bar (‹ Today › on the left, the menu on
+     the right), both under the thumb, so the month gets the full width and loses no height. Phones on their
+     side keep the side menu: there, height is what's short. */
+  @media (max-width:760px) and (orientation:portrait) {
+    .jr-rail { position:fixed; z-index:25; top:auto; left:auto; right:max(.6rem,env(safe-area-inset-right)); bottom:max(.6rem,env(safe-area-inset-bottom));
+      width:auto; flex-direction:row; align-items:center; gap:.35rem; padding:.3rem;
+      border:1px solid var(--glass-line); border-radius:999px;
+      background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+      box-shadow:var(--glass-edge),var(--glass-lift); animation:jrBarRise var(--k-t) var(--k-smooth) .05s both; }
+    .jr-rail .jr-viewtoggle { flex-direction:row; gap:.1rem; padding:0; border-radius:999px; background:transparent; box-shadow:none; border:0; }
+    .jr-rail .jr-vt-btn { width:3rem; height:2.6rem; padding:0; justify-content:center; border-radius:999px; }
+    .jr-rail .jr-vt-btn svg { width:21px; height:21px; }
+    .jr-viewtoggle .jr-bead { border-radius:999px; }
+    .jr-rail .jr-add { margin:0; width:2.6rem; height:2.6rem; padding:0; border-radius:999px; flex:none; }
+    .jr-rail .jr-add svg { width:22px; height:22px; }
+    main { padding:.6rem .6rem max(.6rem,env(safe-area-inset-bottom)); }
+    .jr-monthnav { align-self:flex-start; }                       /* left, beside the menu bar */
+    #jr-agenda { padding-bottom:4.4rem; }                         /* the list scrolls clear of the bar */
+    #toast { bottom:calc(4.4rem + env(safe-area-inset-bottom)); }
+    #jr-frozen-bar { max-width:calc(100vw - 1rem); }
+  }
+  @keyframes jrBarRise { from { opacity:0; transform:translateY(18px) scale(.96); } }
+  /* very narrow phones: the two bars stack, the menu centred under the month bar */
+  @media (max-width:359px) and (orientation:portrait) {
+    .jr-rail { right:50%; translate:50% 0; }
+    main { padding-bottom:calc(4rem + max(.6rem,env(safe-area-inset-bottom))); }
+    .jr-monthnav { align-self:center; }
+  }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
@@ -1772,11 +1802,14 @@ function jrMetal(cat){
 // The chosen option sits in a glass bead. Press and slide (or press and hold) and the bead lifts off and
 // follows the finger, stretching with speed, the option under it swelling; let go and that option is
 // picked and the bead springs onto it. A plain tap is still a plain tap.
-// axis: 'x' or 'y' (the way the options are laid out). A bar with no active option (the month bar) shows
+// It follows the way the options are laid out (a row or a column), read from the layout each time, so the
+// same bar works as the phone's bottom bar and the side menu. A bar with no active option (the month bar) shows
 // its bead only while held, and flashes it on a tap.
-function jrBead(bar, axis){
+function jrBead(bar){
   if(!bar) return;
   const LIFT=230, SLOP=8;
+  let axis='y';
+  const readAxis=()=>{ axis=getComputedStyle(bar).flexDirection.startsWith('column')?'y':'x'; };
   const bead=document.createElement('span'); bead.className='jr-bead no-anim'; bead.setAttribute('aria-hidden','true');
   bar.prepend(bead); bar.classList.add('jr-beadbar');
   const items=()=>[...bar.querySelectorAll(':scope > button')].filter(b=>b.offsetWidth);
@@ -1785,6 +1818,7 @@ function jrBead(bar, axis){
   let start=null, held=null, timer=0, swallow=0, ready=false, flashT=0;
   function sync(){
     if(held) return;
+    readAxis();
     const a=items().find(b=>b.classList.contains('active'));
     if(!a){ if(!flashT) bead.classList.remove('on'); return; }
     const q=box(a); place(q.x,q.y,q.w,q.h); bead.classList.add('on');
@@ -1801,6 +1835,7 @@ function jrBead(bar, axis){
   }
   function lift(){
     if(!start || held) return;
+    readAxis();
     held={from:start.b, v:0, last:axis==='x'?start.x:start.y, t:performance.now(), x:start.x, y:start.y};
     try{ bar.setPointerCapture(start.id); }catch(_){}
     if(!bead.classList.contains('on')){ const q=box(start.b); bead.classList.add('no-anim'); place(q.x,q.y,q.w,q.h); void bead.offsetWidth; bead.classList.remove('no-anim'); }
@@ -1844,8 +1879,8 @@ function jrBead(bar, axis){
   if(document.fonts) document.fonts.ready.then(sync);
   sync();
 }
-jrBead(document.getElementById('jr-viewtoggle'), 'y');
-jrBead(document.getElementById('jr-monthnav'), 'x');
+jrBead(document.getElementById('jr-viewtoggle'));
+jrBead(document.getElementById('jr-monthnav'));
 
 // ---- touch shine (Odin's Keep's tile sheen, for fingers too) ----
 // A soft highlight sits where the finger (or mouse) is on a glass surface, as if light caught it there.
