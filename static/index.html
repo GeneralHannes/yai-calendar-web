@@ -1031,34 +1031,41 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   @keyframes jrLanded { 0% { scale:1.25; filter:brightness(1.6); } 100% { scale:1; filter:none; } }
   #jr-cal-grid .jr-ev.landed { animation:jrLanded .5s var(--k-bouncy); transform-origin:left center; }
 
-  /* ================= phones held upright: the side menu becomes a floating glass bar at the bottom =================
-     Like Odin's Keep's tab bar. It sits on the same line as the month bar (‹ Today › on the left, the menu on
-     the right), both under the thumb, so the month gets the full width and loses no height. Phones on their
-     side keep the side menu: there, height is what's short. */
+  /* ================= phones held upright: the side menu becomes floating glass bars at the bottom =================
+     Like Odin's Keep's tab bar, one line under the thumb: Calendar / Agenda on the left, and on the right the
+     month bar and Add event joined into one pill — ‹ Today › + (jrPhoneBar moves the two in there). In Agenda
+     the month arrows step aside and just + stays. The month gets the full width. Phones on their side and
+     desktop keep the side menu: on a phone's side, height is what's short. */
   @media (max-width:760px) and (orientation:portrait) {
-    .jr-rail { position:fixed; z-index:25; top:auto; left:auto; right:max(.6rem,env(safe-area-inset-right)); bottom:max(.6rem,env(safe-area-inset-bottom));
-      width:auto; flex-direction:row; align-items:center; gap:.35rem; padding:.3rem;
-      border:1px solid var(--glass-line); border-radius:999px;
-      background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
-      box-shadow:var(--glass-edge),var(--glass-lift); animation:jrBarRise var(--k-t) var(--k-smooth) .05s both; }
-    .jr-rail .jr-viewtoggle { flex-direction:row; gap:.1rem; padding:0; border-radius:999px; background:transparent; box-shadow:none; border:0; }
+    .jr-rail { position:fixed; z-index:25; top:auto; left:max(.6rem,env(safe-area-inset-left)); right:max(.6rem,env(safe-area-inset-right));
+      bottom:max(.6rem,env(safe-area-inset-bottom)); width:auto; flex-direction:row; align-items:center; justify-content:space-between;
+      gap:.5rem; padding:0; border:0; background:none; box-shadow:none; pointer-events:none;   /* only the pills take taps */
+      animation:jrBarRise var(--k-t) var(--k-smooth) .05s both; }
+    .jr-rail > * { pointer-events:auto; }
+    .jr-rail .jr-viewtoggle { flex-direction:row; gap:.1rem; padding:.3rem; border-radius:999px;
+      border:1px solid var(--glass-line); background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+      box-shadow:var(--glass-edge),var(--glass-lift); }
     .jr-rail .jr-vt-btn { width:3rem; height:2.6rem; padding:0; justify-content:center; border-radius:999px; }
     .jr-rail .jr-vt-btn svg { width:21px; height:21px; }
     .jr-viewtoggle .jr-bead { border-radius:999px; }
-    .jr-rail .jr-add { margin:0; width:2.6rem; height:2.6rem; padding:0; border-radius:999px; flex:none; }
-    .jr-rail .jr-add svg { width:22px; height:22px; }
-    main { padding:.6rem .6rem max(.6rem,env(safe-area-inset-bottom)); }
-    .jr-monthnav { align-self:flex-start; }                       /* left, beside the menu bar */
-    #jr-agenda { padding-bottom:4.4rem; }                         /* the list scrolls clear of the bar */
+    .jr-rail .jr-monthnav { margin-left:auto; animation:none; gap:.25rem; flex:none; }
+    .jr-monthnav .jr-mn-btn { width:2.5rem; }
+    .jr-monthnav .jr-mn-today { padding:0 1rem; }
+    .jr-monthnav .jr-add { margin:0 0 0 .15rem; width:2.6rem; height:2.6rem; padding:0; border-radius:999px; flex:none;
+      display:grid; place-items:center; color:var(--k-on-act); }
+    .jr-monthnav .jr-add svg { width:22px; height:22px; }
+    body:not(.jr-cal-view) .jr-monthnav > button:not(.jr-add) { display:none; }   /* Agenda: just + */
+    main { padding:.6rem .6rem calc(4rem + max(.6rem,env(safe-area-inset-bottom))); }
+    #jr-agenda { padding-bottom:1rem; }
     #toast { bottom:calc(4.4rem + env(safe-area-inset-bottom)); }
     #jr-frozen-bar { max-width:calc(100vw - 1rem); }
   }
   @keyframes jrBarRise { from { opacity:0; transform:translateY(18px) scale(.96); } }
-  /* very narrow phones: the two bars stack, the menu centred under the month bar */
+  /* very narrow phones: the same line, a little tighter */
   @media (max-width:359px) and (orientation:portrait) {
-    .jr-rail { right:50%; translate:50% 0; }
-    main { padding-bottom:calc(4rem + max(.6rem,env(safe-area-inset-bottom))); }
-    .jr-monthnav { align-self:center; }
+    .jr-rail .jr-vt-btn { width:2.5rem; }
+    .jr-monthnav .jr-mn-btn { width:2.2rem; }
+    .jr-monthnav .jr-mn-today { padding:0 .7rem; }
   }
 </style>
 <script>
@@ -1847,6 +1854,21 @@ function jrBead(bar){
 }
 jrBead(document.getElementById('jr-viewtoggle'));
 jrBead(document.getElementById('jr-monthnav'));
+
+// Phones held upright: the month bar and Add event become one pill at the bottom right (‹ Today › +), next to
+// Calendar / Agenda. The two elements are moved into place, and put back for desktop and phones on their side,
+// whenever the screen changes. Moving them keeps their handlers and the bead.
+(function jrPhoneBar(){
+  const mq=matchMedia('(max-width:760px) and (orientation:portrait)');
+  const rail=document.querySelector('.jr-rail'), nav=document.getElementById('jr-monthnav'), add=rail.querySelector('.jr-add');
+  const navHome=nav.parentElement, navNext=nav.nextSibling;
+  const place=()=>{
+    if(mq.matches){ if(nav.parentElement!==rail){ rail.appendChild(nav); nav.appendChild(add); } }
+    else if(nav.parentElement===rail){ navHome.insertBefore(nav, navNext); rail.appendChild(add); }
+  };
+  place();
+  mq.addEventListener ? mq.addEventListener('change', place) : mq.addListener(place);
+})();
 
 // ---- touch shine (Odin's Keep's tile sheen, for fingers too) ----
 // A soft highlight sits where the finger (or mouse) is on a glass surface, as if light caught it there.
