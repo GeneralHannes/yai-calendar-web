@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>if(navigator.standalone)document.documentElement.classList.add("ios-app");</script>
+<script>if(navigator.standalone)document.documentElement.classList.add("ios-app");
+/* iPhone only (not iPad or Android): its own safe-area layout, see "iPhone" in the styles */
+if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.add("ios-phone");</script>
 <script>try{var t=localStorage.getItem("sk_theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <meta name="theme-color" content="#1e2030">
 <script>window.JOURNAL_STATIC=true</script>
@@ -1166,6 +1168,32 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-up-more i { font-style:normal; font-weight:700; color:var(--ink); opacity:.75; margin-right:.4em; }
   .jr-up-ev.done { border-left-color:var(--muted); opacity:.6; }
   .jr-up-ev.done .jr-up-title { text-decoration:line-through; color:var(--muted); }
+
+  /* ================= iPhone only (script in <head> adds html.ios-phone) =================
+     The page runs edge to edge (viewport-fit=cover): it reaches under the status bar and the home indicator.
+     The safe areas are read once into variables, and the layout takes everything the notch and the indicator
+     don't need:
+       top    — the status-bar band is the (glass) top bar itself, with no extra padding under it;
+       bottom — the floating bars sit just clear of the home indicator (it lives in the lowest ~13pt, so they
+                start at half the inset, ~17pt, not a full 34pt up), and the month and day panel run down
+                to just above them. Each home-indicator iPhone gains about 25px of calendar.
+     Android, iPad and desktop are untouched. */
+  html.ios-phone { --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+    --bar-b:max(.35rem, calc(var(--sab) * .5)); }
+  @media (max-width:760px) and (orientation:portrait) {
+    html.ios-phone .keep-bar.jr-bar-bare { padding-top:var(--sat); }
+    html.ios-phone main { padding-top:.3rem; padding-bottom:calc(3.8rem + var(--bar-b) + .4rem); }
+    html.ios-phone .jr-rail { bottom:var(--bar-b); }
+    html.ios-phone #toast { bottom:calc(var(--bar-b) + 4.3rem); }
+    html.ios-phone #jr-remind { bottom:calc(var(--bar-b) + 4.4rem); }
+    html.ios-phone #jr-frozen-bar { top:calc(var(--sat) + .3rem); }
+  }
+  /* on its side: the notch is at one edge (the side menu and calendar already clear it), only the home
+     indicator is below — claim half of it */
+  @media (max-height:520px) and (orientation:landscape) {
+    html.ios-phone main { padding-bottom:max(.5rem, calc(var(--sab) * .5)); }
+    html.ios-phone .jr-rail { padding-bottom:max(.6rem, calc(var(--sab) * .5)); }
+  }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
