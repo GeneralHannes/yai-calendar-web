@@ -1215,6 +1215,31 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     html.ios-phone main { padding-bottom:max(.5rem, calc(var(--sab) * .5)); }
     html.ios-phone .jr-rail { padding-bottom:max(.6rem, calc(var(--sab) * .5)); }
   }
+  /* ================= sign in / create account (script: jrSignIn) ================= */
+  .jr-signin { position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:1.2rem;
+    background:var(--bg); animation:kFadeIn .25s ease both; overflow:auto; }
+  .jr-signin::before { content:""; position:fixed; inset:0; z-index:-1; background:var(--ambient); pointer-events:none; }
+  .jr-signin-card { width:100%; max-width:21rem; display:flex; flex-direction:column; gap:.55rem; padding:1.4rem 1.3rem 1.1rem;
+    border-radius:22px; border:1px solid var(--glass-line); background:var(--glass);
+    -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur); box-shadow:var(--glass-edge),var(--glass-lift);
+    animation:kRise .45s var(--k-smooth) both; }
+  .jr-signin-mark { width:2.6rem; height:2.6rem; align-self:center; }
+  .jr-signin-card h2 { margin:.1rem 0 0; text-align:center; font:400 1.5rem/1.2 var(--k-display); color:var(--ink); }
+  .jr-signin-card > p { margin:0 0 .3rem; text-align:center; font-size:.85rem; }
+  .jr-signin-card .field { margin:0; flex:none; min-height:0; }   /* a shared .field rule gives fields an 8rem basis */
+  .jr-signin-card > * { flex:none; }
+  .jr-signin-card .act { margin-top:.35rem; padding:.75rem; border-radius:14px; font-size:1rem; }
+  .jr-signin-err { min-height:1.1em; font-size:.85rem; color:var(--warn); text-align:center; }
+  .jr-signin-switch { all:unset; cursor:pointer; align-self:center; font-size:.86rem; color:var(--accent); padding:.25rem .4rem; border-radius:8px; }
+  .jr-signin-switch:focus-visible { outline:2px solid var(--accent); }
+  /* who added an event, and who's signed in */
+  .jr-dc-by { flex:none; font-size:.74rem; color:var(--muted); font-style:italic; }
+  .jr-by { font-size:.72rem; color:var(--muted); font-style:italic; }
+  .jr-up-more b { font-weight:600; color:var(--muted); font-style:italic; margin-right:.4em; }
+  .jr-agenda-head { align-items:center; }
+  .jr-me { margin-left:auto; display:flex; align-items:center; gap:.5rem; font-size:.85rem; color:var(--muted); }
+  .jr-me:empty { display:none; }
+  .jr-me .mini { padding:.35rem .7rem; border-radius:999px; font-size:.8rem; }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
@@ -1240,7 +1265,7 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
 
   <main>
     <div id="jr-agenda" style="display:none">
-      <div class="row jr-agenda-head"><h2 class="view-title">Agenda</h2>
+      <div class="row jr-agenda-head"><h2 class="view-title">Agenda</h2><div class="jr-me" id="jr-me"></div>
         <label class="muted jr-showpast"><input type="checkbox" id="jr-show-past" onchange="renderAgenda()"> show past</label></div>
       <div id="jr-agenda-list"><span class="empty">Loading&hellip;</span></div>
     </div>
@@ -1374,7 +1399,7 @@ async function api(path, opts={}){
   try{ r = await fetch(jrUrl(path), opts); }
   catch(e){ throw new JrOffline('cannot reach the server'); }        // network down, server or tunnel gone
   if(r.status>=502 && r.status<=530) throw new JrOffline('server offline (HTTP '+r.status+')');   // the tunnel answers, the server doesn't
-  if(r.status===401){ TOKEN=''; localStorage.removeItem('sk_token'); askToken(); throw new Error('password required'); }
+  if(r.status===401){ jrSetSession('', null); askToken(); throw new Error('please sign in'); }
   if(r.status===429){ toast('Too many wrong PINs — try again in 15 minutes'); throw new Error('locked out for a while'); }
   if(!r.ok){ let d; try{ d=(await r.json()).detail; }catch(_){} throw new Error(d || r.statusText); }
   return r.json();
@@ -1392,8 +1417,69 @@ async function jrFetchEvents(){
     return jrSnapshot()?.events || JOURNAL_EVENTS || [];
   }
 }
+// ---- signing in ----
+// The backend says (GET /api/auth) whether it has accounts. With accounts: a username/password screen, with
+// "Create account" (needs the team code if the server has one); the session token then goes out as X-Token,
+// where the old shared PIN went. Without accounts: the PIN screen below, as before.
+let JR_AUTH=null;                                                     // what /api/auth said
+let JR_USER=(()=>{ try{ return JSON.parse(localStorage.getItem('yai_user')); }catch(_){ return null; } })();
+async function jrAuthInfo(){ if(JR_AUTH) return JR_AUTH; try{ JR_AUTH=await (await fetch(jrUrl('/api/auth'))).json(); }catch(_){ JR_AUTH={required:false}; } return JR_AUTH; }
+function jrSetSession(token, user){
+  TOKEN=token||''; JR_USER=user||null;
+  try{ token?localStorage.setItem('sk_token',token):localStorage.removeItem('sk_token');
+       user?localStorage.setItem('yai_user',JSON.stringify(user)):localStorage.removeItem('yai_user'); }catch(_){}
+  jrRenderMe();
+}
+function jrRenderMe(){
+  const el=document.getElementById('jr-me'); if(!el) return;
+  el.innerHTML=JR_USER?`<span>${esc(JR_USER.name)}</span><button type="button" class="mini" onclick="jrSignOut()">Sign out</button>`:'';
+}
+async function jrSignOut(){
+  if(!await askConfirm('Sign out on this device?')) return;
+  try{ await fetch(jrUrl('/api/logout'),{method:'POST',headers:{'X-Token':TOKEN}}); }catch(_){}
+  jrSetSession('', null); JOURNAL_EVENTS=[]; jrRender(); askToken();
+}
+function jrSignIn(){
+  if(document.getElementById('pin-ov')) return;
+  const ov=document.createElement('div'); ov.id='pin-ov'; ov.className='jr-signin';
+  let mode='in';
+  const draw=()=>{
+    const up=mode==='up';
+    ov.innerHTML=`<form class="jr-signin-card" autocomplete="on">
+      <svg viewBox="0 0 24 24" class="jr-signin-mark" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#D4AF37" stroke-width="1.7"/><path d="M4 12h16" stroke="#D4AF37" stroke-width="1.7"/></svg>
+      <h2>${up?'Create account':'Sign in'}</h2>
+      <p class="muted">${up?'Your name is shown on the events you add.':'Yai Calendar, shared with your team.'}</p>
+      ${up?`<label class="field"><span>Your name</span><input name="name" autocomplete="name" maxlength="40" placeholder="Dara"></label>`:''}
+      <label class="field"><span>Username</span><input name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32"></label>
+      <label class="field"><span>Password</span><input name="password" type="password" autocomplete="${up?'new-password':'current-password'}"></label>
+      ${up&&JR_AUTH?.team_code?`<label class="field"><span>Team code</span><input name="code" inputmode="numeric" autocomplete="off"></label>`:''}
+      <button class="act" type="submit">${up?'Create account':'Sign in'}</button>
+      <div class="jr-signin-err" role="alert"></div>
+      <button class="jr-signin-switch" type="button">${up?'I already have an account':'New here? Create an account'}</button>
+    </form>`;
+    const f=ov.querySelector('form'), errEl=ov.querySelector('.jr-signin-err'), go=f.querySelector('[type=submit]');
+    ov.querySelector('.jr-signin-switch').onclick=()=>{ mode=up?'in':'up'; draw(); };
+    f.onsubmit=async e=>{
+      e.preventDefault();
+      const v=Object.fromEntries(new FormData(f));
+      if(!v.username||!v.password){ errEl.textContent='Fill in your username and password'; return; }
+      go.disabled=true; errEl.textContent='';
+      try{
+        const r=await fetch(jrUrl(up?'/api/signup':'/api/login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)});
+        const d=await r.json().catch(()=>({}));
+        if(!r.ok){ errEl.textContent=r.status===429?'Too many wrong tries — wait 15 minutes':(d.detail||'Something went wrong'); go.disabled=false; return; }
+        jrSetSession(d.token, d.user); dismiss(ov); toast(`Signed in as ${d.user.name}`); loadJournal();
+      }catch(_){ errEl.textContent='Can’t reach the calendar — try again'; go.disabled=false; }
+    };
+    setTimeout(()=>{ try{ f.querySelector('input').focus(); }catch(_){} }, 60);
+  };
+  draw(); document.body.appendChild(ov);
+}
+
 // On-page PIN screen (NOT a native prompt — iOS home-screen web apps block prompt()/alert()).
-function askToken(){
+async function askToken(){
+  if(document.getElementById('pin-ov')) return;
+  if((await jrAuthInfo()).accounts) return jrSignIn();
   if(document.getElementById('pin-ov')) return;
   const ov=document.createElement('div'); ov.id='pin-ov';
   ov.style.cssText='position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;'
@@ -1422,7 +1508,14 @@ function askToken(){
   inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
   setTimeout(()=>{ try{ inp.focus(); }catch(_){} }, 60);
 }
-async function checkAuth(){ try{ const a = await (await fetch(jrUrl('/api/auth'))).json(); if(a.required && !TOKEN) askToken(); }catch(_){} }
+async function checkAuth(){
+  const a=await jrAuthInfo();
+  if(a.accounts && TOKEN && !JR_USER){                                // signed in before names were kept on the device
+    try{ const r=await fetch(jrUrl('/api/me'),{headers:{'X-Token':TOKEN}}); if(r.ok) jrSetSession(TOKEN,(await r.json()).user); }catch(_){}
+  }
+  jrRenderMe();
+  if(a.required && !TOKEN) askToken();
+}
 
 // On-page confirm/prompt replacements.
 function askConfirm(msg){
@@ -1509,7 +1602,7 @@ async function loadJournal(){
   if(first) setJournalView(JR_VIEW, true);
   let live=false;
   try{ JOURNAL_EVENTS = await jrFetchEvents(); live=!JR_FROZEN; }
-  catch(e){ toast('Error loading events: '+e.message); JOURNAL_EVENTS=jrSnapshot()?.events || []; }
+  catch(e){ if(e.message!=='please sign in') toast('Error loading events: '+e.message); JOURNAL_EVENTS=jrSnapshot()?.events || []; }
   if(!first) setJournalView(JR_VIEW, true);
   else if(JR_VIEW==='calendar') renderCalendar({enter:true});   // the day's cards deal in as they arrive
   else renderAgenda();
@@ -1555,7 +1648,7 @@ function jrRenderUpNext(){
     html+=`<button type="button" class="jr-up-ev${e.done?' done':''}" style="--i:${n++}" onclick="jrUpOpen('${e.event_date}',${e.id})">
       <span class="jr-up-time">${e.event_time?jrShortTime(e.event_time):'All day'}</span>
       <span class="jr-up-title">${esc(e.title)}</span>
-      ${e.category||e.notes?`<span class="jr-up-more">${e.category?`<i>${esc(e.category)}</i>`:''}${e.notes?esc(e.notes):''}</span>`:''}
+      ${e.category||e.notes||e.created_by?`<span class="jr-up-more">${e.category?`<i>${esc(e.category)}</i>`:''}${e.created_by?`<b>${esc(e.created_by)}</b>`:''}${e.notes?esc(e.notes):''}</span>`:''}
     </button>`;
   }
   box.innerHTML=html;
@@ -1587,6 +1680,7 @@ function renderAgenda(){
             <div class="jr-cell jr-title" style="flex-direction:column;align-items:flex-start;white-space:normal">
               <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
               <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ note'}</div>
+              ${e.created_by?`<div class="jr-by">by ${esc(e.created_by)}</div>`:''}
               <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
             </div>
             <div class="jr-cell jr-cat" onclick="editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
@@ -1955,6 +2049,7 @@ function renderDay(enter, dir){
           <div class="jr-dc-title" onclick="editEventTitle(${e.id})" title="Rename">${esc(e.title)}</div>
           <div class="jr-dc-tags"><span class="chip-lbl" onclick="editEventCategory(${e.id})">${e.category?esc(e.category):'+ category'}</span></div>
           <div class="jr-dc-notes" onclick="editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ add notes'}</div>
+          ${e.created_by?`<div class="jr-dc-by">Added by ${esc(e.created_by)}</div>`:''}
         </div>
       </article>`).join('')}</div>`
     :`<div class="jr-day-empty">Nothing planned for this day.<span>Use “Add event” to put something on it.</span></div>`}`;
@@ -2279,7 +2374,7 @@ async function jrOfferReminders(){
   // opened from a reminder (or a link) on a particular day
   const qd=new URLSearchParams(location.search).get('day');
   if(JR_ISO.test(qd||'')){ JR_SEL=qd; const d=new Date(qd+'T00:00:00'); JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth(); JR_VIEW='calendar'; }
-  checkAuth();
+  await checkAuth();
   await loadJournal();
   setTimeout(()=>{ if(!document.getElementById('pin-ov')) jrOfferReminders(); }, 1500);
 })();
