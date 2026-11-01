@@ -870,6 +870,36 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     100% { box-shadow:0 0 0 0 color-mix(in srgb,var(--k-act) 0%,transparent); } }
   .jr-bottom .jr-dcard.flash { animation:jrCardIn .5s var(--k-bouncy) both, jrFlash 1.4s ease-out .15s; }
   .jr-dcard.leaving { transition:none; }
+
+  /* ---- motion: extras ---- */
+  /* the ring that glides from the old day to the new one (renderCalendar adds and removes it) */
+  .jr-cal-grid { position:relative; }
+  .jr-glide { position:absolute; z-index:2; pointer-events:none; border-radius:10px; transform-origin:0 0;
+    box-shadow:0 0 0 2px var(--accent), 0 0 18px 2px color-mix(in srgb,var(--k-act) 45%,transparent); }
+  /* ticking an event done: a green light sweeps across its card */
+  .jr-dcard { position:relative; }
+  .jr-dcard.just-done::after { content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+    background:linear-gradient(100deg,transparent 25%,color-mix(in srgb,var(--good) 38%,transparent) 50%,transparent 75%) no-repeat;
+    background-size:250% 100%; animation:jrSweep .75s var(--k-smooth) both; }
+  @keyframes jrSweep { from { background-position:100% 0; } to { background-position:-50% 0; opacity:0; } }
+  .jr-dcard.just-done .jr-dc-title { animation:jrDim .5s ease .2s both; }
+  @keyframes jrDim { from { opacity:1; } 40% { opacity:.4; } }
+  /* Add event: the + turns a quarter on hover and spins when pressed */
+  .jr-add svg { transition:transform .45s var(--k-bouncy); }
+  @media (hover:hover) and (pointer:fine) { .jr-add:hover svg { transform:rotate(90deg); } }
+  .jr-add:active svg { transform:rotate(180deg) scale(.85); transition-duration:.2s; }
+  .jr-add { transition:transform var(--k-t-quick) var(--k-bouncy), box-shadow .3s ease; }
+  .jr-add:active { transform:scale(.94); }
+  /* the Add event form: its fields ease in one after another */
+  .modal-card .field { animation:kRise .4s var(--k-smooth) both; }
+  .modal-card .field:nth-of-type(1) { animation-delay:40ms; } .modal-card .field:nth-of-type(2) { animation-delay:80ms; }
+  .modal-card .field:nth-of-type(3) { animation-delay:120ms; } .modal-card .field:nth-of-type(4) { animation-delay:160ms; }
+  .modal-card .field:nth-of-type(n+5) { animation-delay:200ms; }
+  .modal-card .item-edit-actions { animation:kRise .4s var(--k-smooth) .24s both; }
+  /* Today, while another month is showing: a slow soft glow saying "back to now" */
+  @keyframes jrAway { 0%,100% { box-shadow:var(--glass-edge),0 0 0 0 rgba(212,175,55,0); color:var(--ink); }
+    50% { box-shadow:var(--glass-edge),0 0 0 3px rgba(212,175,55,.22),0 0 16px 2px rgba(212,175,55,.3); color:var(--gold); } }
+  .jr-mn-today.away { animation:jrAway 2.4s ease-in-out infinite; }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
@@ -1112,7 +1142,7 @@ function renderAgenda(){
   const today = jrToday();
   const events = JOURNAL_EVENTS.filter(e => showPast || e.event_date >= today);
   const box = $('#jr-agenda-list');
-  if(!events.length){ box.innerHTML = '<div class="empty">'+(showPast?'No events yet.':'Nothing planned.')+'<span class="muted">Deliveries, bills, shifts and promotions go here — tap “+ Add event”.</span></div>'; return; }
+  if(!events.length){ box.innerHTML = '<div class="empty">'+(showPast?'No events yet.':'Nothing planned.')+'<span class="muted">Tap “Add event” to put something on it.</span></div>'; return; }
   const groups = {};
   for(const e of events){ (groups[e.event_date] = groups[e.event_date] || []).push(e); }
   const dates = Object.keys(groups).sort();
@@ -1196,7 +1226,10 @@ async function toggleEventDone(id){
     const updated=await api('/api/journal/events/'+id+'/done',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({done:!e.done})});
     const i=JOURNAL_EVENTS.findIndex(x=>x.id===id); if(i>=0) JOURNAL_EVENTS[i]=updated;
     jrRender();
-    if(updated.done && !K_REDUCED.matches) document.querySelector(`.jr-dcard[data-id="${id}"] .ok`)?.classList.add('tick');
+    if(updated.done && !K_REDUCED.matches){
+      const c=document.querySelector(`.jr-dcard[data-id="${id}"]`);
+      c?.querySelector('.ok')?.classList.add('tick'); c?.classList.add('just-done');
+    }
   }catch(err){ toast('Error: '+err.message); }
 }
 async function deleteEventRow(id){
@@ -1346,8 +1379,23 @@ function renderCalendar(opt={}){
     </button>`;
   }
   const grid=$('#jr-cal-grid');
+  const was=grid.querySelector('.jr-cal-day.sel'), from=was&&{x:was.offsetLeft,y:was.offsetTop,w:was.offsetWidth,h:was.offsetHeight};
   grid.classList.toggle('wave', !!opt.wave && !K_REDUCED.matches);
   grid.innerHTML=html;
+  // Today glows softly while you're looking at some other month: it's the way back
+  const now=new Date(), away=JR_CAL_YEAR!==now.getFullYear()||JR_CAL_MONTH!==now.getMonth();
+  document.querySelector('.jr-mn-today')?.classList.toggle('away', away);
+  // a new day picked in the same month: a ring glides from the old square to the new one
+  const to=grid.querySelector('.jr-cal-day.sel');
+  if(from && to && opt.enter && !opt.dir && to!==was && grid.animate && !K_REDUCED.matches){
+    const g=document.createElement('span'); g.className='jr-glide'; g.setAttribute('aria-hidden','true');
+    Object.assign(g.style,{left:to.offsetLeft+'px',top:to.offsetTop+'px',width:to.offsetWidth+'px',height:to.offsetHeight+'px'});
+    grid.appendChild(g);
+    const sx=from.w/to.offsetWidth, sy=from.h/to.offsetHeight;
+    g.animate([{transform:`translate(${from.x-to.offsetLeft}px,${from.y-to.offsetTop}px) scale(${sx},${sy})`,opacity:1},
+               {transform:'none',opacity:1,offset:.85},{transform:'none',opacity:0}],
+      {duration:420,easing:'cubic-bezier(.2,.9,.25,1)'}).finished.then(()=>g.remove(),()=>g.remove());
+  }
   if(opt.dir && grid.animate && !K_REDUCED.matches){
     grid.animate([{transform:`translateX(${opt.dir*28}px)`,opacity:.25},{transform:'none',opacity:1}],{duration:380,easing:'cubic-bezier(.16,1,.3,1)'});
     $('.jr-month').animate([{transform:`translateX(${opt.dir*18}px)`,opacity:0},{transform:'none',opacity:1}],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
