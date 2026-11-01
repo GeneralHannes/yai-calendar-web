@@ -1067,6 +1067,45 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-monthnav .jr-mn-btn { width:2.2rem; }
     .jr-monthnav .jr-mn-today { padding:0 .7rem; }
   }
+
+  /* ================= desktop: "Coming up" in the side menu (script: jrRenderUpNext) =================
+     The empty space under Calendar / Agenda lists what's ahead: month headings, then each day (big date,
+     weekday, Today/Tomorrow), then its events with time, title and a line of category and notes. It scrolls
+     on its own; the menu widens a little to fit it. Phones never show it. */
+  .jr-upnext { display:none; }
+  @media (min-width:761px) and (min-height:521px) {
+    .jr-rail { width:16rem; }
+    .jr-upnext { display:block; flex:1 1 0; min-height:0; overflow-y:auto; overscroll-behavior:contain; margin:.1rem -.3rem 0; padding:0 .3rem .6rem;
+      scrollbar-width:thin; scrollbar-color:var(--glass-line) transparent;
+      -webkit-mask-image:linear-gradient(transparent, #000 .6rem, #000 calc(100% - 1.4rem), transparent);
+              mask-image:linear-gradient(transparent, #000 .6rem, #000 calc(100% - 1.4rem), transparent); }
+    .jr-rail .jr-add { margin-top:.2rem; }
+  }
+  .jr-up-head { position:sticky; top:0; z-index:1; padding:.55rem .2rem .3rem; font-size:.68rem; font-weight:800; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--muted); background:linear-gradient(var(--k-bg0) 70%, transparent); }
+  .jr-up-empty { padding:.4rem .2rem; font-size:.85rem; color:var(--muted); }
+  .jr-up-month { margin:.7rem .2rem .25rem; font:400 1.02rem/1.2 var(--k-display); color:var(--gold); }
+  .jr-up-month:first-of-type { margin-top:.2rem; }
+  .jr-up-day { display:flex; align-items:baseline; gap:.45rem; margin:.55rem .2rem .2rem; color:var(--ink);
+    animation:kRise .4s var(--k-smooth) both; animation-delay:calc(min(var(--i),12) * 25ms); }
+  .jr-up-day b { font-size:1.15rem; font-variant-numeric:tabular-nums; line-height:1; }
+  .jr-up-day span { font-size:.78rem; color:var(--muted); font-weight:600; }
+  .jr-up-day em { font-style:normal; color:var(--accent); }
+  .jr-up-day.sel b { color:var(--accent); }
+  .jr-up-ev { all:unset; box-sizing:border-box; display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:.5rem; row-gap:.05rem;
+    width:100%; padding:.42rem .55rem; margin:.15rem 0; border-radius:10px; cursor:pointer;
+    background:color-mix(in srgb,var(--k-bg3) 45%,transparent); border:1px solid var(--glass-line); border-left:3px solid var(--accent);
+    transition:background-color .2s, transform .3s var(--ease-spring), border-color .2s;
+    animation:kRise .4s var(--k-smooth) both; animation-delay:calc(min(var(--i),12) * 25ms); }
+  .jr-up-ev:hover { background:color-mix(in srgb,var(--k-act) 16%,var(--k-bg2)); transform:translateX(2px); }
+  .jr-up-ev:active { transform:scale(.97); }
+  .jr-up-ev:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  .jr-up-time { grid-row:1; font-size:.74rem; font-weight:700; font-variant-numeric:tabular-nums; color:color-mix(in srgb,var(--accent) 70%,var(--k-hi)); padding-top:.1rem; white-space:nowrap; }
+  .jr-up-title { grid-row:1; font-size:.86rem; font-weight:650; color:var(--ink); line-height:1.3; overflow-wrap:anywhere; }
+  .jr-up-more { grid-column:2; font-size:.74rem; color:var(--muted); line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .jr-up-more i { font-style:normal; font-weight:700; color:var(--ink); opacity:.75; margin-right:.4em; }
+  .jr-up-ev.done { border-left-color:var(--muted); opacity:.6; }
+  .jr-up-ev.done .jr-up-title { text-decoration:line-through; color:var(--muted); }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
@@ -1085,6 +1124,8 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
       <button class="jr-vt-btn" id="jr-view-calendar-btn" onclick="setJournalView('calendar')" title="Calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
       <button class="jr-vt-btn" id="jr-view-agenda-btn" onclick="setJournalView('agenda')" title="Agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".9" fill="currentColor"/><circle cx="4" cy="12" r=".9" fill="currentColor"/><circle cx="4" cy="18" r=".9" fill="currentColor"/></svg><span>Agenda</span></button>
     </div>
+    <!-- desktop: what's coming up, in date order (hidden on phones) -->
+    <section class="jr-upnext" id="jr-upnext" aria-label="Upcoming events"></section>
     <button class="act jr-add k-shine" onclick="openAddEvent(JR_VIEW==='calendar'?JR_SEL:undefined)" title="Add event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add event</span></button>
   </nav>
 
@@ -1383,7 +1424,41 @@ function setJournalView(v, skipSave){
 }
 function jrRender(){ if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar(); }
 
+// Desktop side menu: everything from today on, in date order, under month and day headings — the Agenda in
+// brief. Clicking one opens that day in the calendar. (Phones hide it: there the menu is a bar.)
+let JR_UPNEXT_SIG='';
+function jrRenderUpNext(){
+  const box=document.getElementById('jr-upnext'); if(!box) return;
+  const today=jrToday();
+  const evs=JOURNAL_EVENTS.filter(e=>e.event_date>=today)
+    .sort((a,b)=>a.event_date.localeCompare(b.event_date) || jrByTime(a,b)).slice(0,60);
+  const sig=JSON.stringify([today,JR_SEL,evs]); if(sig===JR_UPNEXT_SIG) return; JR_UPNEXT_SIG=sig;   // nothing new: leave it be
+  if(!evs.length){ box.innerHTML='<div class="jr-up-head">Coming up</div><div class="jr-up-empty">Nothing planned yet.</div>'; return; }
+  let html='<div class="jr-up-head">Coming up</div>', month='', day='', n=0;
+  for(const e of evs){
+    const d=new Date(e.event_date+'T00:00:00'), m=`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    if(m!==month){ month=m; html+=`<div class="jr-up-month">${esc(m)}</div>`; }
+    if(e.event_date!==day){
+      day=e.event_date;
+      const rel=e.event_date===today?'Today':(Math.round((d-new Date(today+'T00:00:00'))/86400000)===1?'Tomorrow':'');
+      html+=`<div class="jr-up-day${day===JR_SEL?' sel':''}" style="--i:${n}"><b>${d.getDate()}</b><span>${DAY_NAMES[d.getDay()].slice(0,3)}${rel?` · <em>${rel}</em>`:''}</span></div>`;
+    }
+    html+=`<button type="button" class="jr-up-ev${e.done?' done':''}" style="--i:${n++}" onclick="jrUpOpen('${e.event_date}',${e.id})">
+      <span class="jr-up-time">${e.event_time?jrShortTime(e.event_time):'All day'}</span>
+      <span class="jr-up-title">${esc(e.title)}</span>
+      ${e.category||e.notes?`<span class="jr-up-more">${e.category?`<i>${esc(e.category)}</i>`:''}${e.notes?esc(e.notes):''}</span>`:''}
+    </button>`;
+  }
+  box.innerHTML=html;
+}
+function jrUpOpen(iso, id){
+  if(JR_VIEW!=='calendar') setJournalView('calendar');
+  calSelect(iso);
+  if(!K_REDUCED.matches) requestAnimationFrame(()=>document.querySelector(`.jr-dcard[data-id="${id}"]`)?.classList.add('flash'));
+}
+
 function renderAgenda(){
+  jrRenderUpNext();
   const showPast = $('#jr-show-past')?.checked;
   const today = jrToday();
   const events = JOURNAL_EVENTS.filter(e => showPast || e.event_date >= today);
@@ -1653,6 +1728,7 @@ function renderCalendar(opt={}){
   if(opt.enter && !opt.dir && !K_REDUCED.matches) grid.querySelector('.jr-cal-day.sel')?.classList.add('pick');
   jrFitCells();
   renderDay(opt.enter, opt.dayDir);
+  jrRenderUpNext();
 }
 
 // Lays out the titles in the day squares. Runs after every render and whenever the grid changes size.
