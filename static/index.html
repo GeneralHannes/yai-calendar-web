@@ -955,6 +955,9 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-ev.cut { text-overflow:ellipsis; }                               /* …or, short of rows, one line ending "…" */
   .jr-ev.done { background:color-mix(in srgb,var(--muted) 14%,var(--k-bg2)); }
   .jr-ev-gap { display:block; flex:none; pointer-events:none; }      /* a row kept free for a title running in from the left */
+  /* the time leads the title, short ("9:00"), a lighter tint so the title still reads first */
+  .jr-ev-t { font-weight:700; font-variant-numeric:tabular-nums; color:color-mix(in srgb,var(--accent) 70%,var(--k-hi)); margin-right:.3em; }
+  .jr-ev.done .jr-ev-t { color:inherit; }
   @container (max-width:74px) {
     /* phones: slimmer rows so a square holds three titles, not two */
     .jr-ev, .jr-preview.tight .jr-ev { display:block; white-space:nowrap; -webkit-line-clamp:unset; overflow-wrap:normal; hyphens:manual;
@@ -1338,6 +1341,8 @@ function jrDayLabel(iso){
   return `${DAY_NAMES[d.getDay()].slice(0,3)} ${d.getDate()} ${MON[d.getMonth()]}`;   // Sat 10 Oct
 }
 function jrTimeLabel(t){ return t ? t.slice(0,5) : '—'; }
+// for the day squares, where every letter counts: "09:30:00" → "9:30"
+function jrShortTime(t){ return t ? t.slice(0,5).replace(/^0(\d)/,'$1') : ''; }
 
 // The month and the day are drawn straight away; the events fill in when they arrive, so a slow or
 // failed load never leaves an empty screen.
@@ -1612,7 +1617,7 @@ function renderCalendar(opt={}){
     html += `<button type="button" class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${iso===JR_SEL?' sel':''}${evs.length?' has-events':''}"
       onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${evs.length?`<span class="jr-more" hidden></span><span class="jr-count">${evs.length}</span>`:''}</span>
-      ${evs.length?`<span class="jr-preview">${evs.map(e=>`<span class="jr-ev${e.done?' done':''}" data-id="${e.id}">${esc(e.title)}</span>`).join('')}</span>`:''}
+      ${evs.length?`<span class="jr-preview">${evs.map(e=>`<span class="jr-ev${e.done?' done':''}" data-id="${e.id}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
     </button>`;
   }
   const grid=$('#jr-cal-grid');
