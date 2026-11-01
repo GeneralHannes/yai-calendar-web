@@ -964,6 +964,93 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-daynum { font-size:.82rem !important; min-width:1.3rem !important; height:1.3rem !important; }
   }
   @media (max-width:560px) { .jr-cal-day { padding:3px 3px 2px; gap:1px; } }
+
+  /* ================= liquid glass bead (Odin's Keep's tab bar; script: jrBead) ================= */
+  .jr-beadbar { position:relative; isolation:isolate; touch-action:none; -webkit-user-select:none; user-select:none; }
+  .jr-beadbar > button { position:relative; z-index:1; transition:scale .3s var(--ease-spring), color .2s; }
+  .jr-beadbar > .active { background:transparent !important; box-shadow:none !important; }
+  .jr-bead { position:absolute; left:0; top:0; width:0; height:0; z-index:0; pointer-events:none; opacity:0; border-radius:10px;
+    background:color-mix(in srgb,var(--k-act) 16%,transparent);
+    border:1px solid color-mix(in srgb,var(--k-hi) 14%,transparent);
+    box-shadow:inset 0 1px 1px color-mix(in srgb,var(--k-hi) 24%,transparent), inset 0 -3px 8px -3px color-mix(in srgb,var(--k-act) 35%,transparent),
+      0 6px 18px -8px rgba(0,0,0,.55);
+    transition:translate .6s var(--ease-spring), width .6s var(--ease-spring), height .5s var(--ease-spring), opacity .2s, background-color .25s, box-shadow .25s; }
+  .jr-monthnav .jr-bead { border-radius:999px; }
+  .jr-beadbar > .jr-bead { display:block; }        /* the phone rail hides its <span> labels; not this one */
+  .jr-bead.on { opacity:1; }
+  .jr-bead.drag { background:color-mix(in srgb,var(--k-hi) 9%,transparent);
+    -webkit-backdrop-filter:blur(1.5px) saturate(1.8) brightness(1.15); backdrop-filter:blur(1.5px) saturate(1.8) brightness(1.15);
+    box-shadow:inset 0 1px 1px color-mix(in srgb,var(--k-hi) 45%,transparent), inset 0 0 0 1px color-mix(in srgb,var(--k-hi) 10%,transparent),
+      inset 0 -6px 14px -6px color-mix(in srgb,var(--k-act) 45%,transparent), 0 12px 28px -8px rgba(0,0,0,.6);
+    transition:translate .07s linear, width .22s ease-out, height .22s ease-out, opacity .15s, background-color .2s, box-shadow .2s; }
+  .jr-bead.flash { animation:jrBeadFlash .38s var(--k-smooth) both; }
+  @keyframes jrBeadFlash { from { opacity:0; scale:.8; } 40% { opacity:1; scale:1.08; } to { opacity:0; scale:1; } }
+  .jr-bead.no-anim { transition:none; }
+  .jr-beadbar.liquid > button.bead-under { scale:1.12; color:var(--k-hi); }
+  .jr-viewtoggle .jr-vt-btn.active { color:var(--accent); }
+
+  /* ================= touch shine (script: k-shine) =================
+     a soft highlight where the finger or mouse is, under the content, inside the surface */
+  .k-shine { position:relative; isolation:isolate; }
+  .k-shine::before { content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; pointer-events:none; opacity:0;
+    background:radial-gradient(220px circle at var(--mx,50%) var(--my,0%), rgba(255,255,255,.11), transparent 62%);
+    transition:opacity .35s ease; }
+  .k-shine.shining::before { opacity:1; transition-duration:.12s; }
+  .jr-add.k-shine::before { background:radial-gradient(120px circle at var(--mx,50%) var(--my,0%), rgba(255,255,255,.4), transparent 65%); }
+
+  /* ================= views come in from the side you came from (Odin's Keep's tab motion) ================= */
+  @keyframes jrViewU { from { opacity:0; transform:translateY(22px); } }
+  @keyframes jrViewD { from { opacity:0; transform:translateY(-22px); } }
+  #jr-agenda.vin-u, #jr-calendar.vin-u { animation:jrViewU var(--k-t) var(--k-smooth) both; }
+  #jr-agenda.vin-d, #jr-calendar.vin-d { animation:jrViewD var(--k-t) var(--k-smooth) both; }
+
+  /* ================= struck-metal category badges (Odin's Keep's item labels) =================
+     A bevel (light top edge, dark bottom), a glow in its own hue, and a sheen that sweeps across now and
+     then. The word is always written on it, so the meaning never rests on the colour. */
+  .chip-lbl.jr-badge { position:relative; isolation:isolate; overflow:hidden; display:inline-flex; align-items:center;
+    padding:.14rem .5rem .13rem; border-radius:6px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+    color:#fff; text-shadow:0 1px 0 rgba(0,0,0,.4);
+    background:var(--b-metal); background-size:200% 200%; border:1px solid var(--b-edge);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(0,0,0,.35), 0 0 12px -3px var(--b-glow), 0 1px 2px rgba(0,0,0,.45); }
+  .chip-lbl.jr-badge::after { content:""; position:absolute; inset:-1px; z-index:-1; pointer-events:none;
+    background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.6) 48%,rgba(255,255,255,.15) 55%,transparent 70%);
+    transform:translateX(-130%); animation:kSheen 4.2s cubic-bezier(.4,0,.2,1) 4; }
+  .jr-dcard:nth-child(2n) .chip-lbl.jr-badge::after { animation-delay:1.3s; }
+  .jr-dcard:nth-child(3n) .chip-lbl.jr-badge::after { animation-delay:2.4s; }
+  @keyframes kSheen { 0%,62% { transform:translateX(-130%); } 100% { transform:translateX(130%); } }
+  .b-ruby     { --b-metal:linear-gradient(135deg,#ff7485 0%,#d01839 38%,#ff9aa5 55%,#8e0c24 100%); --b-edge:#ff8fa0; --b-glow:rgba(255,60,90,.75); }
+  .b-amethyst { --b-metal:linear-gradient(135deg,#d6b3ff 0%,#7a3fe0 40%,#e5ccff 56%,#4a1f9e 100%); --b-edge:#caa6ff; --b-glow:rgba(160,100,255,.7); }
+  .b-sapphire { --b-metal:linear-gradient(135deg,#a9ccff 0%,#2f64d8 40%,#c7ddff 56%,#173c96 100%); --b-edge:#9cc0ff; --b-glow:rgba(80,140,255,.7); }
+  .b-gold     { --b-metal:linear-gradient(135deg,#fff3b0 0%,#d2a022 38%,#ffe98a 55%,#8f6610 100%); --b-edge:#ffe38a; --b-glow:rgba(240,195,60,.7); }
+  .chip-lbl.b-gold { color:#3a2900; text-shadow:0 1px 0 rgba(255,255,255,.45); }
+  .b-emerald  { --b-metal:linear-gradient(135deg,#9dffd2 0%,#12a86a 40%,#c3ffe4 56%,#07613c 100%); --b-edge:#8ff5c6; --b-glow:rgba(40,220,140,.65); }
+  .b-gunmetal { --b-metal:linear-gradient(135deg,#dfe5ee 0%,#6a7384 40%,#f1f4f8 56%,#3a404c 100%); --b-edge:#c9d1dc; --b-glow:rgba(170,185,210,.45); }
+  .b-copper   { --b-metal:linear-gradient(135deg,#ffcfa8 0%,#c1611f 40%,#ffdcc0 56%,#7a3a10 100%); --b-edge:#ffc59a; --b-glow:rgba(240,130,60,.6); }
+  .jr-dcard.done .chip-lbl.jr-badge { filter:saturate(.25); opacity:.7; }
+
+  /* ================= the big day number: struck gold with a glint (Odin's Keep's metal text) ================= */
+  @supports ((-webkit-background-clip:text) or (background-clip:text)) {
+    .jr-day-big { background-image:linear-gradient(100deg,#b8901f 0%,#f3d36b 28%,#fff6cf 44%,#e9c14a 60%,#a47c12 80%,#e6c35a 100%);
+      background-size:250% 100%; background-position:0% 0; -webkit-background-clip:text; background-clip:text;
+      -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 8px rgba(212,175,55,.35)); }
+    .jr-bottom.enter .jr-day-big { animation:jrNumIn .5s var(--k-bouncy) both, kGlint 1.6s ease-in-out .25s both; }
+  }
+  @keyframes kGlint { from { background-position:0% 0; } to { background-position:100% 0; } }
+
+  /* ================= dragging an event to another day (script: drag an event) ================= */
+  #jr-cal-grid .jr-ev[data-id] { touch-action:none; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  #jr-cal-grid .jr-ev.dragging { opacity:.25; }
+  .jr-ev-ghost { position:fixed !important; z-index:80; pointer-events:none; margin:0; max-height:none; overflow:visible;
+    cursor:grabbing; white-space:nowrap !important; transform-origin:20% 50%;
+    box-shadow:0 14px 30px -8px rgba(0,0,0,.65), 0 0 0 1px color-mix(in srgb,var(--k-hi) 25%,transparent), 0 0 18px -2px color-mix(in srgb,var(--k-act) 55%,transparent);
+    animation:jrPickUp .22s var(--k-bouncy) both; }
+  @keyframes jrPickUp { from { scale:1; rotate:0deg; } to { scale:1.12; rotate:-2deg; } }
+  body.jr-dragging, body.jr-dragging * { cursor:grabbing !important; }
+  .jr-cal-day.drop-target { background:color-mix(in srgb,var(--k-act) 26%,transparent) !important;
+    box-shadow:inset 0 0 0 2px var(--accent), inset 0 0 22px -4px color-mix(in srgb,var(--k-act) 60%,transparent) !important; }
+  .jr-cal-day.drop-target .jr-daynum { scale:1.15; transition:scale .2s var(--ease-spring); }
+  @keyframes jrLanded { 0% { scale:1.25; filter:brightness(1.6); } 100% { scale:1; filter:none; } }
+  #jr-cal-grid .jr-ev.landed { animation:jrLanded .5s var(--k-bouncy); transform-origin:left center; }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
@@ -978,11 +1065,11 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
 <div class="jr-shell">
   <!-- the small side section: only the two views and Add event -->
   <nav class="jr-rail" aria-label="Journal">
-    <div class="jr-viewtoggle" data-k-thumb>
+    <div class="jr-viewtoggle k-shine" id="jr-viewtoggle">
       <button class="jr-vt-btn" id="jr-view-calendar-btn" onclick="setJournalView('calendar')" title="Calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
       <button class="jr-vt-btn" id="jr-view-agenda-btn" onclick="setJournalView('agenda')" title="Agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".9" fill="currentColor"/><circle cx="4" cy="12" r=".9" fill="currentColor"/><circle cx="4" cy="18" r=".9" fill="currentColor"/></svg><span>Agenda</span></button>
     </div>
-    <button class="act jr-add" onclick="openAddEvent(JR_VIEW==='calendar'?JR_SEL:undefined)" title="Add event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add event</span></button>
+    <button class="act jr-add k-shine" onclick="openAddEvent(JR_VIEW==='calendar'?JR_SEL:undefined)" title="Add event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add event</span></button>
   </nav>
 
   <main>
@@ -1003,10 +1090,10 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
         <div class="jr-cal-grid" id="jr-cal-grid"></div>
       </section>
       <!-- bottom: everything on the selected day, and only that day -->
-      <section class="jr-bottom" id="jr-day" aria-live="polite"></section>
+      <section class="jr-bottom k-shine" id="jr-day" aria-live="polite"></section>
       </div>
       <!-- month arrows and Today, down where the thumb is -->
-      <div class="jr-monthnav" role="group" aria-label="Change month">
+      <div class="jr-monthnav k-shine" id="jr-monthnav" role="group" aria-label="Change month">
         <button class="jr-mn-btn" onclick="calShiftMonth(-1)" aria-label="Previous month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
         <button class="jr-mn-today" onclick="calGoToday()">Today</button>
         <button class="jr-mn-btn" onclick="calShiftMonth(1)" aria-label="Next month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
@@ -1261,12 +1348,18 @@ async function loadJournal(){
   if(live) jrOfferLocalEvents();   // only once the backend has really answered (past the PIN)
 }
 function setJournalView(v, skipSave){
-  JR_VIEW=v;
+  const from=JR_VIEW; JR_VIEW=v;
   if(!skipSave) try{ localStorage.setItem('sk_journal_view', v); }catch(_){}
   $('#jr-view-agenda-btn').classList.toggle('active', v==='agenda');
   $('#jr-view-calendar-btn').classList.toggle('active', v==='calendar');
   $('#jr-agenda').style.display = v==='agenda' ? '' : 'none';
   $('#jr-calendar').style.display = v==='calendar' ? '' : 'none';
+  // Odin's Keep's tab motion: the view comes in from the side of the button you came from
+  // (Agenda sits below Calendar in the side menu, so it rises up; Calendar drops down)
+  if(from!==v && !skipSave){
+    const el=$(v==='agenda'?'#jr-agenda':'#jr-calendar');
+    el.classList.remove('vin-u','vin-d'); void el.offsetWidth; el.classList.add(v==='agenda'?'vin-u':'vin-d');
+  }
   document.body.classList.toggle('jr-cal-view', v==='calendar');
   if(v==='agenda') renderAgenda(); else renderCalendar({wave:true, enter:true});
 }
@@ -1292,9 +1385,9 @@ function renderAgenda(){
             <div class="jr-cell jr-title" style="flex-direction:column;align-items:flex-start;white-space:normal">
               <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
               <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ note'}</div>
-              <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
+              <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl ${jrMetal(e.category)}">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
             </div>
-            <div class="jr-cell jr-cat" onclick="editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
+            <div class="jr-cell jr-cat" onclick="editEventCategory(${e.id})">${e.category?`<span class="chip-lbl ${jrMetal(e.category)}">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
             <div class="jr-cell jr-check${e.done?' done':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}">${e.done?'✓':'○'}</div>
             <div class="jr-cell jr-del" onclick="deleteEventRow(${e.id})" title="Delete">✕</div>
           </div>`).join('')}
@@ -1435,6 +1528,7 @@ function calSelect(iso){
   renderCalendar({wave:!!dir, dir:Math.sign(dir), enter:changed, dayDir});
 }
 let jrJustSwiped=()=>false;
+let JR_EVDRAG=null, JR_GESTURE_AT=0;   // an event being dragged to another day; when a drag last ended
 // a removed square's click never reaches the document-level guard, so the day handler checks too
 function calDayClick(iso){ if(!jrJustSwiped()) calSelect(iso); }
 function calShiftDay(n){ const d=new Date((JR_SEL||jrToday())+'T00:00:00'); d.setDate(d.getDate()+n); calSelect(jrISO(d)); }
@@ -1464,7 +1558,8 @@ function calShiftDay(n){ const d=new Date((JR_SEL||jrToday())+'T00:00:00'); d.se
   },{passive:true});
   document.addEventListener('touchmove',e=>{
     if(!s) return;
-    if(e.touches.length!==1){ if(s.axis==='x') reset(s.el); s=null; return; }   // a second finger: not a swipe
+    // a second finger, or an event picked up to drag to another day: not a swipe
+    if(e.touches.length!==1 || JR_EVDRAG){ if(s.axis==='x') reset(s.el); s=null; return; }
     s.dx=e.touches[0].clientX-s.x; s.dy=e.touches[0].clientY-s.y;
     if(!s.axis && Math.hypot(s.dx,s.dy)>16) s.axis=Math.abs(s.dx)>Math.abs(s.dy)*1.2?'x':'y';
     if(s.axis==='x' && s.el && !K_REDUCED.matches){ s.el.style.transition='none';
@@ -1479,7 +1574,7 @@ function calShiftDay(n){ const d=new Date((JR_SEL||jrToday())+'T00:00:00'); d.se
   document.addEventListener('touchcancel',()=>{ if(s) finish(s.dx,s.dy); },{passive:true});
   // Backstop for a tap that still comes after a swipe: it goes to the square the finger started on, which the
   // swipe has already redrawn away, and selecting that day would jump straight back to the old month.
-  jrJustSwiped=()=>Date.now()-swipedAt<400;
+  jrJustSwiped=()=>Date.now()-Math.max(swipedAt, JR_GESTURE_AT)<400;
   document.addEventListener('click',e=>{ if(jrJustSwiped()){ e.stopPropagation(); e.preventDefault(); } },true);
   document.addEventListener('keydown',e=>{
     if(JR_VIEW!=='calendar' || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('.modal-ov')) return;
@@ -1511,7 +1606,7 @@ function renderCalendar(opt={}){
     html += `<button type="button" class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${iso===JR_SEL?' sel':''}${evs.length?' has-events':''}"
       onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${evs.length?`<span class="jr-more" hidden></span><span class="jr-count">${evs.length}</span>`:''}</span>
-      ${evs.length?`<span class="jr-preview">${evs.map(e=>`<span class="jr-ev${e.done?' done':''}">${esc(e.title)}</span>`).join('')}</span>`:''}
+      ${evs.length?`<span class="jr-preview">${evs.map(e=>`<span class="jr-ev${e.done?' done':''}" data-id="${e.id}">${esc(e.title)}</span>`).join('')}</span>`:''}
     </button>`;
   }
   const grid=$('#jr-cal-grid');
@@ -1617,7 +1712,7 @@ function renderDay(enter, dir){
       <div class="jr-day-sum">${evs.length?`<b>${evs.length}</b>event${evs.length>1?'s':''}${done?` · ${done} done`:''}`:''}</div>
     </div>
     ${evs.length?`<div class="jr-day-list">${evs.map(e=>`
-      <article class="jr-dcard${e.done?' done':''}" data-id="${e.id}">
+      <article class="jr-dcard k-shine${e.done?' done':''}" data-id="${e.id}">
         <div class="jr-dc-top">
           <div class="jr-dc-time${e.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="Change time">${e.event_time?e.event_time.slice(0,5):'All day'}</div>
           <div class="jr-dc-acts">
@@ -1627,7 +1722,7 @@ function renderDay(enter, dir){
         </div>
         <div class="jr-dc-body">
           <div class="jr-dc-title" onclick="editEventTitle(${e.id})" title="Rename">${esc(e.title)}</div>
-          <div class="jr-dc-tags"><span class="chip-lbl" onclick="editEventCategory(${e.id})">${e.category?esc(e.category):'+ category'}</span></div>
+          <div class="jr-dc-tags"><span class="chip-lbl${e.category?' '+jrMetal(e.category):''}" onclick="editEventCategory(${e.id})">${e.category?esc(e.category):'+ category'}</span></div>
           <div class="jr-dc-notes" onclick="editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ add notes'}</div>
         </div>
       </article>`).join('')}</div>`
@@ -1658,6 +1753,195 @@ async function jrOfferLocalEvents(){
   }catch(e){ toast('Could not copy: '+e.message); localStorage.removeItem(doneKey); }
 }
 
+// ---- struck-metal category badges (Odin's Keep's item labels) ----
+// The finish follows the words, not a lookup table, so a new category still gets a sensible one;
+// anything unrecognised gets a steady finish of its own from its name.
+function jrMetal(cat){
+  const c=(cat||'').toLowerCase();
+  const by=[[/bill|rent|pay|due|tax|loan/,'ruby'],[/staff|shift|meeting|team|call/,'sapphire'],[/promo|sale|special|event|party/,'gold'],
+    [/new|launch|open/,'emerald'],[/deliver|restock|stock|order|supplier/,'copper'],[/repair|service|maint|clean/,'gunmetal'],
+    [/rare|vip|birthday|anniv/,'amethyst']];
+  for(const [re,m] of by) if(re.test(c)) return 'jr-badge b-'+m;
+  const pool=['sapphire','emerald','amethyst','copper','gold','gunmetal'];
+  let h=0; for(const ch of c) h=(h*31+ch.charCodeAt(0))|0;
+  return 'jr-badge b-'+pool[Math.abs(h)%pool.length];
+}
+
+// ---- liquid glass bead (Odin's Keep's tab bar) ----
+// The chosen option sits in a glass bead. Press and slide (or press and hold) and the bead lifts off and
+// follows the finger, stretching with speed, the option under it swelling; let go and that option is
+// picked and the bead springs onto it. A plain tap is still a plain tap.
+// axis: 'x' or 'y' (the way the options are laid out). A bar with no active option (the month bar) shows
+// its bead only while held, and flashes it on a tap.
+function jrBead(bar, axis){
+  if(!bar) return;
+  const LIFT=230, SLOP=8;
+  const bead=document.createElement('span'); bead.className='jr-bead no-anim'; bead.setAttribute('aria-hidden','true');
+  bar.prepend(bead); bar.classList.add('jr-beadbar');
+  const items=()=>[...bar.querySelectorAll(':scope > button')].filter(b=>b.offsetWidth);
+  const box=b=>({x:b.offsetLeft, y:b.offsetTop, w:b.offsetWidth, h:b.offsetHeight});
+  const place=(x,y,w,h)=>{ bead.style.translate=`${x.toFixed(1)}px ${y.toFixed(1)}px`; bead.style.width=w.toFixed(1)+'px'; bead.style.height=h.toFixed(1)+'px'; };
+  let start=null, held=null, timer=0, swallow=0, ready=false, flashT=0;
+  function sync(){
+    if(held) return;
+    const a=items().find(b=>b.classList.contains('active'));
+    if(!a){ if(!flashT) bead.classList.remove('on'); return; }
+    const q=box(a); place(q.x,q.y,q.w,q.h); bead.classList.add('on');
+    if(!ready){ ready=true; requestAnimationFrame(()=>requestAnimationFrame(()=>bead.classList.remove('no-anim'))); }
+  }
+  const under=(x,y)=>items().find(b=>{ const r=b.getBoundingClientRect(); return axis==='x'?x>=r.left&&x<r.right:y>=r.top&&y<r.bottom; });
+  function follow(x,y){
+    const now=performance.now(), p=axis==='x'?x:y, dt=Math.max(1,now-held.t);
+    held.v=held.v*.5+((p-held.last)/dt*1000)*.5; held.last=p; held.t=now; held.x=x; held.y=y;
+    const u=under(x,y); items().forEach(b=>b.classList.toggle('bead-under', b===u));
+    const q=box(u||held.from), br=bar.getBoundingClientRect(), k=1.12+Math.min(.45,Math.abs(held.v)/2400);   // lifts a bit bigger, stretches with speed
+    if(axis==='x'){ const w=q.w*k; place(x-br.left-w/2, q.y-3, w, q.h+6); }
+    else { const h=q.h*k; place(q.x-3, y-br.top-h/2, q.w+6, h); }
+  }
+  function lift(){
+    if(!start || held) return;
+    held={from:start.b, v:0, last:axis==='x'?start.x:start.y, t:performance.now(), x:start.x, y:start.y};
+    try{ bar.setPointerCapture(start.id); }catch(_){}
+    if(!bead.classList.contains('on')){ const q=box(start.b); bead.classList.add('no-anim'); place(q.x,q.y,q.w,q.h); void bead.offsetWidth; bead.classList.remove('no-anim'); }
+    bead.classList.add('drag','on'); bar.classList.add('liquid');
+    if(navigator.vibrate) try{ navigator.vibrate(6); }catch(_){}
+    follow(start.x,start.y);
+  }
+  function drop(cancel){
+    clearTimeout(timer); start=null;
+    if(!held) return;
+    const u=cancel?null:under(held.x,held.y); held=null;
+    bead.classList.remove('drag'); bar.classList.remove('liquid'); items().forEach(b=>b.classList.remove('bead-under'));
+    if(u) u.click();                                   // the pick does what a tap on it would
+    swallow=Date.now();                                // …and the release itself isn't another tap
+    sync(); if(!items().some(b=>b.classList.contains('active'))) setTimeout(()=>{ if(!held) bead.classList.remove('on'); }, 260);
+  }
+  bar.addEventListener('pointerdown',e=>{
+    const b=e.target.closest('button'); if(!b || e.button>0 || b.parentElement!==bar) return;
+    start={x:e.clientX, y:e.clientY, b, id:e.pointerId}; clearTimeout(timer);
+    timer=setTimeout(lift, LIFT);
+  });
+  bar.addEventListener('pointermove',e=>{
+    if(held){ e.preventDefault(); follow(e.clientX,e.clientY); return; }
+    if(start && Math.hypot(e.clientX-start.x, e.clientY-start.y)>SLOP){ clearTimeout(timer); lift(); }   // sliding: lift at once
+  });
+  bar.addEventListener('pointerup',()=>drop(false));
+  bar.addEventListener('pointercancel',()=>drop(true));
+  bar.addEventListener('click',e=>{
+    if(Date.now()-swallow<350 && e.isTrusted){ e.stopPropagation(); e.preventDefault(); return; }
+    // no option stays chosen here (the month bar): a tap flashes the bead on what was tapped
+    const b=e.target.closest('button');
+    if(b && !items().some(x=>x.classList.contains('active')) && !K_REDUCED.matches){
+      const q=box(b); bead.classList.add('no-anim'); place(q.x,q.y,q.w,q.h); void bead.offsetWidth; bead.classList.remove('no-anim');
+      bead.classList.add('on','flash'); clearTimeout(flashT);
+      flashT=setTimeout(()=>{ flashT=0; bead.classList.remove('on','flash'); }, 380);
+    }
+  },true);
+  new MutationObserver(ms=>{ if(ms.some(m=>m.target!==bead)) requestAnimationFrame(sync); })
+    .observe(bar,{subtree:true,attributes:true,attributeFilter:['class']});
+  if(window.ResizeObserver) new ResizeObserver(()=>sync()).observe(bar);
+  if(document.fonts) document.fonts.ready.then(sync);
+  sync();
+}
+jrBead(document.getElementById('jr-viewtoggle'), 'y');
+jrBead(document.getElementById('jr-monthnav'), 'x');
+
+// ---- touch shine (Odin's Keep's tile sheen, for fingers too) ----
+// A soft highlight sits where the finger (or mouse) is on a glass surface, as if light caught it there.
+(function(){
+  let cur=null, offT=0;
+  const at=(el,e)=>{ const r=el.getBoundingClientRect(); el.style.setProperty('--mx',(e.clientX-r.left).toFixed(0)+'px'); el.style.setProperty('--my',(e.clientY-r.top).toFixed(0)+'px'); };
+  const on=(el,e)=>{ at(el,e); el.classList.add('shining'); };
+  addEventListener('pointerdown',e=>{ if(K_REDUCED.matches) return; const el=e.target.closest?.('.k-shine'); if(!el) return;
+    clearTimeout(offT); if(cur&&cur!==el) cur.classList.remove('shining'); cur=el; on(el,e); },{passive:true,capture:true});
+  addEventListener('pointermove',e=>{ if(K_REDUCED.matches) return;
+    if(e.pointerType==='mouse'){ const el=e.target.closest?.('.k-shine'); if(cur&&cur!==el) cur.classList.remove('shining'); cur=el; if(el) on(el,e); }
+    else if(cur) at(cur,e); },{passive:true});
+  const off=e=>{ if(e.pointerType==='mouse'||!cur) return; const el=cur; cur=null; offT=setTimeout(()=>el.classList.remove('shining'),220); };
+  addEventListener('pointerup',off,{passive:true}); addEventListener('pointercancel',off,{passive:true});
+})();
+
+// ---- drag an event to another day ----
+// Mouse: press on a title in a day square and drag. Touch: press and hold it (so swipes and taps still work),
+// then drag. The title follows the pointer, the day under it lights up, and letting go moves the event there.
+(function(){
+  const HOLD=320, SLOP=6;
+  let pend=null, drag=null, holdT=0;
+  const grid=()=>document.getElementById('jr-cal-grid');
+  // by position, not by what's on top: a long title running across a day belongs to the day it started on
+  const dayAt=(x,y)=>[...document.querySelectorAll('#jr-cal-grid .jr-cal-day')].find(d=>{ const r=d.getBoundingClientRect(); return x>=r.left&&x<r.right&&y>=r.top&&y<r.bottom; });
+  const isoOf=cell=>(cell?.getAttribute('onclick')||'').match(/'(\d{4}-\d{2}-\d{2})'/)?.[1]||null;
+  function begin(){
+    const {chip,x,y,id}=pend; pend=null;
+    if(JR_FROZEN){ toast('Server offline — changes are paused'); return; }
+    const ev=JOURNAL_EVENTS.find(e=>e.id===id); if(!ev) return;
+    const r=chip.getBoundingClientRect();
+    const ghost=chip.cloneNode(true); ghost.className=chip.className+' jr-ev-ghost'; ghost.removeAttribute('data-id');
+    const cs=getComputedStyle(chip);                               // out of its square it would lose the phone sizes
+    Object.assign(ghost.style,{left:r.left+'px', top:r.top+'px', width:r.width+'px', maxWidth:'none',
+      fontSize:cs.fontSize, lineHeight:cs.lineHeight, padding:cs.padding, letterSpacing:cs.letterSpacing});
+    document.body.appendChild(ghost);
+    chip.classList.add('dragging'); document.body.classList.add('jr-dragging');
+    drag={ev, chip, ghost, gx:x-r.left, gy:y-r.top, from:ev.event_date, over:null};
+    JR_EVDRAG=drag;
+    if(navigator.vibrate) try{ navigator.vibrate(10); }catch(_){}
+    move(x,y);
+  }
+  function move(x,y){
+    drag.ghost.style.translate=`${(x-drag.gx-parseFloat(drag.ghost.style.left)).toFixed(1)}px ${(y-drag.gy-parseFloat(drag.ghost.style.top)).toFixed(1)}px`;
+    const cell=dayAt(x,y);
+    if(cell!==drag.over){ drag.over?.classList.remove('drop-target'); drag.over=cell; cell?.classList.add('drop-target'); }
+  }
+  async function end(cancel){
+    const d=drag; drag=null; JR_EVDRAG=null; JR_GESTURE_AT=Date.now();
+    document.body.classList.remove('jr-dragging'); d.over?.classList.remove('drop-target');
+    const to=cancel?null:isoOf(d.over);
+    if(!to || to===d.from){                                        // nowhere new: the title flies back home
+      d.chip.classList.remove('dragging');
+      const r=d.chip.getBoundingClientRect();
+      if(d.ghost.animate && !K_REDUCED.matches){
+        await d.ghost.animate([{translate:d.ghost.style.translate},{translate:`${r.left-parseFloat(d.ghost.style.left)}px ${r.top-parseFloat(d.ghost.style.top)}px`, opacity:.4}],
+          {duration:260, easing:'cubic-bezier(.2,.9,.25,1)'}).finished.catch(()=>{});
+      }
+      d.ghost.remove(); return;
+    }
+    d.ghost.remove();
+    const ev=d.ev, before=ev.event_date;
+    ev.event_date=to;                                              // move it now; the backend confirms behind it
+    calSelect(to);
+    requestAnimationFrame(()=>document.querySelector(`#jr-cal-grid .jr-ev[data-id="${ev.id}"]`)?.classList.add('landed'));
+    const d2=new Date(to+'T00:00:00');
+    try{
+      const upd=await api('/api/journal/events/'+ev.id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_date:to})});
+      const i=JOURNAL_EVENTS.findIndex(x=>x.id===ev.id); if(i>=0) JOURNAL_EVENTS[i]=upd;
+      toast(`Moved to ${DAY_NAMES[d2.getDay()].slice(0,3)} ${d2.getDate()} ${MONTH_NAMES[d2.getMonth()].slice(0,3)}`);
+    }catch(e){
+      ev.event_date=before; jrRender();
+      if(!(e instanceof JrOffline)) toast('Could not move: '+e.message);
+    }
+  }
+  addEventListener('pointerdown',e=>{
+    if(e.button>0 || JR_VIEW!=='calendar' || drag) return;
+    const chip=e.target.closest?.('#jr-cal-grid .jr-ev[data-id]'); if(!chip || chip.hidden) return;
+    pend={chip, id:+chip.dataset.id, x:e.clientX, y:e.clientY, touch:e.pointerType!=='mouse'};
+    clearTimeout(holdT);
+    if(pend.touch) holdT=setTimeout(()=>{ if(pend) begin(); }, HOLD);
+  },true);
+  addEventListener('pointermove',e=>{
+    if(drag){ e.preventDefault(); move(e.clientX,e.clientY); return; }
+    if(!pend) return;
+    const far=Math.hypot(e.clientX-pend.x, e.clientY-pend.y)>SLOP;
+    if(far && pend.touch){ clearTimeout(holdT); pend=null; return; }   // moved before the hold: it's a swipe
+    if(far){ pend.x=e.clientX; pend.y=e.clientY; begin(); }           // mouse: dragging starts it
+  },{passive:false});
+  addEventListener('pointerup',()=>{ clearTimeout(holdT); pend=null; if(drag) end(false); });
+  addEventListener('pointercancel',()=>{ clearTimeout(holdT); pend=null; if(drag) end(true); });
+  // a touch drag must not scroll or pull-to-refresh the page underneath
+  addEventListener('touchmove',e=>{ if(drag && e.cancelable) e.preventDefault(); },{passive:false});
+  addEventListener('contextmenu',e=>{ if(drag || pend) e.preventDefault(); });
+  addEventListener('keydown',e=>{ if(drag && e.key==='Escape') end(true); });
+})();
+
 (async function boot(){
   await jrResolveApi();          // which backend, before anything is fetched
   checkAuth();
@@ -1669,7 +1953,7 @@ async function jrOfferLocalEvents(){
 (function(){
   let busy=false;
   async function sync(){
-    if(busy || document.hidden || document.querySelector('.modal-ov,#pin-ov')) return;
+    if(busy || JR_EVDRAG || document.hidden || document.querySelector('.modal-ov,#pin-ov')) return;
     busy=true;
     try{
       const fresh=await jrFetchEvents();
