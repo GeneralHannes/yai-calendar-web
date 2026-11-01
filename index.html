@@ -1098,7 +1098,20 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
       -webkit-mask-image:linear-gradient(transparent, #000 .6rem, #000 calc(100% - 1.4rem), transparent);
               mask-image:linear-gradient(transparent, #000 .6rem, #000 calc(100% - 1.4rem), transparent); }
     .jr-rail .jr-add { margin-top:.2rem; }
+    /* the phone's floating glass, on desktop: the side menu is a glass panel standing off the edges rather than
+       a flat strip, Calendar / Agenda a glass pill inside it like the phone's bar, and it rises in the same way */
+    .jr-rail { margin:.7rem 0 .7rem .7rem; margin-left:max(.7rem,env(safe-area-inset-left)); padding:.6rem;
+      border:1px solid var(--glass-line); border-radius:22px;
+      background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+      box-shadow:var(--glass-edge),var(--glass-lift); animation:jrPanelRise .55s var(--k-smooth) .05s both; }
+    .jr-rail .jr-viewtoggle { padding:.3rem; border-radius:16px; gap:.15rem;
+      background:color-mix(in srgb,var(--k-bg0) 40%,transparent); border:1px solid var(--glass-line); box-shadow:inset 0 1px 3px rgba(0,0,0,.3); }
+    .jr-rail .jr-vt-btn { border-radius:12px; }
+    .jr-viewtoggle .jr-bead { border-radius:12px; }
+    .jr-up-head { background:linear-gradient(color-mix(in srgb,var(--k-bg2) 92%,transparent) 70%, transparent); }
+    main > .jr-monthnav { animation:jrBarRise .55s var(--k-smooth) .12s both; }
   }
+  @keyframes jrPanelRise { from { opacity:0; transform:translateX(-14px) scale(.98); } }
   .jr-up-head { position:sticky; top:0; z-index:1; padding:.55rem .2rem .3rem; font-size:.68rem; font-weight:800; letter-spacing:.12em;
     text-transform:uppercase; color:var(--muted); background:linear-gradient(var(--k-bg0) 70%, transparent); }
   .jr-up-empty { padding:.4rem .2rem; font-size:.85rem; color:var(--muted); }
