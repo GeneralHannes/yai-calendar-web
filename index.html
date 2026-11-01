@@ -1005,30 +1005,6 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   #jr-agenda.vin-u, #jr-calendar.vin-u { animation:jrViewU var(--k-t) var(--k-smooth) both; }
   #jr-agenda.vin-d, #jr-calendar.vin-d { animation:jrViewD var(--k-t) var(--k-smooth) both; }
 
-  /* ================= struck-metal category badges (Odin's Keep's item labels) =================
-     A bevel (light top edge, dark bottom), a glow in its own hue, and a sheen that sweeps across now and
-     then. The word is always written on it, so the meaning never rests on the colour. */
-  .chip-lbl.jr-badge { position:relative; isolation:isolate; overflow:hidden; display:inline-flex; align-items:center;
-    padding:.14rem .5rem .13rem; border-radius:6px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
-    color:#fff; text-shadow:0 1px 0 rgba(0,0,0,.4);
-    background:var(--b-metal); background-size:200% 200%; border:1px solid var(--b-edge);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(0,0,0,.35), 0 0 12px -3px var(--b-glow), 0 1px 2px rgba(0,0,0,.45); }
-  .chip-lbl.jr-badge::after { content:""; position:absolute; inset:-1px; z-index:-1; pointer-events:none;
-    background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.6) 48%,rgba(255,255,255,.15) 55%,transparent 70%);
-    transform:translateX(-130%); animation:kSheen 4.2s cubic-bezier(.4,0,.2,1) 4; }
-  .jr-dcard:nth-child(2n) .chip-lbl.jr-badge::after { animation-delay:1.3s; }
-  .jr-dcard:nth-child(3n) .chip-lbl.jr-badge::after { animation-delay:2.4s; }
-  @keyframes kSheen { 0%,62% { transform:translateX(-130%); } 100% { transform:translateX(130%); } }
-  .b-ruby     { --b-metal:linear-gradient(135deg,#ff7485 0%,#d01839 38%,#ff9aa5 55%,#8e0c24 100%); --b-edge:#ff8fa0; --b-glow:rgba(255,60,90,.75); }
-  .b-amethyst { --b-metal:linear-gradient(135deg,#d6b3ff 0%,#7a3fe0 40%,#e5ccff 56%,#4a1f9e 100%); --b-edge:#caa6ff; --b-glow:rgba(160,100,255,.7); }
-  .b-sapphire { --b-metal:linear-gradient(135deg,#a9ccff 0%,#2f64d8 40%,#c7ddff 56%,#173c96 100%); --b-edge:#9cc0ff; --b-glow:rgba(80,140,255,.7); }
-  .b-gold     { --b-metal:linear-gradient(135deg,#fff3b0 0%,#d2a022 38%,#ffe98a 55%,#8f6610 100%); --b-edge:#ffe38a; --b-glow:rgba(240,195,60,.7); }
-  .chip-lbl.b-gold { color:#3a2900; text-shadow:0 1px 0 rgba(255,255,255,.45); }
-  .b-emerald  { --b-metal:linear-gradient(135deg,#9dffd2 0%,#12a86a 40%,#c3ffe4 56%,#07613c 100%); --b-edge:#8ff5c6; --b-glow:rgba(40,220,140,.65); }
-  .b-gunmetal { --b-metal:linear-gradient(135deg,#dfe5ee 0%,#6a7384 40%,#f1f4f8 56%,#3a404c 100%); --b-edge:#c9d1dc; --b-glow:rgba(170,185,210,.45); }
-  .b-copper   { --b-metal:linear-gradient(135deg,#ffcfa8 0%,#c1611f 40%,#ffdcc0 56%,#7a3a10 100%); --b-edge:#ffc59a; --b-glow:rgba(240,130,60,.6); }
-  .jr-dcard.done .chip-lbl.jr-badge { filter:saturate(.25); opacity:.7; }
-
   /* ================= the big day number: struck gold with a glint (Odin's Keep's metal text) ================= */
   @supports ((-webkit-background-clip:text) or (background-clip:text)) {
     .jr-day-big { background-image:linear-gradient(100deg,#b8901f 0%,#f3d36b 28%,#fff6cf 44%,#e9c14a 60%,#a47c12 80%,#e6c35a 100%);
@@ -1416,9 +1392,9 @@ function renderAgenda(){
             <div class="jr-cell jr-title" style="flex-direction:column;align-items:flex-start;white-space:normal">
               <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
               <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ note'}</div>
-              <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl ${jrMetal(e.category)}">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
+              <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
             </div>
-            <div class="jr-cell jr-cat" onclick="editEventCategory(${e.id})">${e.category?`<span class="chip-lbl ${jrMetal(e.category)}">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
+            <div class="jr-cell jr-cat" onclick="editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
             <div class="jr-cell jr-check${e.done?' done':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}">${e.done?'✓':'○'}</div>
             <div class="jr-cell jr-del" onclick="deleteEventRow(${e.id})" title="Delete">✕</div>
           </div>`).join('')}
@@ -1753,7 +1729,7 @@ function renderDay(enter, dir){
         </div>
         <div class="jr-dc-body">
           <div class="jr-dc-title" onclick="editEventTitle(${e.id})" title="Rename">${esc(e.title)}</div>
-          <div class="jr-dc-tags"><span class="chip-lbl${e.category?' '+jrMetal(e.category):''}" onclick="editEventCategory(${e.id})">${e.category?esc(e.category):'+ category'}</span></div>
+          <div class="jr-dc-tags"><span class="chip-lbl" onclick="editEventCategory(${e.id})">${e.category?esc(e.category):'+ category'}</span></div>
           <div class="jr-dc-notes" onclick="editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ add notes'}</div>
         </div>
       </article>`).join('')}</div>`
@@ -1782,20 +1758,6 @@ async function jrOfferLocalEvents(){
     toast(`Copied ${r.imported} event${r.imported===1?'':'s'}`);
     JOURNAL_EVENTS=await jrFetchEvents(); jrRender();
   }catch(e){ toast('Could not copy: '+e.message); localStorage.removeItem(doneKey); }
-}
-
-// ---- struck-metal category badges (Odin's Keep's item labels) ----
-// The finish follows the words, not a lookup table, so a new category still gets a sensible one;
-// anything unrecognised gets a steady finish of its own from its name.
-function jrMetal(cat){
-  const c=(cat||'').toLowerCase();
-  const by=[[/bill|rent|pay|due|tax|loan/,'ruby'],[/staff|shift|meeting|team|call/,'sapphire'],[/promo|sale|special|event|party/,'gold'],
-    [/new|launch|open/,'emerald'],[/deliver|restock|stock|order|supplier/,'copper'],[/repair|service|maint|clean/,'gunmetal'],
-    [/rare|vip|birthday|anniv/,'amethyst']];
-  for(const [re,m] of by) if(re.test(c)) return 'jr-badge b-'+m;
-  const pool=['sapphire','emerald','amethyst','copper','gold','gunmetal'];
-  let h=0; for(const ch of c) h=(h*31+ch.charCodeAt(0))|0;
-  return 'jr-badge b-'+pool[Math.abs(h)%pool.length];
 }
 
 // ---- liquid glass bead (Odin's Keep's tab bar) ----
