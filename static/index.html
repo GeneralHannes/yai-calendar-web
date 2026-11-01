@@ -1022,7 +1022,7 @@ function askToken(){
   ov.innerHTML='<div style="width:100%;max-width:17rem;text-align:center">'
     +'<svg viewBox="0 0 24 24" style="width:2.6rem;height:2.6rem;margin-bottom:.5rem" aria-hidden="true">'
     +'<circle cx="12" cy="12" r="9" fill="none" stroke="#D4AF37" stroke-width="1.7"/><path d="M4 12h16" stroke="#D4AF37" stroke-width="1.7"/></svg>'
-    +'<h2 style="margin:0 0 1rem;font-size:1.15rem;font-weight:700">Enter shop PIN</h2>'
+    +'<h2 style="margin:0 0 1rem;font-size:1.15rem;font-weight:700">Enter PIN</h2>'
     +'<input id="pin-inp" type="tel" inputmode="numeric" autocomplete="off" placeholder="PIN" '
     +'style="font-size:1.5rem;text-align:center;letter-spacing:.35em">'
     +'<button class="act" id="pin-go" style="margin-top:.75rem;width:100%">Unlock</button>'
@@ -1485,6 +1485,23 @@ function renderDay(enter, dir){
 
 checkAuth();
 loadJournal();
+// Everyone shares one Journal: every 10s, and whenever the app comes back to the front, fetch the events
+// again and redraw only if someone changed something. Never mid-form, and never behind the PIN screen.
+(function(){
+  let busy=false;
+  async function sync(){
+    if(busy || document.hidden || document.querySelector('.modal-ov,#pin-ov')) return;
+    busy=true;
+    try{
+      const fresh=await api('/api/journal/events');
+      if(JSON.stringify(fresh)!==JSON.stringify(JOURNAL_EVENTS)){ JOURNAL_EVENTS=fresh; jrRender(); }
+    }catch(_){}
+    busy=false;
+  }
+  setInterval(sync, 10000);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) sync(); });
+  addEventListener('focus', sync);
+})();
 </script>
 <script>/* offline app shell (static/sw.js): registers only on a trusted certificate; a new version shows a tap-to-reload pill */
 if("serviceWorker" in navigator&&window.isSecureContext&&!/[?&]nosw\b/.test(location.search)){
