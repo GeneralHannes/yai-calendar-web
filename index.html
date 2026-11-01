@@ -2274,28 +2274,6 @@ async function jrOfferReminders(){
     <button class="mini" data-later>Later</button><button class="act" data-on>Turn on</button>`);
 }
 
-// TEMPORARY diagnostic for the iPhone home-screen layout: hold the year (in the month heading) for a second.
-(function(){
-  let t=0;
-  const show=()=>{
-    const r=s=>{ const e=document.querySelector(s); return e?Math.round(e.getBoundingClientRect().bottom):'-'; };
-    const p=document.createElement('div'); p.style.cssText='position:fixed;top:0;bottom:0;width:1px;visibility:hidden'; document.documentElement.appendChild(p);
-    const framed=Math.round(p.getBoundingClientRect().height); p.remove();
-    const cs=getComputedStyle(document.documentElement), sw=document.querySelector('script:not([src])');
-    const lines=[`shell ${(window.__yaiShell||'?')}`, `standalone ${!!navigator.standalone}`, `screen ${screen.width}x${screen.height}`,
-      `inner ${innerWidth}x${innerHeight}`, `visual ${Math.round(visualViewport?.height||0)}`, `html client ${document.documentElement.clientHeight}`,
-      `fixed frame ${framed}`, `--vgap ${cs.getPropertyValue('--vgap')}`, `classes ${document.documentElement.className}`,
-      `body bottom ${r('body')}  bars bottom ${r('.jr-rail')}  panel bottom ${r('.jr-bottom')}`];
-    toast(''); const b=document.createElement('pre'); b.style.cssText='position:fixed;z-index:999;left:8px;right:8px;top:40%;margin:0;padding:10px;border-radius:12px;background:#000d;color:#9f9;font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap';
-    b.textContent=lines.join('\n'); b.onclick=()=>b.remove(); document.body.appendChild(b);
-  };
-  addEventListener('pointerdown',e=>{ if(e.target.closest?.('#jr-cal-year')){ clearTimeout(t); t=setTimeout(show,900); } },true);
-  if(navigator.standalone && document.documentElement.classList.contains('ios-phone'))
-    setTimeout(()=>{ show(); setTimeout(()=>document.querySelector('pre[style*="ui-monospace"]')?.remove(), 15000); }, 2500);
-  addEventListener('pointerup',()=>clearTimeout(t),true); addEventListener('pointercancel',()=>clearTimeout(t),true);
-})();
-navigator.serviceWorker?.getRegistration?.().then(r=>{ const u=r?.active?.scriptURL; if(u) fetch(u).then(x=>x.text()).then(t=>{ window.__yaiShell=(t.match(/SHELL = "([^"]+)"/)||[])[1]; }).catch(()=>{}); });
-
 (async function boot(){
   await jrResolveApi();          // which backend, before anything is fetched
   // opened from a reminder (or a link) on a particular day
