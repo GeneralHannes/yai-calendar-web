@@ -1051,10 +1051,6 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-rail .jr-monthnav { margin-left:auto; animation:none; gap:.25rem; flex:none; }
     .jr-monthnav .jr-mn-btn { width:2.5rem; }
     .jr-monthnav .jr-mn-today { padding:0 1rem; }
-    .jr-monthnav .jr-add { margin:0 0 0 .15rem; width:2.6rem; height:2.6rem; padding:0; border-radius:999px; flex:none;
-      display:grid; place-items:center; color:var(--k-on-act); }
-    .jr-monthnav .jr-add svg { width:22px; height:22px; }
-    body:not(.jr-cal-view) .jr-monthnav > button:not(.jr-add) { display:none; }   /* Agenda: just + */
     /* the month and the day can trade places (jrSwapPanels) */
     body.jr-dayfirst .jr-bottom { order:-1; }
     .jr-day-headrow .jr-swap { display:grid; }
@@ -1064,6 +1060,13 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     #jr-frozen-bar { max-width:calc(100vw - 1rem); }
   }
   @keyframes jrBarRise { from { opacity:0; transform:translateY(18px) scale(.96); } }
+  /* ‹ Today › + : Add event inside the month bar (jrPhoneBar puts it there on phones held upright and on desktop) */
+  .jr-monthnav .jr-add { margin:0 0 0 .15rem; width:2.6rem; height:2.6rem; padding:0; border-radius:999px; flex:none;
+    display:grid; place-items:center; color:var(--k-on-act); }
+  .jr-monthnav .jr-add svg { width:22px; height:22px; }
+  .jr-monthnav .jr-add span { display:none; }
+  body:not(.jr-cal-view) .jr-monthnav > button:not(.jr-add) { display:none; }   /* Agenda: just + */
+  main > .jr-monthnav { margin-top:.75rem; }                                       /* desktop: under the open view */
   .jr-swap { display:none; flex:none; margin-left:auto; place-items:center; width:2.3rem; height:2.3rem; border-radius:999px; cursor:pointer;
     color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 50%,transparent); border:1px solid var(--glass-line); box-shadow:var(--glass-edge);
     transition:color .2s, background-color .2s, rotate .45s var(--ease-spring), scale .15s; }
@@ -1968,19 +1971,56 @@ function jrBead(bar){
 jrBead(document.getElementById('jr-viewtoggle'));
 jrBead(document.getElementById('jr-monthnav'));
 
-// Phones held upright: the month bar and Add event become one pill at the bottom right (‹ Today › +), next to
-// Calendar / Agenda. The two elements are moved into place, and put back for desktop and phones on their side,
-// whenever the screen changes. Moving them keeps their handlers and the bead.
+// The month bar and Add event as one pill, ‹ Today › +:
+//   phones held upright — at the bottom right, next to Calendar / Agenda (in the bar the side menu becomes);
+//   desktop — under whichever view is open, so + is there in Agenda too (the arrows step aside there);
+//   phones on their side and short windows — as they were: month bar under the month, + in the side menu.
+// The two elements are moved into place whenever the screen changes; moving keeps their handlers and the bead.
 (function jrPhoneBar(){
-  const mq=matchMedia('(max-width:760px) and (orientation:portrait)');
-  const rail=document.querySelector('.jr-rail'), nav=document.getElementById('jr-monthnav'), add=rail.querySelector('.jr-add');
+  const phone=matchMedia('(max-width:760px) and (orientation:portrait)'), desk=matchMedia('(min-width:761px) and (min-height:521px)');
+  const rail=document.querySelector('.jr-rail'), main=document.querySelector('main'), nav=document.getElementById('jr-monthnav'), add=rail.querySelector('.jr-add');
   const navHome=nav.parentElement, navNext=nav.nextSibling;
   const place=()=>{
-    if(mq.matches){ if(nav.parentElement!==rail){ rail.appendChild(nav); nav.appendChild(add); } }
-    else if(nav.parentElement===rail){ navHome.insertBefore(nav, navNext); rail.appendChild(add); }
+    if(phone.matches){ if(nav.parentElement!==rail) rail.appendChild(nav); if(add.parentElement!==nav) nav.appendChild(add); }
+    else if(desk.matches){ if(nav.parentElement!==main) main.appendChild(nav); if(add.parentElement!==nav) nav.appendChild(add); }
+    else { if(nav.parentElement!==navHome) navHome.insertBefore(nav, navNext); if(add.parentElement!==rail) rail.appendChild(add); }
   };
   place();
-  mq.addEventListener ? mq.addEventListener('change', place) : mq.addListener(place);
+  for(const mq of [phone,desk]) mq.addEventListener ? mq.addEventListener('change', place) : mq.addListener(place);
+})();
+
+// ---- trackpad swipe: the phone's swipe, on desktop ----
+// A two-finger sideways swipe over the month changes month, over the day panel steps a day. What's under the
+// fingers follows them, the same pull as on a phone, then goes or springs back. Up/down scrolling is left alone.
+(function(){
+  let acc=0, el=null, day=false, idleT=0, quietUntil=0;
+  const settle=(spring)=>{
+    clearTimeout(idleT);
+    if(el){
+      const x=el;
+      x.style.transition=spring&&!K_REDUCED.matches?'transform .3s var(--k-smooth), opacity .3s ease':'';
+      x.style.transform=''; x.style.opacity='';
+      if(spring) setTimeout(()=>{ x.style.transition=''; },320);
+    }
+    el=null; acc=0;
+  };
+  addEventListener('wheel',e=>{
+    if(JR_VIEW!=='calendar' || e.ctrlKey || document.querySelector('.modal-ov')) return;   // ctrl+wheel is pinch-zoom
+    if(Math.abs(e.deltaX)<=Math.abs(e.deltaY)) return;
+    const top=e.target.closest?.('.jr-top'), bot=!top && e.target.closest?.('.jr-bottom'); if(!top && !bot) return;
+    e.preventDefault();                                   // no browser back/forward swipe
+    if(Date.now()<quietUntil) return;                     // the momentum tail of a swipe that already went
+    if(!el){ day=!!bot; el=top?$('#jr-cal-grid'):bot.querySelector('.jr-day-list,.jr-day-empty'); }
+    acc-=e.deltaX*(e.deltaMode===1?16:1);                 // the content moves with the fingers
+    if(el && !K_REDUCED.matches){ el.style.transition='none'; el.style.transform=`translateX(${(acc*.45).toFixed(1)}px)`;
+      el.style.opacity=String(Math.max(.35,1-Math.abs(acc)/400)); }
+    if(Math.abs(acc)>120){
+      const dir=acc<0?1:-1; settle(false); quietUntil=Date.now()+550;
+      if(day) calShiftDay(dir); else calShiftMonth(dir);
+      return;
+    }
+    clearTimeout(idleT); idleT=setTimeout(()=>settle(true), 160);   // fingers lifted short of it: spring back
+  },{passive:false});
 })();
 
 // ---- touch shine (Odin's Keep's tile sheen, for fingers too) ----
