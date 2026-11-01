@@ -960,9 +960,14 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-ev-t { font-weight:700; font-variant-numeric:tabular-nums; color:color-mix(in srgb,var(--accent) 70%,var(--k-hi)); margin-right:.3em; }
   .jr-ev.done .jr-ev-t { color:inherit; }
   @container (max-width:74px) {
-    /* phones: slimmer rows so a square holds three titles, not two */
+    /* phones: big enough to read at arm's length — larger, bolder, bright text on a stronger fill with a fine
+       edge — while the rows stay tight enough that a square still holds a few */
     .jr-ev, .jr-preview.tight .jr-ev { display:block; white-space:nowrap; -webkit-line-clamp:unset; overflow-wrap:normal; hyphens:manual;
-      font-size:.6rem; line-height:1.25; padding:0 3px 0 3px; }
+      font-size:.69rem; font-weight:650; line-height:1.22; letter-spacing:-.01em; padding:1px 4px 1px 4px; border-radius:4px;
+      color:var(--k-hi); background:color-mix(in srgb,var(--k-act) 44%,var(--k-bg2));
+      box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k-hi) 10%,transparent), 0 1px 3px rgba(0,0,0,.3); }
+    .jr-ev.done { color:var(--muted); background:color-mix(in srgb,var(--muted) 16%,var(--k-bg2)); }
+    .jr-ev-t { color:color-mix(in srgb,var(--accent) 45%,var(--k-hi)); }
     .jr-ev.wrap { white-space:normal; overflow-wrap:anywhere; }
     .jr-preview { gap:1px; }
     .jr-daynum { font-size:.82rem !important; min-width:1.3rem !important; height:1.3rem !important; }
