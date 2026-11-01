@@ -1051,12 +1051,17 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-rail .jr-viewtoggle { flex-direction:row; gap:.1rem; padding:.3rem; border-radius:999px;
       border:1px solid var(--glass-line); background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
       box-shadow:var(--glass-edge),var(--glass-lift); }
-    .jr-rail .jr-vt-btn { width:3rem; height:2.6rem; padding:0; justify-content:center; border-radius:999px; }
-    .jr-rail .jr-vt-btn svg { width:21px; height:21px; }
+    /* thumb-sized: ~50px tall (Apple's 44pt and then some), bigger icons and Today */
+    .jr-rail { left:max(.45rem,env(safe-area-inset-left)); right:max(.45rem,env(safe-area-inset-right)); gap:.4rem; }
+    .jr-rail .jr-vt-btn { width:3.2rem; height:3.1rem; padding:0; justify-content:center; border-radius:999px; }
+    .jr-rail .jr-vt-btn svg { width:24px; height:24px; }
     .jr-viewtoggle .jr-bead { border-radius:999px; }
     .jr-rail .jr-monthnav { margin-left:auto; animation:none; gap:.25rem; flex:none; }
-    .jr-monthnav .jr-mn-btn { width:2.5rem; }
-    .jr-monthnav .jr-mn-today { padding:0 1rem; }
+    .jr-monthnav .jr-mn-btn { width:2.6rem; height:3.1rem; }
+    .jr-monthnav .jr-mn-btn svg { width:23px; height:23px; }
+    .jr-monthnav .jr-mn-today { height:3.1rem; padding:0 .95rem; font-size:1.02rem; }
+    .jr-rail .jr-monthnav .jr-add { width:3.1rem; height:3.1rem; }
+    .jr-rail .jr-monthnav .jr-add svg { width:25px; height:25px; }
     /* the month and the day can trade places (jrSwapPanels) */
     body.jr-dayfirst .jr-bottom { order:-1; }
     .jr-day-headrow .jr-swap { display:grid; }
@@ -1070,9 +1075,9 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     body, html.ios-app body { min-height:0; }
     #jr-calendar, .jr-top, .jr-bottom, .jr-rail { touch-action:none; }
     #jr-agenda { touch-action:pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
-    main { padding:.6rem .6rem calc(4rem + max(.6rem,env(safe-area-inset-bottom))); }
+    main { padding:.6rem .6rem calc(4.5rem + max(.6rem,env(safe-area-inset-bottom))); }
     #jr-agenda { padding-bottom:1rem; }
-    #toast { bottom:calc(4.4rem + env(safe-area-inset-bottom)); }
+    #toast { bottom:calc(5rem + env(safe-area-inset-bottom)); }
     #jr-frozen-bar { max-width:calc(100vw - 1rem); }
   }
   @keyframes jrBarRise { from { opacity:0; transform:translateY(18px) scale(.96); } }
@@ -1091,9 +1096,10 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   body.jr-dayfirst .jr-swap { rotate:180deg; color:var(--accent); }
   /* very narrow phones: the same line, a little tighter */
   @media (max-width:359px) and (orientation:portrait) {
-    .jr-rail .jr-vt-btn { width:2.5rem; }
+    .jr-rail .jr-vt-btn { width:2.7rem; }
     .jr-monthnav .jr-mn-btn { width:2.2rem; }
-    .jr-monthnav .jr-mn-today { padding:0 .7rem; }
+    .jr-monthnav .jr-mn-today { padding:0 .6rem; font-size:.95rem; }
+    .jr-rail .jr-monthnav .jr-add { width:2.9rem; height:2.9rem; }
   }
 
   /* ================= desktop: "Coming up" in the side menu (script: jrRenderUpNext) =================
@@ -1134,7 +1140,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-remind-txt b { font-size:.92rem; }
   .jr-remind-txt span { font-size:.78rem; color:var(--muted); line-height:1.3; }
   #jr-remind button { flex:none; border-radius:999px; padding:.5rem .85rem; }
-  @media (max-width:760px) and (orientation:portrait) { #jr-remind { bottom:calc(4.5rem + max(.6rem,env(safe-area-inset-bottom))); } }
+  @media (max-width:760px) and (orientation:portrait) { #jr-remind { bottom:calc(5rem + max(.6rem,env(safe-area-inset-bottom))); } }
   .jr-up-head { position:sticky; top:0; z-index:1; padding:.55rem .2rem .3rem; font-size:.68rem; font-weight:800; letter-spacing:.12em;
     text-transform:uppercase; color:var(--muted); background:linear-gradient(var(--k-bg0) 70%, transparent); }
   .jr-up-empty { padding:.4rem .2rem; font-size:.85rem; color:var(--muted); }
