@@ -1,6 +1,6 @@
 {
-  "name": "Odin's Journal",
-  "short_name": "Journal",
+  "name": "Yai Calendar",
+  "short_name": "Yai Calendar",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

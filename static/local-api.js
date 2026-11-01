@@ -53,8 +53,9 @@
 
   window.fetch = async function (input, init) {
     const url = typeof input === "string" ? input : input.url;
-    const path = new URL(url, location.href).pathname;
-    if (!path.startsWith("/api/") || (await hasServer()) === "server") return real(input, init);
+    const u = new URL(url, location.href), path = u.pathname;
+    // a backend at another address (JR_API in index.html) is always asked for real
+    if (u.origin !== location.origin || !path.startsWith("/api/") || (await hasServer()) === "server") return real(input, init);
     let body = {};
     try { body = init && init.body ? JSON.parse(init.body) : {}; } catch (_) {}
     return local(((init && init.method) || "GET").toUpperCase(), path, body);

@@ -13,10 +13,10 @@
 <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Odin's Journal">
-<title>Odin&rsquo;s Journal</title>
+<meta name="apple-mobile-web-app-title" content="Yai Calendar">
+<title>Yai Calendar</title>
 <!--
-  Odin's Journal — future planned events (deliveries, bills, staff schedule,
+  Yai Calendar (was Odin's Journal) — future planned events (deliveries, bills, staff schedule,
   promotions). Its own app in its own space on purpose: separate from Odin's
   Vault's admin/inventory workflow, so it can be opened, bookmarked and used
   on its own without any of Vault's tab-switching machinery. Reads/writes
@@ -901,6 +901,22 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   @keyframes jrAway { 0%,100% { box-shadow:var(--glass-edge),0 0 0 0 rgba(212,175,55,0); color:var(--ink); }
     50% { box-shadow:var(--glass-edge),0 0 0 3px rgba(212,175,55,.22),0 0 16px 2px rgba(212,175,55,.3); color:var(--gold); } }
   .jr-mn-today.away { animation:jrAway 2.4s ease-in-out infinite; }
+
+  /* ---- frozen: the backend can't be reached, the last saved copy is showing, read-only ---- */
+  #jr-frozen-bar { position:fixed; z-index:30; left:50%; top:calc(.5rem + env(safe-area-inset-top)); transform:translateX(-50%);
+    max-width:calc(100vw - 1.5rem); padding:.45rem .9rem; border-radius:999px; font-size:.8rem; line-height:1.3; text-align:center;
+    color:var(--ink); background:color-mix(in srgb,var(--k-bg2) 88%,transparent);
+    -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+    border:1px solid color-mix(in srgb,var(--gold) 55%,transparent); box-shadow:var(--glass-lift);
+    animation:jrBarDrop .4s var(--k-smooth) both; }
+  #jr-frozen-bar b { color:var(--gold); }
+  #jr-frozen-bar.leaving { animation:jrBarDrop .25s var(--k-exit) reverse both; }
+  @keyframes jrBarDrop { from { opacity:0; transform:translate(-50%,-12px); } }
+  body.jr-frozen .jr-add { opacity:.45; filter:saturate(.3); }
+  body.jr-frozen .jr-dc-acts, body.jr-frozen .jr-dc-tags .chip-lbl, body.jr-frozen .jr-cell.jr-check,
+  body.jr-frozen .jr-cell.jr-del { opacity:.4; pointer-events:none; }
+  body.jr-frozen .jr-dc-title, body.jr-frozen .jr-dc-time, body.jr-frozen .jr-dc-notes { pointer-events:none; }
+  body.jr-frozen .jr-dcard { border-top-style:dashed; }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
@@ -1007,12 +1023,74 @@ if(TOKEN){ try{ localStorage.setItem('sk_token', TOKEN); }catch(_){} }
 
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
 
+// ---- where the data lives: ONE setting, so the backend can be swapped ----
+// JR_API is the backend's address ('' = the server this page came from, or on a static host with no
+// server, this device only). It comes from, in order:
+//   1. ?api=https://… in the link (remembered on this device; ?api=reset forgets it),
+//   2. static/config.json  {"api": "https://…"}  — what `bun run public` writes for the GitHub site,
+//   3. nothing: ''.
+let JR_API='';
+async function jrResolveApi(){
+  try{
+    const q=new URLSearchParams(location.search).get('api');
+    if(q==='reset') localStorage.removeItem('journal_api');
+    else if(q) localStorage.setItem('journal_api', q.replace(/\/+$/,''));
+    const kept=localStorage.getItem('journal_api');
+    if(kept){ JR_API=kept; return; }
+  }catch(_){}
+  try{
+    const r=await fetch('static/config.json?'+Date.now(), {cache:'no-store'});
+    if(r.ok){ const c=await r.json(); JR_API=(c.api||'').trim().replace(/\/+$/,''); }
+  }catch(_){}
+}
+const jrUrl = path => JR_API + path;
+
+// ---- frozen copy: the last events this device loaded, kept so nothing recorded ever disappears ----
+// When the backend can't be reached (switched off, moved, no signal) the calendar shows this copy,
+// read-only, until the backend answers again.
+const JR_SNAP_KEY='journal_snapshot';
+let JR_FROZEN=false;
+function jrSaveSnapshot(events){ try{ localStorage.setItem(JR_SNAP_KEY, JSON.stringify({at:new Date().toISOString(), api:JR_API, events})); }catch(_){} }
+// only the copy taken from the backend in use now: never show one backend's events as another's
+function jrSnapshot(){ try{ const s=JSON.parse(localStorage.getItem(JR_SNAP_KEY)); return s && s.api===JR_API ? s : null; }catch(_){ return null; } }
+function jrFreeze(on){
+  if(JR_FROZEN===on) return;
+  JR_FROZEN=on;
+  document.body.classList.toggle('jr-frozen', on);
+  let b=document.getElementById('jr-frozen-bar');
+  if(on){
+    const s=jrSnapshot(), when=s?.at?new Date(s.at).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}):null;
+    if(!b){ b=document.createElement('div'); b.id='jr-frozen-bar'; b.setAttribute('role','status'); document.body.appendChild(b); }
+    b.innerHTML=`<b>Server offline</b> · ${when?`showing the copy saved ${esc(when)}`:'nothing saved on this device yet'} · changes are paused`;
+  } else if(b){ b.classList.add('leaving'); setTimeout(()=>b.remove(), 260); toast('Back online'); }
+}
+class JrOffline extends Error {}
+
 async function api(path, opts={}){
+  const method=(opts.method||'GET').toUpperCase();
+  if(JR_FROZEN && method!=='GET'){ toast('Server offline — changes are paused'); throw new JrOffline('offline'); }
   opts.headers = Object.assign({}, opts.headers||{}, TOKEN?{'X-Token':TOKEN}:{});
-  const r = await fetch(path, opts);
+  let r;
+  try{ r = await fetch(jrUrl(path), opts); }
+  catch(e){ throw new JrOffline('cannot reach the server'); }        // network down, server or tunnel gone
+  if(r.status>=502 && r.status<=530) throw new JrOffline('server offline (HTTP '+r.status+')');   // the tunnel answers, the server doesn't
   if(r.status===401){ TOKEN=''; localStorage.removeItem('sk_token'); askToken(); throw new Error('password required'); }
+  if(r.status===429){ toast('Too many wrong PINs — try again in 15 minutes'); throw new Error('locked out for a while'); }
   if(!r.ok){ let d; try{ d=(await r.json()).detail; }catch(_){} throw new Error(d || r.statusText); }
   return r.json();
+}
+// Every event read goes through here: fresh from the backend (and saved as the frozen copy), or, if the
+// backend can't be reached, the frozen copy.
+async function jrFetchEvents(){
+  try{
+    const events=await api('/api/journal/events');
+    jrSaveSnapshot(events); jrFreeze(false);
+    return events;
+  }catch(e){
+    if(!(e instanceof JrOffline)) throw e;
+    jrFreeze(true);
+    return jrSnapshot()?.events || JOURNAL_EVENTS || [];
+  }
 }
 // On-page PIN screen (NOT a native prompt — iOS home-screen web apps block prompt()/alert()).
 function askToken(){
@@ -1033,7 +1111,8 @@ function askToken(){
   const submit=async()=>{ const pin=(inp.value||'').trim(); if(!pin) return;
     go.disabled=true; err.textContent='Checking…';
     try{
-      const r=await fetch('/api/journal/events',{headers:{'X-Token':pin}});
+      const r=await fetch(jrUrl('/api/journal/events'),{headers:{'X-Token':pin}});
+      if(r.status===429){ err.textContent='Too many wrong tries — wait 15 minutes'; go.disabled=false; return; }
       if(!r.ok){ err.textContent='Wrong PIN — try again'; inp.value=''; inp.focus(); go.disabled=false; return; }
       TOKEN=pin; try{ localStorage.setItem('sk_token',pin); }catch(_){}
       dismiss(ov); loadJournal();
@@ -1043,7 +1122,7 @@ function askToken(){
   inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
   setTimeout(()=>{ try{ inp.focus(); }catch(_){} }, 60);
 }
-async function checkAuth(){ try{ const a = await (await fetch('/api/auth')).json(); if(a.required && !TOKEN) askToken(); }catch(_){} }
+async function checkAuth(){ try{ const a = await (await fetch(jrUrl('/api/auth'))).json(); if(a.required && !TOKEN) askToken(); }catch(_){} }
 
 // On-page confirm/prompt replacements.
 function askConfirm(msg){
@@ -1091,7 +1170,7 @@ function askInput(msg, def){
   });
 }
 
-// =================== Odin's Journal ===================
+// =================== Yai Calendar ===================
 let JOURNAL_EVENTS = [];
 let JR_VIEW = localStorage.getItem('sk_journal_view') || 'calendar';
 let JR_CAL_YEAR, JR_CAL_MONTH; // 0-based month, like Date's own convention
@@ -1126,11 +1205,13 @@ async function loadJournal(){
   if(!JR_SEL) JR_SEL=jrToday();
   const first=!document.querySelector('#jr-cal-grid').children.length && !document.querySelector('#jr-agenda-list .jr-day-group');
   if(first) setJournalView(JR_VIEW, true);
-  try{ JOURNAL_EVENTS = await api('/api/journal/events'); }
-  catch(e){ toast('Error loading Journal: '+e.message); JOURNAL_EVENTS=[]; }
+  let live=false;
+  try{ JOURNAL_EVENTS = await jrFetchEvents(); live=!JR_FROZEN; }
+  catch(e){ toast('Error loading events: '+e.message); JOURNAL_EVENTS=jrSnapshot()?.events || []; }
   if(!first) setJournalView(JR_VIEW, true);
   else if(JR_VIEW==='calendar') renderCalendar({enter:true});   // the day's cards deal in as they arrive
   else renderAgenda();
+  if(live) jrOfferLocalEvents();   // only once the backend has really answered (past the PIN)
 }
 function setJournalView(v, skipSave){
   JR_VIEW=v;
@@ -1252,6 +1333,7 @@ async function deleteEventRow(id){
 }
 
 async function openAddEvent(prefillDate){
+  if(JR_FROZEN){ toast('Server offline — changes are paused'); return; }
   const ov=document.createElement('div'); ov.className='modal-ov';
   const card=document.createElement('div'); card.className='modal-card'; card.style.cssText='max-width:24rem;width:100%';
   const today=jrToday();
@@ -1484,17 +1566,39 @@ function renderDay(enter, dir){
   }
 }
 
-checkAuth();
-loadJournal();
-// Everyone shares one Journal: every 10s, and whenever the app comes back to the front, fetch the events
+// Events this device kept on its own before it had a shared backend (the GitHub site's local mode).
+// Once a backend answers, offer them to it once. The device keeps its copy either way.
+async function jrOfferLocalEvents(){
+  if(!JR_API || JR_FROZEN) return;
+  let local; try{ local=JSON.parse(localStorage.getItem('journal_local_events'))?.events||[]; }catch(_){ local=[]; }
+  const doneKey='journal_local_offered:'+JR_API;
+  if(!local.length || localStorage.getItem(doneKey)) return;
+  const n=local.length;
+  const yes=await askConfirm(`This device has ${n} event${n>1?'s':''} saved only on it. Copy ${n>1?'them':'it'} to the shared calendar so everyone can see ${n>1?'them':'it'}?`);
+  try{ localStorage.setItem(doneKey, yes?'copied':'declined'); }catch(_){}
+  if(!yes) return;
+  try{
+    const r=await api('/api/journal/import', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({events:local})});
+    toast(`Copied ${r.imported} event${r.imported===1?'':'s'}`);
+    JOURNAL_EVENTS=await jrFetchEvents(); jrRender();
+  }catch(e){ toast('Could not copy: '+e.message); localStorage.removeItem(doneKey); }
+}
+
+(async function boot(){
+  await jrResolveApi();          // which backend, before anything is fetched
+  checkAuth();
+  await loadJournal();
+})();
+// Everyone shares one calendar: every 10s, and whenever the app comes back to the front, fetch the events
 // again and redraw only if someone changed something. Never mid-form, and never behind the PIN screen.
+// While frozen this is also what notices the backend is back.
 (function(){
   let busy=false;
   async function sync(){
     if(busy || document.hidden || document.querySelector('.modal-ov,#pin-ov')) return;
     busy=true;
     try{
-      const fresh=await api('/api/journal/events');
+      const fresh=await jrFetchEvents();
       if(JSON.stringify(fresh)!==JSON.stringify(JOURNAL_EVENTS)){ JOURNAL_EVENTS=fresh; jrRender(); }
     }catch(_){}
     busy=false;

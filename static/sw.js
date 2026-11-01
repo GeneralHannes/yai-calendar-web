@@ -1,8 +1,8 @@
-// Odin's Journal — offline app shell, served at /sw.js.
+// Yai Calendar — offline app shell, served at /sw.js.
 // The page opens at once from the device and is refreshed in the background; a new version shows
 // "New version — tap to reload". Fonts never change under their URL, so they're kept. /api/* is never cached.
 
-const SHELL = "journal-shell-v11";            // bump to make every device drop its copy
+const SHELL = "yai-shell-v12";            // bump to make every device drop its copy
 // Paths are taken from the worker's own scope, so it works at "/" and under a sub-path (GitHub Pages).
 const BASE = new URL(self.registration.scope).pathname;
 const PAGES = [BASE, BASE + "journal"];
