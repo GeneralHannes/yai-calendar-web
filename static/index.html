@@ -787,10 +787,10 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     color:color-mix(in srgb,var(--accent) 75%,var(--ink)); }
   .jr-dc-time.allday { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
   .jr-dc-title { flex:1 1 5rem; min-width:0; font-size:.98rem; font-weight:700; line-height:1.3; cursor:pointer;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    white-space:normal; overflow-wrap:break-word; }   /* long titles wrap: the panel shows everything */
   .jr-dcard.done .jr-dc-title { text-decoration:line-through; color:var(--muted); }
-  .jr-dc-sub { order:5; flex:1 0 100%; min-width:0; margin-top:-.1rem; font-size:.74rem; line-height:1.3; color:var(--muted); cursor:pointer;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .jr-dc-sub { order:5; flex:1 0 100%; min-width:0; margin-top:-.1rem; font-size:.74rem; line-height:1.35; color:var(--muted); cursor:pointer;
+    white-space:normal; overflow-wrap:break-word; }
   .jr-dc-sub b { color:var(--accent); }
   .jr-dc-sub svg { width:.9em; height:.9em; vertical-align:-.12em; margin-right:.1em; }
   .jr-dc-title:hover, .jr-dc-time:hover, .jr-dc-sub:hover { color:var(--accent); }
@@ -1046,8 +1046,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   /* a multi-day event: a bar locked from its first day to its last (width set by jrFitCells), one line, "…" if the
      title is longer; a stronger fill so it reads as a span, square ends where it carries on into the next row */
   #jr-cal-grid .jr-ev.span { max-width:none; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis;
-    display:block; -webkit-line-clamp:unset; color:var(--k-on-act);
-    background:color-mix(in srgb,var(--k-act) 78%,var(--k-bg2)); border-left-color:color-mix(in srgb,var(--k-act) 60%,#000); }
+    display:block; -webkit-line-clamp:unset; color:var(--ink);   /* dark text, like the one-day events */
+    background:color-mix(in srgb,var(--k-act) 55%,var(--k-bg2)); border-left-color:color-mix(in srgb,var(--k-act) 75%,#000); }
   /* split over two rows, it still reads as one: the piece that carries on ends in an arrow point, the piece it carries
      on into starts with the matching notch on the same line, and touching either lights up both (.linked) */
   #jr-cal-grid .jr-ev.span.cont-r { border-top-right-radius:0; border-bottom-right-radius:0; padding-right:10px;
@@ -1055,7 +1055,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   #jr-cal-grid .jr-ev.span.cont-l { border-top-left-radius:0; border-bottom-left-radius:0; border-left-color:transparent; padding-left:10px;
     clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%, 6px 50%); }
   #jr-cal-grid .jr-ev.span.cont-l.cont-r { clip-path:polygon(0 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 0 100%, 6px 50%); }
-  #jr-cal-grid .jr-ev.span.linked { background:color-mix(in srgb,var(--k-act) 94%,#000); }
+  #jr-cal-grid .jr-ev.span.linked { background:color-mix(in srgb,var(--k-act) 72%,var(--k-bg2)); }
   /* the days a multi-day event covers: a soft tint for the ones through the selected day, stronger while its bar is
      hovered or pressed (jrSpanCells) */
   #jr-cal-grid .jr-cal-day.span-sel:not(.sel) { background:color-mix(in srgb,var(--k-act) 8%,transparent); }
