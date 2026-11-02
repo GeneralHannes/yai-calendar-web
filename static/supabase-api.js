@@ -41,6 +41,10 @@
     if (path === "/api/login" && method === "POST") return rpc(origin, "yai_login", { p_username: body.username ?? "", p_password: body.password ?? "" });
     if (path === "/api/logout") return rpc(origin, "yai_logout", { p_token: token });
     if (path === "/api/me") return rpc(origin, "yai_me", { p_token: token });
+    if (path === "/api/users" && method === "GET") return rpc(origin, "yai_users", { p_token: token });
+    const us = path.match(/^\/api\/users\/(\d+)(\/role)?$/);
+    if (us && us[2] && method === "POST") return rpc(origin, "yai_set_role", { p_token: token, p_id: +us[1], p_role: body.role ?? "" });
+    if (us && !us[2] && method === "DELETE") return rpc(origin, "yai_remove_user", { p_token: token, p_id: +us[1] });
     if (path === "/api/people") return rpc(origin, "yai_people", { p_token: token });
     if (path === "/api/journal/events" && method === "GET") return rpc(origin, "yai_events", { p_token: token });
     if (path === "/api/journal/events" && method === "POST") return rpc(origin, "yai_add", { p_token: token, p_event: body });

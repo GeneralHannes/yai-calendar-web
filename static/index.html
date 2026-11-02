@@ -1376,6 +1376,23 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-day-list[data-n="3"] .jr-dc-sub, .jr-day-list[data-n="4"] .jr-dc-sub { font-size:.95rem; }
   }
 
+  /* ================= roles ================= */
+  .jr-role { font-style:normal; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:.08rem .45rem; border-radius:999px;
+    color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 70%,transparent); border:1px solid var(--glass-line); }
+  .jr-acct-list { display:grid; gap:.4rem; margin:.4rem 0 .9rem; }
+  .jr-acct { display:flex; align-items:center; gap:.6rem; padding:.45rem .6rem; border-radius:12px; background:color-mix(in srgb,var(--k-bg3) 55%,transparent); border:1px solid var(--glass-line); }
+  .jr-acct-who { flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.3; }
+  .jr-acct-who small { color:var(--muted); font-size:.76rem; }
+  .jr-acct select { width:auto; padding:.3rem .5rem; font-size:.88rem; }
+  .jr-acct-gap { width:4.6rem; flex:none; }
+  /* a view-only account: nothing that adds, changes or deletes */
+  body.jr-viewer .jr-add, body.jr-viewer .jr-dc-acts, body.jr-viewer .jr-cell.jr-check, body.jr-viewer .jr-cell.jr-del,
+  body.jr-viewer .jr-pop-acts, body.jr-viewer .jr-up-add { display:none !important; }
+  body.jr-viewer .jr-table { grid-template-columns:4.2rem 1fr 6rem; }
+  body.jr-viewer .jr-table .jr-h:nth-child(4), body.jr-viewer .jr-table .jr-h:nth-child(5) { display:none; }
+  @media (max-width:640px) { body.jr-viewer .jr-table { grid-template-columns:3.6rem 1fr; } }
+  body.jr-viewer .jr-cell, body.jr-viewer .jr-dc-title, body.jr-viewer .jr-dc-time, body.jr-viewer .jr-dc-sub { cursor:default; }
+
   /* ================= agenda tidy-up ================= */
   .jr-agenda-head { display:flex; flex-wrap:wrap; align-items:center; gap:.45rem .6rem; }
   .jr-agenda-head .view-title { flex:1 1 auto; }
@@ -1676,7 +1693,7 @@ en:{
   whyPushAndroid:'This phone couldn’t reach its push service. It needs Google Play services and internet (some Wi-Fi networks block it): try again on mobile data.',
   whyState:'Close the app completely, open it again, and try once more.', whyOther:v=>`Could not turn on reminders (${v.what}).`,
   newVersion:'New version — tap to reload',
-  addedBy:'Added by {name}', byName:'by {name}', lblPeople:'Attending', addPeople:'＋ Add people', findPeople:'Search the team', noPeopleFound:'No one found', nPicked:'{n} selected', lblPeopleDay:'Attending this day', sameAsEvent:'Same as the whole event', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
+  addedBy:'Added by {name}', byName:'by {name}', lblPeople:'Attending', addPeople:'＋ Add people', findPeople:'Search the team', noPeopleFound:'No one found', nPicked:'{n} selected', lblPeopleDay:'Attending this day', sameAsEvent:'Same as the whole event', close:'Close', roleAdmin:'Admin', roleEditor:'Editor', roleViewer:'Viewer', roleViewerNote:'View only', accounts:'Accounts', accountsHint:'Admins manage accounts and can do everything. Editors add, change and delete events. Viewers can only look.', removeAcct:'Remove', removeAcctAsk:'Remove the account “{name}”? They will be signed out and can no longer sign in.', acctRemoved:'Account removed', roleSaved:'Role changed', you:'you', viewOnly:'This account can only view events.', adminOnly:'Only an admin can do that.', lastAdmin:'There must be at least one admin.', ownAcct:'You can’t remove your own account.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
   nothingPlanned:'Nothing planned.', tapAdd:'Tap “Add event” to put something on it.', noEvents:'No events yet.',
   dayEmpty:'Double-tap a day or press + to add one.',
   evWord:n=>n>1?'events':'event', nEvents:n=>`${n} event${n>1?'s':''}`, nDone:'{n} done',
@@ -1726,7 +1743,7 @@ zh:{
   whyPushAndroid:'此手机无法连接推送服务。需要 Google Play 服务和网络（有些 Wi-Fi 会屏蔽）：请改用移动数据重试。',
   whyState:'请完全关闭应用，重新打开后再试一次。', whyOther:v=>`无法开启提醒（${v.what}）。`,
   newVersion:'有新版本，点按刷新',
-  addedBy:'添加者：{name}', byName:'添加者：{name}', lblPeople:'参加人员', addPeople:'＋ 添加人员', findPeople:'搜索团队', noPeopleFound:'没有找到', nPicked:'已选 {n} 人', lblPeopleDay:'当天参加人员', sameAsEvent:'与整个活动相同', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
+  addedBy:'添加者：{name}', byName:'添加者：{name}', lblPeople:'参加人员', addPeople:'＋ 添加人员', findPeople:'搜索团队', noPeopleFound:'没有找到', nPicked:'已选 {n} 人', lblPeopleDay:'当天参加人员', sameAsEvent:'与整个活动相同', close:'关闭', roleAdmin:'管理员', roleEditor:'编辑者', roleViewer:'查看者', roleViewerNote:'仅查看', accounts:'账号', accountsHint:'管理员可管理账号并执行所有操作。编辑者可添加、修改和删除活动。查看者只能查看。', removeAcct:'移除', removeAcctAsk:'移除账号“{name}”？该用户将被退出登录，并且无法再登录。', acctRemoved:'账号已移除', roleSaved:'角色已更改', you:'你', viewOnly:'此账号只能查看活动。', adminOnly:'只有管理员可以这样做。', lastAdmin:'至少需要一位管理员。', ownAcct:'你不能移除自己的账号。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
   nothingPlanned:'暂时没有安排。', tapAdd:'点按“添加活动”来添加。', noEvents:'还没有活动。',
   dayEmpty:'双击某一天，或点按 + 来添加。',
   evWord:()=>'个活动', nEvents:n=>`${n} 个活动`, nDone:'已完成 {n}',
@@ -1776,7 +1793,7 @@ km:{
   whyPushAndroid:'ទូរស័ព្ទនេះមិនអាចភ្ជាប់ទៅសេវាជូនដំណឹងបានទេ។ វាត្រូវការ Google Play services និងអ៊ីនធឺណិត (បណ្តាញ Wi-Fi មួយចំនួនរារាំង)៖ សូមសាកល្បងម្តងទៀតជាមួយទិន្នន័យទូរស័ព្ទ។',
   whyState:'សូមបិទកម្មវិធីទាំងស្រុង បើកម្តងទៀត រួចព្យាយាមម្តងទៀត។', whyOther:v=>`មិនអាចបើកការរំលឹកបានទេ (${v.what})។`,
   newVersion:'មានកំណែថ្មី ចុចដើម្បីផ្ទុកឡើងវិញ',
-  addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', lblPeople:'អ្នកចូលរួម', addPeople:'＋ បន្ថែមអ្នកចូលរួម', findPeople:'ស្វែងរកក្នុងក្រុម', noPeopleFound:'រកមិនឃើញ', nPicked:'បានជ្រើស {n}', lblPeopleDay:'អ្នកចូលរួមថ្ងៃនេះ', sameAsEvent:'ដូចព្រឹត្តិការណ៍ទាំងមូល', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
+  addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', lblPeople:'អ្នកចូលរួម', addPeople:'＋ បន្ថែមអ្នកចូលរួម', findPeople:'ស្វែងរកក្នុងក្រុម', noPeopleFound:'រកមិនឃើញ', nPicked:'បានជ្រើស {n}', lblPeopleDay:'អ្នកចូលរួមថ្ងៃនេះ', sameAsEvent:'ដូចព្រឹត្តិការណ៍ទាំងមូល', close:'បិទ', roleAdmin:'អ្នកគ្រប់គ្រង', roleEditor:'អ្នកកែសម្រួល', roleViewer:'អ្នកមើល', roleViewerNote:'មើលតែប៉ុណ្ណោះ', accounts:'គណនី', accountsHint:'អ្នកគ្រប់គ្រងអាចគ្រប់គ្រងគណនី និងធ្វើបានទាំងអស់។ អ្នកកែសម្រួលអាចបន្ថែម កែ និងលុបព្រឹត្តិការណ៍។ អ្នកមើលអាចមើលបានតែប៉ុណ្ណោះ។', removeAcct:'ដកចេញ', removeAcctAsk:'ដកគណនី “{name}” ចេញ? ពួកគេនឹងត្រូវចាកចេញ ហើយមិនអាចចូលបានទៀតទេ។', acctRemoved:'បានដកគណនីចេញ', roleSaved:'បានប្តូរតួនាទី', you:'អ្នក', viewOnly:'គណនីនេះអាចមើលព្រឹត្តិការណ៍បានតែប៉ុណ្ណោះ។', adminOnly:'មានតែអ្នកគ្រប់គ្រងទេដែលអាចធ្វើបាន។', lastAdmin:'ត្រូវមានអ្នកគ្រប់គ្រងយ៉ាងតិចម្នាក់។', ownAcct:'អ្នកមិនអាចដកគណនីខ្លួនឯងបានទេ។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
   nothingPlanned:'មិនមានអ្វីគ្រោងទុកទេ។', tapAdd:'ចុច «បន្ថែមព្រឹត្តិការណ៍» ដើម្បីបន្ថែម។', noEvents:'មិនទាន់មានព្រឹត្តិការណ៍ទេ។',
   dayEmpty:'ចុចពីរដងលើថ្ងៃ ឬចុច + ដើម្បីបន្ថែម។',
   evWord:()=>'ព្រឹត្តិការណ៍', nEvents:n=>`${n} ព្រឹត្តិការណ៍`, nDone:'រួចរាល់ {n}',
@@ -1798,7 +1815,8 @@ const jrLbl=(k,hint)=>`<span>${esc(tx(k))}${hint&&tx(hint)?` <span class="muted"
 const JR_ERRS=[[/wrong username or password/i,'errLogin'],[/wrong team code/i,'errCode'],[/username is taken/i,'errTaken'],
   [/^username:/i,'errUsername'],[/^password:/i,'errPassword'],[/too many wrong/i,'tooMany'],[/please sign in/i,'errSignIn'],
   [/title (is required|cannot be blank)/i,'titleReq'],[/(event|end)_date must be/i,'errDate'],[/(event|end)_time must be/i,'errTime'],
-  [/end date is before/i,'endBeforeStart'],[/end time is before/i,'endTimeBefore'],[/give a start time/i,'needStart'],[/no event #/i,'errNoEvent']];
+  [/end date is before/i,'endBeforeStart'],[/end time is before/i,'endTimeBefore'],[/give a start time/i,'needStart'],[/no event #/i,'errNoEvent'],
+  [/can only view/i,'viewOnly'],[/only an admin/i,'adminOnly'],[/at least one admin/i,'lastAdmin'],[/own account/i,'ownAcct']];
 function jrErr(m){ const s=String(m||''); if(JR_LANG==='en') return s; for(const [re,k] of JR_ERRS) if(re.test(s)) return tx(k); return s; }
 
 // The words in the page's own markup (data-i18n = text, -title, -aria, -ph = placeholder), the weekday row, the
@@ -1884,6 +1902,7 @@ class JrOffline extends Error {}
 
 async function api(path, opts={}){
   const method=(opts.method||'GET').toUpperCase();
+  if(method!=='GET' && /^\/api\/journal\//.test(path) && JR_USER && !jrCanEdit()){ toast(tx('viewOnly')); throw new Error('this account can only view'); }
   if(JR_FROZEN && method!=='GET'){ toast(tx('offlinePaused')); throw new JrOffline('offline'); }
   opts.headers = Object.assign({}, opts.headers||{}, TOKEN?{'X-Token':TOKEN}:{});
   let r;
@@ -1923,9 +1942,48 @@ function jrSetSession(token, user){
   if(token) try{ navigator.storage?.persist?.(); }catch(_){}
   jrRenderMe();
 }
+// roles: admin / editor / viewer (the database enforces them; this just hides what a viewer can't use).
+// No accounts (or an old session with no role yet) means no limits.
+const jrRole=()=>JR_USER?.role||'editor';
+const jrCanEdit=()=>jrRole()!=='viewer';
 function jrRenderMe(){
+  document.body.classList.toggle('jr-viewer', !!JR_USER && !jrCanEdit());
   const el=document.getElementById('jr-me'); if(!el) return;
-  el.innerHTML=JR_USER?`<span>${esc(JR_USER.name)}</span><button type="button" class="mini" onclick="jrSignOut()">${esc(tx('signOut'))}</button>`:'';
+  el.innerHTML=JR_USER?`<span>${esc(JR_USER.name)}${!jrCanEdit()?` <em class="jr-role">${esc(tx('roleViewerNote'))}</em>`:''}</span>`
+    +(jrRole()==='admin'?`<button type="button" class="mini" onclick="jrAccounts()">${esc(tx('accounts'))}</button>`:'')
+    +`<button type="button" class="mini" onclick="jrSignOut()">${esc(tx('signOut'))}</button>`:'';
+}
+// the signed-in account as the server has it now (an admin may have changed the role since)
+async function jrRefreshMe(){
+  if(!TOKEN || !JR_USER) return;
+  try{ const r=await fetch(jrUrl('/api/me'),{headers:{'X-Token':TOKEN}}); if(!r.ok) return; const u=(await r.json()).user;
+    if(u && u.role!==JR_USER.role){ jrSetSession(TOKEN,u); renderCalendar?.(); if(JR_VIEW==='agenda') renderAgenda(); } }catch(_){}
+}
+// admins: who has an account and what they may do
+async function jrAccounts(){
+  let list; try{ list=await api('/api/users'); }catch(e){ toast(tx('errPrefix')+jrErr(e.message)); return; }
+  const ov=document.createElement('div'); ov.className='modal-ov';
+  const card=document.createElement('div'); card.className='modal-card jr-accts'; card.style.cssText='max-width:28rem;width:100%';
+  const draw=()=>{
+    card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('accounts'))}</h2></div><p class="jr-ae-hint">${esc(tx('accountsHint'))}</p>
+      <div class="jr-acct-list">${list.map(u=>`<div class="jr-acct" data-id="${u.id}">
+        <span class="jr-acct-who"><b>${esc(u.name)}${u.id===JR_USER.id?` <em class="jr-role">${esc(tx('you'))}</em>`:''}</b><small>@${esc(u.username)}</small></span>
+        <select aria-label="${esc(tx('accounts'))}: ${esc(u.name)}">${['admin','editor','viewer'].map(r=>`<option value="${r}"${u.role===r?' selected':''}>${esc(tx('role'+r[0].toUpperCase()+r.slice(1)))}</option>`).join('')}</select>
+        ${u.id===JR_USER.id?'<span class="jr-acct-gap"></span>':`<button type="button" class="mini jr-ae-del" data-rm="${u.id}">${esc(tx('removeAcct'))}</button>`}</div>`).join('')}</div>
+      <div class="item-edit-actions"><button class="mini" id="ac-close">${esc(tx('close'))}</button></div>`;
+    card.querySelector('#ac-close').onclick=()=>dismiss(ov);
+    card.querySelectorAll('.jr-acct select').forEach(sel=>sel.onchange=async()=>{
+      const id=+sel.closest('.jr-acct').dataset.id;
+      try{ await api('/api/users/'+id+'/role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:sel.value})});
+        list.find(u=>u.id===id).role=sel.value; toast(tx('roleSaved')); }
+      catch(e){ toast(tx('errPrefix')+jrErr(e.message)); draw(); } });
+    card.querySelectorAll('[data-rm]').forEach(b=>b.onclick=async()=>{
+      const id=+b.dataset.rm, u=list.find(x=>x.id===id);
+      if(!await askConfirm(tx('removeAcctAsk',{name:u.name}), tx('removeAcct'), true)) return;
+      try{ await api('/api/users/'+id,{method:'DELETE'}); list=list.filter(x=>x.id!==id); toast(tx('acctRemoved')); draw(); }
+      catch(e){ toast(tx('errPrefix')+jrErr(e.message)); } });
+  };
+  draw(); ov.appendChild(card); document.body.appendChild(ov); ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
 }
 async function jrSignOut(){
   if(!await askConfirm(tx('signOutAsk'))) return;
@@ -2003,7 +2061,7 @@ async function askToken(){
 }
 async function checkAuth(){
   const a=await jrAuthInfo();
-  if(a.accounts && TOKEN && !JR_USER){                                // signed in before names were kept on the device
+  if(a.accounts && TOKEN && (!JR_USER || !JR_USER.role)){                                // signed in before names were kept on the device
     try{ const r=await fetch(jrUrl('/api/me'),{headers:{'X-Token':TOKEN}}); if(r.ok) jrSetSession(TOKEN,(await r.json()).user); }catch(_){}
   }
   jrRenderMe();
@@ -2132,7 +2190,7 @@ async function loadJournal(){
   const first=!document.querySelector('#jr-cal-grid').children.length && !document.querySelector('#jr-agenda-list .jr-day-group');
   if(first) setJournalView(JR_VIEW, true);
   let live=false;
-  try{ JOURNAL_EVENTS = await jrFetchEvents(); live=!JR_FROZEN; if(live) await jrLoadPeople(); }
+  try{ JOURNAL_EVENTS = await jrFetchEvents(); live=!JR_FROZEN; if(live){ await jrLoadPeople(); jrRefreshMe(); } }
   catch(e){ if(e.message!=='please sign in') toast(tx('loadErr')+jrErr(e.message)); JOURNAL_EVENTS=jrSnapshot()?.events || []; }
   if(!first) setJournalView(JR_VIEW, true);
   else if(JR_VIEW==='calendar') renderCalendar({enter:true});   // the day's cards deal in as they arrive
@@ -2281,6 +2339,7 @@ async function deleteEventRow(id){
 // A multi-day event also gets a tab for each of its days: a day's own times, place and notes (empty = the event's).
 // Opened from a day of the calendar it starts on that day's tab, unless the title, dates or category were tapped.
 async function openAddEvent(prefillDate, id, focus, day){
+  if(!jrCanEdit()){ toast(tx('viewOnly')); return; }
   if(JR_FROZEN){ toast(tx('offlinePaused')); return; }
   const ev=id?jrEvent(id):null; if(id && !ev) return;
   const PERDAY={'#ae-time':'#ad-time','#ae-end-time':'#ad-end-time','#ae-loc':'#ad-loc','#ae-notes':'#ad-notes'};
