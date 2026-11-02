@@ -834,7 +834,11 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-pop-by { font-size:.74rem; color:var(--muted); font-style:italic; margin-top:.35rem; }
   .jr-pop-acts { display:flex; gap:.35rem; margin-top:.65rem; }
   .jr-pop-acts button { flex:1; }
-  .jr-pop-del { color:var(--warn); }
+  /* Delete reads as delete: red, with a red edge, filling red on press */
+  .jr-pop-acts .jr-pop-del { color:var(--k-bad); border:1px solid color-mix(in srgb,var(--k-bad) 55%,transparent);
+    background:color-mix(in srgb,var(--k-bad) 10%,transparent); font-weight:700; }
+  .jr-pop-acts .jr-pop-del:hover, .jr-pop-acts .jr-pop-del:active { color:#fff; background:var(--k-bad); border-color:var(--k-bad); }
+  button.act.jr-danger { background:var(--k-bad); border-color:var(--k-bad); color:#fff; }
   .jr-pop > * { animation:kRise .3s var(--k-smooth) both; }
   .jr-pop > :nth-child(2) { animation-delay:30ms; } .jr-pop > :nth-child(3) { animation-delay:60ms; } .jr-pop > :nth-child(n+4) { animation-delay:90ms; }
   @media (prefers-reduced-motion:reduce) { .jr-pop, .jr-pop > * { transition:none; animation:none; } }
@@ -873,7 +877,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-dc-acts .edit { display:grid; place-items:center; padding:0; }
   .jr-dc-acts .edit svg { width:.95rem; height:.95rem; }
   .jr-dc-acts .edit:hover { color:var(--accent); }
-  .item-edit-actions .jr-ae-del { margin-right:auto; color:var(--warn); }
+  .item-edit-actions .jr-ae-del { margin-right:auto; color:var(--k-bad); font-weight:700; border:1px solid color-mix(in srgb,var(--k-bad) 55%,transparent); background:color-mix(in srgb,var(--k-bad) 10%,transparent); }
   .jr-day-empty { color:var(--muted); padding:.4rem 0 .2rem; }
   .jr-day-empty span { display:block; font-size:.85rem; opacity:.8; margin-top:.2rem; }
   .jr-bottom.enter .jr-day-headrow, .jr-bottom.enter .jr-day-empty { animation:kRise var(--k-t) var(--k-smooth) both; }
@@ -1644,7 +1648,8 @@ async function checkAuth(){
 }
 
 // On-page confirm/prompt replacements.
-function askConfirm(msg){
+// a yes/no question on the page; `yes` names the button, and `danger` makes it red (for deleting)
+function askConfirm(msg, yes='OK', danger=false){
   return new Promise(resolve=>{
     const ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;'
@@ -1653,7 +1658,7 @@ function askConfirm(msg){
       +'border-radius:12px;padding:1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.35)">'
       +'<div style="font-size:.98rem;line-height:1.4;margin-bottom:1rem;white-space:pre-wrap">'+esc(msg)+'</div>'
       +'<div style="display:flex;gap:.5rem"><button class="mini" id="ac-no" style="flex:1">Cancel</button>'
-      +'<button class="act" id="ac-yes" style="flex:1">OK</button></div></div>';
+      +'<button class="act'+(danger?' jr-danger':'')+'" id="ac-yes" style="flex:1">'+esc(yes)+'</button></div></div>';
     document.body.appendChild(ov);
     const done=v=>{ document.removeEventListener('keydown',onKey); dismiss(ov); resolve(v); };
     const onKey=e=>{ if(e.key==='Escape') done(false); };
@@ -1878,7 +1883,7 @@ async function toggleEventDone(id){
 }
 async function deleteEventRow(id){
   const e=jrEvent(id); if(!e || jrJustSwiped()) return;
-  if(!await askConfirm('Delete "'+e.title+'"?')) return;
+  if(!await askConfirm('Delete "'+e.title+'"?\nThis can’t be undone, and it goes for everyone.', 'Delete', true)) return;
   try{
     await api('/api/journal/events/'+id,{method:'DELETE'});
     await jrFold(document.querySelector(`.jr-dcard[data-id="${id}"]`));
@@ -2288,7 +2293,7 @@ function jrEventPop(id, iso){
     <div class="jr-pop-acts">
       <button class="mini" data-a="edit">Edit</button>
       <button class="mini" data-a="done">${e.done?'Not done':'Done ✓'}</button>
-      <button class="mini jr-pop-del" data-a="del">Delete</button>
+      <button class="mini jr-pop-del" data-a="del"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:3px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>Delete</button>
     </div>`;
   document.body.appendChild(p);
   // beside the event: below it if there's room, else above; kept on screen
