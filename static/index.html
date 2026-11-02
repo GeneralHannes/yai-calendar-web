@@ -9,9 +9,9 @@ if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.ad
 /* Android: its Chrome misdraws live background blur (stale strips over the month header), so the glass there
    is drawn without it — see "Android" in the styles */
 if(/Android/.test(navigator.userAgent))document.documentElement.classList.add("android");</script>
-<script>/* light (Daylight) unless this device chose another theme */
-try{var t=localStorage.getItem("sk_theme");document.documentElement.setAttribute("data-theme",t||"daylight")}catch(e){document.documentElement.setAttribute("data-theme","daylight")}</script>
-<meta name="theme-color" content="#e1e2e7">
+<script>/* light (Catppuccin Latte) unless this device chose another theme */
+try{var t=localStorage.getItem("sk_theme");document.documentElement.setAttribute("data-theme",t||"latte")}catch(e){document.documentElement.setAttribute("data-theme","latte")}</script>
+<meta name="theme-color" content="#e6e9ef">
 <script src="/static/local-api.js"></script>
 <script src="/static/supabase-api.js"></script>
 <link rel="manifest" href="/manifest.webmanifest">
@@ -563,6 +563,18 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
      ambient wash) is color-mix()ed from these, so a theme is ~20 values. Chosen in Vault's
      Settings, kept in localStorage 'sk_theme' (shared by Vault, POS and Journal). The default
      Tokyo Night Moon is the plain :root above, with no data-theme. ===== */
+  /* Catppuccin Latte (catppuccin.com/palette): crust/mantle/base for the layers, surface0/1 for fills, text/subtext,
+     and its blue, green, yellow, peach, red, mauve, teal and sky for the meanings above */
+  :root[data-theme="latte"] { color-scheme:light;
+    --k-bg0:#dce0e8; --k-bg1:#e6e9ef; --k-bg2:#eff1f5; --k-bg3:#ccd0da; --k-bg4:#bcc0cc;
+    --k-ink:#4c4f69; --k-hi:#4c4f69; --k-muted:#6c6f85; --k-faint:#8c8fa1;
+    --k-money:#40a02b; --k-qty:#df8e1d; --k-size:#04a5e5; --k-tier:#179299; --k-cat:#8839ef;
+    --k-act:#1e66f5; --k-bad:#d20f39; --k-warn:#fe640b; --k-on-act:#eff1f5;
+    --k-gold:#df8e1d; --gold:#df8e1d; --shot-a:#e6e9ef; --shot-b:#dce0e8;
+    --glass-edge:inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(76,79,105,.07);
+    --glass-lift:0 14px 36px -16px rgba(76,79,105,.28),0 2px 8px -3px rgba(76,79,105,.14);
+    --k-lift:0 1px 0 rgba(255,255,255,.7) inset,0 8px 22px -14px rgba(76,79,105,.32);
+    --shadow:0 2px 10px rgba(76,79,105,.16); }
   :root[data-theme="daylight"] { color-scheme:light;
     --k-bg0:#cfd4e3; --k-bg1:#e1e2e7; --k-bg2:#f1f2f7; --k-bg3:#dfe2ec; --k-bg4:#c5cadc;
     --k-ink:#343b58; --k-hi:#16161e; --k-muted:#5f6a9c; --k-faint:#8189b0;
@@ -1065,11 +1077,13 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
       -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 8px rgba(212,175,55,.35)); }
     .jr-bottom.enter .jr-day-big { animation:jrNumIn .5s var(--k-bouncy) both, kGlint 1.6s ease-in-out .25s both; }
     /* light: a deeper gold, so it reads on white */
+    :root[data-theme="latte"] .jr-day-big { background-image:linear-gradient(100deg,#b8650a 0%,#df8e1d 28%,#f2be6a 44%,#d0820f 60%,#a85a06 80%,#df8e1d 100%);
+      filter:drop-shadow(0 1px 0 rgba(255,255,255,.6)); }
     :root[data-theme="daylight"] .jr-day-big { background-image:linear-gradient(100deg,#7a5a05 0%,#b8901f 28%,#e0b94a 44%,#a47c12 60%,#6e5004 80%,#9a7608 100%);
       filter:drop-shadow(0 1px 0 rgba(255,255,255,.6)); }
   }
   /* light: the "Coming up" heading sits on the panel's own glass, not a grey band */
-  :root[data-theme="daylight"] .jr-up-head { background:none; -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
+  :root[data-theme="daylight"] .jr-up-head, :root[data-theme="latte"] .jr-up-head { background:none; -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
   @keyframes kGlint { from { background-position:0% 0; } to { background-position:100% 0; } }
 
   /* ================= dragging an event to another day (script: drag an event) ================= */
