@@ -1,0 +1,65 @@
+// Supabase mode. The page talks to /api/* at JR_API (index.html). When static/config.json names a Supabase
+// project — {"api": "https://<ref>.supabase.co", "supabase_key": "<its publishable/anon key>"} — this answers
+// the calls to that address through the yai_* database functions from supabase/schema.sql instead, so the
+// page itself doesn't know or care which backend it has. Anything else passes straight through.
+(function () {
+  const real = window.fetch.bind(window);
+  const STORE = "yai_supabase";
+
+  // {origin, key} from config.json, remembered so it's still known with no signal
+  let confP = null;
+  const conf = () => confP || (confP = real("static/config.json?" + Date.now(), { cache: "no-store" })
+    .then((r) => r.json())
+    .then((c) => {
+      const k = (c.supabase_key || "").trim(), o = k && c.api ? new URL(c.api).origin : "";
+      try { localStorage.setItem(STORE, JSON.stringify({ origin: o, key: k })); } catch (_) {}
+      return { origin: o, key: k };
+    })
+    .catch(() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (_) { return {}; } }));
+  const key = async () => (await conf()).key || "";
+
+  const reply = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  const header = (h, name) => !h ? "" : typeof h.get === "function" ? h.get(name) || "" :
+    Object.entries(h).find(([k]) => k.toLowerCase() === name)?.[1] || "";
+
+  async function rpc(origin, fn, args) {
+    const k = await key();
+    const headers = { "content-type": "application/json", apikey: k };
+    if (k.startsWith("eyJ")) headers.authorization = "Bearer " + k;   // older (JWT) anon keys want both
+    const r = await real(`${origin}/rest/v1/rpc/${fn}`, { method: "POST", headers, body: JSON.stringify(args) });
+    const d = await r.json().catch(() => null);
+    if (!r.ok) return reply({ detail: d?.message || r.statusText }, r.status);
+    if (d && typeof d === "object" && !Array.isArray(d) && d.error) return reply({ detail: d.error }, d.status || 400);
+    return reply(d);
+  }
+
+  async function answer(origin, method, path, body, token) {
+    const ev = path.match(/^\/api\/journal\/events\/(\d+)(\/done)?$/);
+    if (path === "/api/auth") return rpc(origin, "yai_auth", {});
+    if (path === "/api/signup" && method === "POST")
+      return rpc(origin, "yai_signup", { p_username: body.username ?? "", p_password: body.password ?? "", p_name: body.name ?? "", p_code: body.code ?? "" });
+    if (path === "/api/login" && method === "POST") return rpc(origin, "yai_login", { p_username: body.username ?? "", p_password: body.password ?? "" });
+    if (path === "/api/logout") return rpc(origin, "yai_logout", { p_token: token });
+    if (path === "/api/me") return rpc(origin, "yai_me", { p_token: token });
+    if (path === "/api/journal/events" && method === "GET") return rpc(origin, "yai_events", { p_token: token });
+    if (path === "/api/journal/events" && method === "POST") return rpc(origin, "yai_add", { p_token: token, p_event: body });
+    if (path === "/api/journal/import" && method === "POST")
+      return rpc(origin, "yai_import", { p_token: token, p_events: Array.isArray(body) ? body : body.events });
+    if (ev && method === "DELETE") return rpc(origin, "yai_delete", { p_token: token, p_id: +ev[1] });
+    if (ev && ev[2]) return rpc(origin, "yai_done", { p_token: token, p_id: +ev[1], p_done: !!body.done });
+    if (ev && method === "POST") return rpc(origin, "yai_update", { p_token: token, p_id: +ev[1], p_patch: body });
+    // reminders (/api/push/*) aren't set up on Supabase yet: the app then doesn't offer them
+    return reply({ detail: "not available on this backend" }, 404);
+  }
+
+  window.fetch = async function (input, init) {
+    let u;
+    try { u = new URL(typeof input === "string" ? input : input.url, location.href); } catch (_) { return real(input, init); }
+    if (!u.pathname.includes("/api/")) return real(input, init);
+    const c = await conf();
+    if (!c.key || u.origin !== c.origin || !u.pathname.startsWith("/api/")) return real(input, init);
+    let body = {};
+    try { body = init && init.body ? JSON.parse(init.body) : {}; } catch (_) {}
+    return answer(u.origin, ((init && init.method) || "GET").toUpperCase(), u.pathname, body || {}, header(init && init.headers, "x-token").trim());
+  };
+})();
