@@ -1035,7 +1035,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   #jr-cal-grid .jr-ev { font-size:clamp(.66rem, 3px + 7.5cqi, 1.05rem); line-height:1.22; padding:.14em .38em .14em .42em; }
   /* words break only at spaces, never inside a word (jrFitWords sizes an event's text so its longest word fits) */
   #jr-cal-grid .jr-ev.wrap, #jr-cal-grid .jr-ev.clamp { overflow-wrap:normal; word-break:normal; -webkit-hyphens:manual; hyphens:manual; }
-  #jr-cal-grid .jr-ev.hy { overflow-wrap:break-word; -webkit-hyphens:auto; hyphens:auto; }   /* the rare word too long for its day */
+  #jr-cal-grid .jr-ev.hy { overflow-wrap:break-word; -webkit-hyphens:auto; hyphens:auto; }
+  #jr-cal-grid .jr-ev.abbr { letter-spacing:.02em; overflow-wrap:normal; -webkit-hyphens:manual; hyphens:manual; }   /* initials never split */   /* initials ("PPTF 2026"): a touch of air between the letters */   /* the rare word too long for its day */
   /* phones: the squares can't get wider, so their insides give the titles the room: thinner padding in the
      square and in the event, a thinner edge */
   @container (max-width:74px) { #jr-cal-grid .jr-ev:not(.span) { padding:.12em .22em .12em .3em; border-left-width:2px; } }
@@ -2096,8 +2097,8 @@ function renderCalendar(opt={}){
       data-iso="${iso}" onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${n?`<span class="jr-more" hidden></span><span class="jr-count">${n}</span>`:''}</span>
       ${bars.length||singles.length?`<span class="jr-preview">${
-        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}" data-id="${e.id}" data-span="${span}">${esc(e.title)}</span>`).join('')
-      }${singles.map(e=>`<span class="jr-ev${e.done?' done':''}" data-id="${e.id}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
+        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}">${esc(e.title)}</span>`).join('')
+      }${singles.map(e=>`<span class="jr-ev${e.done?' done':''}" data-id="${e.id}" data-t="${esc(e.title)}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
     </button>`;
   }
   const grid=$('#jr-cal-grid');
@@ -2156,13 +2157,23 @@ function jrFitCells(){
       let lane=0, shown=0;
       const firstFree=(from, n)=>{ let at=from; while(at<from+64 && [...Array(n).keys()].some(k=>(busy[at+k]||0)>c)) at++; return at; };
       for(const e of evs){
-        e.classList.remove('cut','clamp'); e.style.webkitLineClamp='';
-        if(!e.dataset.span) jrFitWords(e, room);
-        // a multi-day bar is locked to its days: exactly from this square to its last one in the row, one line
         const span=+e.dataset.span||0;
-        if(span){ const last=cells[r+c+span-1]||cell; e.style.width=(last.offsetLeft+colW-pad-(cell.offsetLeft+pad))+'px'; }
-        else if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
-        let lines=span?1:Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
+        // lays the event out with its full title or its short form ("PPTF 2026", see jrAbbr)
+        const fitAs=short=>{
+          jrSetTitle(e, short?jrAbbr(e.dataset.t):e.dataset.t);
+          e.classList.remove('cut','clamp','wrap','abbr'); e.style.webkitLineClamp=''; if(short) e.classList.add('abbr');
+          if(!span){ jrFitWords(e, room); if(short) e.classList.remove('hy'); }
+          // a multi-day bar is locked to its days: exactly from this square to its last one in the row, one line
+          if(span){ const last=cells[r+c+span-1]||cell; e.style.width=(last.offsetLeft+colW-pad-(cell.offsetLeft+pad))+'px'; }
+          else if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
+          return span?1:Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
+        };
+        let lines=fitAs(false);
+        // squeezed past the point of reading: a word too long even at the smallest size, over twice the lines the
+        // square has, or a bar showing under half its title → the short form (initials, and the year if it has one)
+        const room1=Math.max(1, lanes-firstFree(lane,1));
+        // (only when it's really squeezed: a title cut a little, "Supplier vis…", still reads better than "SV")
+        if(jrAbbr(e.dataset.t)!==e.dataset.t && (e.classList.contains('hy') || (span ? e.clientWidth<e.scrollWidth*.5 : lines>room1*2))) lines=fitAs(true);
         // a bar carrying on from the row above goes on the same line it had there (if that line is near the top)
         const want=span && e.classList.contains('cont-l') ? laneOf[e.dataset.id] : undefined;
         let at=want!=null && want<=2 ? firstFree(Math.max(lane,want), 1) : firstFree(lane, lines);
@@ -2198,6 +2209,23 @@ function jrFitCells(){
     setTimeout(()=>f.scrollIntoView({block:'nearest', behavior:'smooth'}), 300);   // after the keyboard has come up
   });
 })();
+// A title's short form, for when there's no room for it: the first letter of each word, then the year if it has
+// one — "Phnom Penh trade fair 2026" → "PPTF 2026". The day panel (and a hover) still has the full title.
+function jrAbbr(t){
+  const year=(t.match(/\b(19|20)\d{2}\b/)||[])[0];
+  let words=t.replace(/\b(19|20)\d{2}\b/g,' ').split(/[\s\-–—/&,.:;()]+/).filter(Boolean);
+  // long titles leave out the little words ("Quarterly review with the accountant about taxes" → "QRAT")
+  if(words.length>4) words=words.filter(w=>!/^(a|an|the|of|to|in|on|at|for|with|and|or|about|by|from)$/i.test(w));
+  const letters=words.map(w=>w[0].toUpperCase()).join('');
+  const out=[letters, year].filter(Boolean).join(' ');
+  return out.length && out.length<t.length ? out : t;
+}
+// the title text of an event chip (after its time, if it has one)
+function jrSetTitle(e, text){
+  const n=[...e.childNodes].reverse().find(x=>x.nodeType===3);
+  if(n) n.textContent=text; else e.append(text);
+  e.title=e.dataset.t;
+}
 // An event's text, made just small enough that its longest word fits its day whole (never below 8.5px), so words
 // break only at spaces. Most titles keep the size the square gives them (see "event text scales").
 const jrMeasure=document.createElement('canvas').getContext('2d');
