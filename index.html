@@ -1377,6 +1377,27 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-day-list[data-n="3"] .jr-dc-sub, .jr-day-list[data-n="4"] .jr-dc-sub { font-size:.95rem; }
   }
 
+  /* ================= agenda tidy-up ================= */
+  .jr-agenda-head { display:flex; flex-wrap:wrap; align-items:center; gap:.45rem .6rem; }
+  .jr-agenda-head .view-title { flex:1 1 auto; }
+  .jr-agenda-head [data-lang-slot="agenda"] { margin-left:0; }
+  .jr-agenda-head .jr-me, .jr-agenda-head .jr-showpast { margin-left:0; }
+  .jr-agenda-head .jr-showpast { margin-left:auto; }
+  #jr-agenda-list, .jr-day-group, .jr-table { min-width:0; }
+  .jr-table .jr-h:nth-child(4), .jr-table .jr-h:nth-child(5) { padding-left:0; padding-right:0; }
+  /* soft dividers rather than hard lines; the action columns share one */
+  .jr-cell { border-right-color:color-mix(in srgb,var(--line) 40%,transparent); border-bottom-color:color-mix(in srgb,var(--line) 60%,transparent); }
+  .jr-cell.jr-title { padding:.6rem .6rem; gap:.12rem; line-height:1.35; overflow-wrap:anywhere; }
+  .jr-cell.jr-time { align-items:flex-start; padding-top:.65rem; font-size:.82rem; white-space:normal; line-height:1.3; }
+  .jr-cell.jr-check, .jr-cell.jr-del { align-items:flex-start; padding-top:.55rem; font-size:1rem; }
+  .jr-cell.jr-check { border-right-color:transparent; }
+  .jr-cell .jr-ag-ppl { flex:none; width:auto; order:0; margin:.2rem 0 .1rem; }
+  .jr-cat-m { display:none; }
+  @media (max-width:640px) {
+    .jr-cat-m { display:block; margin-top:.15rem; }
+    .jr-cell.jr-time { padding-left:.55rem; }
+  }
+
   /* ================= the team: avatars and the attendee picker ================= */
   .jr-av { position:relative; flex:none; display:inline-grid; place-items:center; width:1.55rem; height:1.55rem; border-radius:50%; overflow:hidden;
     background:hsl(var(--h,210) 55% 82%); color:hsl(var(--h,210) 45% 24%); font-size:.6rem; font-weight:700; line-height:1;
@@ -2192,11 +2213,12 @@ function renderAgenda(){
         <div class="jr-h">${esc(tx('thTime'))}</div><div class="jr-h">${esc(tx('thTitle'))}</div><div class="jr-h jr-h-cat">${esc(tx('thCat'))}</div><div class="jr-h"></div><div class="jr-h"></div>
         ${groups[date].map(e => `
           <div class="jr-row${e.done?' done':''}" style="display:contents;${jrTint(e)}">
-            <div class="jr-cell jr-time" onclick="editEventTime(${e.id})">${jrTimeRange(e)||'—'}</div>
+            <div class="jr-cell jr-time" onclick="editEventTime(${e.id})">${(jrTimeRange(e)||'—').replace('–','–\u200b')}</div>
             <div class="jr-cell jr-title" style="flex-direction:column;align-items:flex-start;white-space:normal">
               <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
               ${jrMulti(e)||e.location?`<div class="jr-ag-where">${jrMulti(e)?`<b onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-end-date')">${jrDateRange(e)}</b>`:''}${e.location?jrMapLink(e.location):''}</div>`:''}
               <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):esc(tx('addNote'))}</div>
+              ${jrAttendees(e).length?`<div class="jr-dc-ppl jr-ag-ppl" onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-people')">${jrAttendees(e).map(p=>`<span class="jr-who">${jrAvatar(p)}${esc(p.name.split(' ')[0])}</span>`).join('')}</div>`:''}
               ${e.created_by?`<div class="jr-by">${esc(tx('byName',{name:e.created_by}))}</div>`:''}
               <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:`<span class="muted">${esc(tx('addTag'))}</span>`}</div>
             </div>
