@@ -9,9 +9,9 @@ if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.ad
 /* Android: its Chrome misdraws live background blur (stale strips over the month header), so the glass there
    is drawn without it — see "Android" in the styles */
 if(/Android/.test(navigator.userAgent))document.documentElement.classList.add("android");</script>
-<script>/* light (Daylight) unless this device chose another theme (Catppuccin Latte is also defined: data-theme="latte") */
-try{var t=localStorage.getItem("sk_theme");document.documentElement.setAttribute("data-theme",t||"daylight")}catch(e){document.documentElement.setAttribute("data-theme","daylight")}</script>
-<meta name="theme-color" content="#e1e2e7">
+<script>/* light (Catppuccin Latte) unless this device chose another theme (Daylight is also defined: data-theme="daylight") */
+try{var t=localStorage.getItem("sk_theme");document.documentElement.setAttribute("data-theme",t||"latte")}catch(e){document.documentElement.setAttribute("data-theme","latte")}</script>
+<meta name="theme-color" content="#e6e9ef">
 <script>window.JOURNAL_STATIC=true</script>
 <script src="static/local-api.js"></script>
 <script src="static/supabase-api.js"></script>
