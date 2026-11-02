@@ -1423,6 +1423,13 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-cell.jr-check, .jr-cell.jr-del { align-items:flex-start; padding-top:.55rem; font-size:1rem; }
   .jr-cell.jr-check { border-right-color:transparent; }
   .jr-cell .jr-ag-ppl { flex:none; width:auto; order:0; margin:.2rem 0 .1rem; }
+  /* the category column: room for a real label, wrapping rather than cut off, lined up with the other cells */
+  @media (min-width:641px) { .jr-table { grid-template-columns:5.2rem 1fr 9.5rem 2.2rem 2.2rem; } }
+  .jr-cell.jr-cat { white-space:normal; overflow:visible; align-items:flex-start; padding-top:.6rem; }
+  .jr-cell.jr-cat .chip-lbl { white-space:normal; overflow-wrap:anywhere; line-height:1.3; }
+  .jr-table .jr-h { padding-left:.6rem; }
+  /* the language switch lives in the side rail on a big screen, so not twice */
+  @media (min-width:761px) and (min-height:521px) { .jr-agenda-head [data-lang-slot="agenda"] { display:none; } }
   .jr-cat-m { display:none; }
   @media (max-width:640px) {
     .jr-cat-m { display:block; margin-top:.15rem; }
