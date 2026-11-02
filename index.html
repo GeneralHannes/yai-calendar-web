@@ -838,6 +838,19 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-pop > * { animation:kRise .3s var(--k-smooth) both; }
   .jr-pop > :nth-child(2) { animation-delay:30ms; } .jr-pop > :nth-child(3) { animation-delay:60ms; } .jr-pop > :nth-child(n+4) { animation-delay:90ms; }
   @media (prefers-reduced-motion:reduce) { .jr-pop, .jr-pop > * { transition:none; animation:none; } }
+  /* the colour ball by the form's heading, and the row of colours it opens */
+  .jr-ae-head { display:flex; align-items:center; gap:.6rem; margin-bottom:.7rem; }
+  .jr-ae-head h2 { margin:0; flex:1; }
+  .jr-ball { --ball:var(--k-act); flex:none; width:1.7rem; height:1.7rem; border-radius:50%; padding:0; cursor:pointer;
+    background:var(--ball); border:2px solid var(--k-bg2); box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 25%,transparent), 0 2px 6px -1px rgba(0,0,0,.25);
+    transition:transform .25s var(--k-snappy), box-shadow .2s; }
+  .jr-ball:active { transform:scale(.88); }
+  .jr-ball.auto { background:conic-gradient(var(--k-act),var(--k-money),var(--k-qty),var(--k-warn),var(--k-bad),var(--k-cat),var(--k-tier),var(--k-size),var(--k-act)); }
+  .jr-ball.on { box-shadow:0 0 0 2.5px var(--ink); transform:scale(1.08); }
+  #ae-ball { width:2rem; height:2rem; }
+  .jr-ae-colors { display:flex; flex-wrap:wrap; gap:.55rem; margin:-.2rem 0 .8rem; padding:.55rem .6rem; border-radius:14px;
+    background:color-mix(in srgb,var(--k-bg3) 45%,transparent); animation:kRise .25s var(--k-smooth) both; }
+  .jr-ae-colors[hidden] { display:none; }
   .jr-ae-loc > span { display:flex; align-items:center; gap:.3rem; }
   .jr-ae-map { all:unset; margin-left:auto; display:inline-flex; align-items:center; gap:.15rem; cursor:pointer;
     font-size:.74rem; font-weight:700; color:var(--accent); padding:.05rem .15rem; border-radius:6px; }
@@ -1715,6 +1728,13 @@ const jrPlace=loc=>jrIsLink(loc) ? 'Map' : loc;
 function jrMapLink(loc, cls=''){
   return `<a class="jr-map ${cls}" href="${esc(jrMapUrl(loc))}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Open in Google Maps">${JR_PIN}${esc(jrPlace(loc))}</a>`;
 }
+// Event colours: the theme's own eight, so they suit whichever theme is on. An event with no colour of its own gets
+// one from its id — a mix across the calendar, and the same one on every device and after every reload.
+const JR_COLORS={blue:'--k-act', green:'--k-money', yellow:'--k-qty', orange:'--k-warn', red:'--k-bad', purple:'--k-cat', teal:'--k-tier', sky:'--k-size'};
+const JR_COLOR_NAMES=Object.keys(JR_COLORS);
+function jrColor(e){ if(e.color && JR_COLORS[e.color]) return e.color; let h=e.id*2654435761>>>0; return JR_COLOR_NAMES[h%JR_COLOR_NAMES.length]; }
+// the style that tints an event's chip, bar, card, row or pop-up: every event rule reads --accent / --k-act
+const jrTint=e=>{ const k=JR_COLORS[jrColor(e)]; return k==='--k-act' ? '--accent:var(--k-act)' : `--accent:var(${k});--k-act:var(${k})`; };   // blue is --k-act itself
 const JR_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
 
 // The month and the day are drawn straight away; the events fill in when they arrive, so a slow or
@@ -1772,7 +1792,7 @@ function jrRenderUpNext(){
     }
     const more=[jrMulti(e)?`<em>${jrDateRange(e)}</em>`:'', e.location?`<span class="jr-up-loc" role="link" title="Open in Google Maps" onclick="event.stopPropagation();open(jrMapUrl(${esc(JSON.stringify(e.location))}),'_blank','noopener')">${JR_PIN}${esc(jrPlace(e.location))}</span>`:'',
       e.category?`<i>${esc(e.category)}</i>`:'', e.created_by?`<b>${esc(e.created_by)}</b>`:'', e.notes?esc(e.notes):''].filter(Boolean).join('');
-    html+=`<button type="button" class="jr-up-ev${e.done?' done':''}" style="--i:${n++}" onclick="jrUpOpen('${iso}',${e.id})">
+    html+=`<button type="button" class="jr-up-ev${e.done?' done':''}" style="--i:${n++};${jrTint(e)}" onclick="jrUpOpen('${iso}',${e.id})">
       <span class="jr-up-time">${jrTimeRange(e,true)||(jrMulti(e)?'Days':'All day')}</span>
       <span class="jr-up-title">${esc(e.title)}</span>
       ${more?`<span class="jr-up-more">${more}</span>`:''}
@@ -1802,7 +1822,7 @@ function renderAgenda(){
       <div class="jr-table">
         <div class="jr-h">Time</div><div class="jr-h">Title</div><div class="jr-h jr-h-cat">Category</div><div class="jr-h"></div><div class="jr-h"></div>
         ${groups[date].map(e => `
-          <div class="jr-row${e.done?' done':''}" style="display:contents">
+          <div class="jr-row${e.done?' done':''}" style="display:contents;${jrTint(e)}">
             <div class="jr-cell jr-time" onclick="editEventTime(${e.id})">${jrTimeRange(e)||'—'}</div>
             <div class="jr-cell jr-title" style="flex-direction:column;align-items:flex-start;white-space:normal">
               <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
@@ -1880,7 +1900,12 @@ async function openAddEvent(prefillDate, id, focus, day){
   const ov=document.createElement('div'); ov.className='modal-ov';
   const card=document.createElement('div'); card.className='modal-card jr-ae'; card.style.cssText='max-width:26rem;width:100%';
   const v=(x)=>esc(x||''), t5=t=>t?t.slice(0,5):'';
-  card.innerHTML=`<h2>${ev?'Edit event':'＋ Add event'}</h2>
+  card.innerHTML=`<div class="jr-ae-head"><h2>${ev?'Edit event':'＋ Add event'}</h2>
+      <button type="button" class="jr-ball" id="ae-ball" aria-label="Colour" aria-expanded="false"></button></div>
+    <div class="jr-ae-colors" id="ae-colors" hidden>
+      <button type="button" class="jr-ball auto" data-c="" title="Automatic"></button>
+      ${JR_COLOR_NAMES.map(c=>`<button type="button" class="jr-ball" data-c="${c}" title="${c[0].toUpperCase()+c.slice(1)}" style="--ball:var(${JR_COLORS[c]})"></button>`).join('')}
+    </div>
     <div class="jr-ae-tabs" id="ae-tabs" hidden></div>
     <div id="ae-all">
       <label class="field"><span>Title</span><input id="ae-title" autocomplete="off" value="${v(ev?.title)}"></label>
@@ -1929,7 +1954,7 @@ async function openAddEvent(prefillDate, id, focus, day){
   function showPanel(){
     const dm=cur!=='all', list=spanList();
     q('#ae-all').hidden=dm; q('#ae-daybox').hidden=!dm;
-    q('h2').textContent=dm?longLbl(cur):(ev?'Edit event':'＋ Add event');
+    q('.jr-ae-head h2').textContent=dm?longLbl(cur):(ev?'Edit event':'＋ Add event');
     if(!dm) return;
     const o=days[cur]||{};
     q('#ad-time').value=t5(o.event_time); q('#ad-end-time').value=t5(o.end_time); q('#ad-loc').value=o.location||''; q('#ad-notes').value=o.notes||'';
@@ -1945,6 +1970,18 @@ async function openAddEvent(prefillDate, id, focus, day){
   }
   q('#ae-tabs').onclick=e=>{ const b=e.target.closest('.jr-ae-tab'); if(!b) return; stash(); cur=b.dataset.d; showPanel(); drawTabs(); };
   q('#ad-reset').onclick=()=>{ delete days[cur]; showPanel(); drawTabs(); };
+  // the colour ball: tap it for the colours; "automatic" (the default) lets the calendar pick one
+  let color=ev?.color||null;
+  const drawBall=()=>{
+    const b=q('#ae-ball'), auto=!color;
+    b.classList.toggle('auto', auto && !ev);
+    b.style.setProperty('--ball', auto ? (ev?`var(${JR_COLORS[jrColor({id:ev.id})]})`:'') : `var(${JR_COLORS[color]})`);
+    b.title=auto?'Colour: automatic':'Colour: '+color;
+    card.querySelectorAll('#ae-colors .jr-ball').forEach(x=>x.classList.toggle('on', (x.dataset.c||null)===color));
+  };
+  q('#ae-ball').onclick=()=>{ const c=q('#ae-colors'); c.hidden=!c.hidden; q('#ae-ball').setAttribute('aria-expanded', String(!c.hidden)); };
+  q('#ae-colors').onclick=e=>{ const b=e.target.closest('[data-c]'); if(!b) return; color=b.dataset.c||null; drawBall(); q('#ae-colors').hidden=true; q('#ae-ball').setAttribute('aria-expanded','false'); };
+  drawBall();
   // "Map" by a Location field: see the place as typed (to check it, or find the right one and paste its link back)
   card.querySelectorAll('.jr-ae-map').forEach(b=>b.onclick=e=>{ e.preventDefault();
     const loc=q(b.dataset.for).value.trim() || (b.dataset.for==='#ad-loc' ? q('#ae-loc').value.trim() : '');
@@ -1973,7 +2010,7 @@ async function openAddEvent(prefillDate, id, focus, day){
     let di=end_date?days:{};
     if(end_date && ev && jrMulti(ev) && event_date!==ev.event_date && jrDays(event_date,end_date)===jrDays(ev.event_date,ev.end_date))
       di=jrShiftDays(days, jrDays(ev.event_date,event_date));
-    const body={event_date, end_date, event_time, end_time, title, day_info:Object.keys(di).length?di:null,
+    const body={event_date, end_date, event_time, end_time, title, color, day_info:Object.keys(di).length?di:null,
       location:q('#ae-loc').value.trim()||null, category:q('#ae-cat').value.trim()||null, notes:q('#ae-notes').value.trim()||null};
     try{
       const saved=await api('/api/journal/events'+(ev?'/'+ev.id:''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -2127,8 +2164,8 @@ function renderCalendar(opt={}){
       data-iso="${iso}" onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${n?`<span class="jr-more" hidden></span><span class="jr-count">${n}</span>`:''}</span>
       ${bars.length||singles.length?`<span class="jr-preview">${
-        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}">${esc(e.title)}</span>`).join('')
-      }${singles.map(e=>`<span class="jr-ev${e.done?' done':''}" data-id="${e.id}" data-t="${esc(e.title)}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
+        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}" style="${jrTint(e)}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}">${esc(e.title)}</span>`).join('')
+      }${singles.map(e=>`<span class="jr-ev${e.done?' done':''}" style="${jrTint(e)}" data-id="${e.id}" data-t="${esc(e.title)}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
     </button>`;
   }
   const grid=$('#jr-cal-grid');
@@ -2239,7 +2276,7 @@ function jrEventPop(id, iso){
   const x=jrMulti(e)?jrDay(e,iso):e, d=new Date(iso+'T00:00:00');
   const when=jrMulti(e) ? `${jrDateRange(e)} · day ${jrDays(e.event_date,iso)+1} of ${jrDays(e.event_date,jrEnd(e))+1}`
     : `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
-  const p=document.createElement('div'); p.className='jr-pop'+(e.done?' done':''); p.setAttribute('role','dialog'); p.setAttribute('aria-label',e.title);
+  const p=document.createElement('div'); p.className='jr-pop'+(e.done?' done':''); p.style.cssText=jrTint(e); p.setAttribute('role','dialog'); p.setAttribute('aria-label',e.title);
   p.innerHTML=`<div class="jr-pop-title">${esc(e.title)}</div>
     <div class="jr-pop-row jr-pop-when"><b>${jrTimeRange(x)||'All day'}</b><span>${when}</span></div>
     ${x.location?`<div class="jr-pop-row">${jrMapLink(x.location)}</div>`:''}
@@ -2364,7 +2401,7 @@ function renderDay(enter, dir){
       const sub=[jrMulti(e)?`<b>day ${jrDays(e.event_date,iso)+1} of ${jrDays(e.event_date,jrEnd(e))+1}</b>`:'',
         x.location?jrMapLink(x.location):'', e.category?esc(e.category):'',
         x.notes?esc(x.notes.replace(/\s+/g,' ')):'', e.created_by?`by ${esc(e.created_by)}`:''].filter(Boolean).join(' · ');
-      return `<article class="jr-dcard k-shine${e.done?' done':''}" data-id="${e.id}">
+      return `<article class="jr-dcard k-shine${e.done?' done':''}" style="${jrTint(e)}" data-id="${e.id}">
         <span class="jr-dc-time${x.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="Change time">${jrTimeRange(x,true)||'All day'}</span>
         <span class="jr-dc-title" onclick="editEventTitle(${e.id})" title="${esc(e.title)}">${esc(e.title)}</span>
         <span class="jr-dc-acts">

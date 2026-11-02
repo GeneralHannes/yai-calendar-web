@@ -17,6 +17,7 @@
   const fail = (status, detail) => reply({ detail }, status);
   const secs = (t) => (t ? (t.length === 5 ? t + ":00" : t) : null);
   const now = () => new Date().toISOString();
+  const COLOR = (c) => (["blue", "green", "yellow", "orange", "red", "purple", "teal", "sky"].includes(str(c).toLowerCase()) ? str(c).toLowerCase() : null);
   const str = (v) => (v ?? "").toString().trim();
   const order = (a, b) =>
     a.event_date.localeCompare(b.event_date) ||
@@ -33,7 +34,7 @@
       if (!title) return fail(400, "title is required");
       if (!DATE_RE.test(event_date)) return fail(400, "event_date must be YYYY-MM-DD");
       if (event_time && !TIME_RE.test(event_time)) return fail(400, "event_time must be HH:MM");
-      const ev = { id: db.next++, event_date, event_time: secs(event_time), end_date: null, end_time: null, day_info: null,
+      const ev = { id: db.next++, event_date, event_time: secs(event_time), end_date: null, end_time: null, day_info: null, color: COLOR(body.color),
         location: str(body.location) || null, title, notes: str(body.notes) || null,
         category: str(body.category) || null, done: false, created_at: now(), updated_at: now() };
       const why = setSpan(ev, body); if (why) return fail(400, why);
@@ -51,6 +52,7 @@
     if ("notes" in body) ev.notes = str(body.notes) || null;
     if ("category" in body) ev.category = str(body.category) || null;
     if ("location" in body) ev.location = str(body.location) || null;
+    if ("color" in body) ev.color = COLOR(body.color);
     if ("event_time" in body && !ev.event_time) ev.end_time = null;   // all day now: no end time either
     const was = { ...ev }, why = setSpan(ev, body);
     if (why) { Object.assign(ev, was); return fail(400, why); }
