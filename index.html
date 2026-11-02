@@ -12,7 +12,7 @@ if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.ad
 <script src="static/local-api.js"></script>
 <script src="static/supabase-api.js"></script>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="static/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="static/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1208,7 +1208,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     border-radius:22px; border:1px solid var(--glass-line); background:var(--glass);
     -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur); box-shadow:var(--glass-edge),var(--glass-lift);
     animation:kRise .45s var(--k-smooth) both; }
-  .jr-signin-mark { width:2.6rem; height:2.6rem; align-self:center; }
+  .jr-signin-mark { width:3.6rem; height:3.6rem; align-self:center; border-radius:22%; box-shadow:0 6px 18px rgba(0,0,0,.35); }
   .jr-signin-card h2 { margin:.1rem 0 0; text-align:center; font:400 1.5rem/1.2 var(--k-display); color:var(--ink); }
   .jr-signin-card > p { margin:0 0 .3rem; text-align:center; font-size:.85rem; }
   .jr-signin-card .field { margin:0; flex:none; min-height:0; }   /* a shared .field rule gives fields an 8rem basis */
@@ -1433,7 +1433,7 @@ function jrSignIn(){
   const draw=()=>{
     const up=mode==='up';
     ov.innerHTML=`<form class="jr-signin-card" autocomplete="on">
-      <svg viewBox="0 0 24 24" class="jr-signin-mark" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#D4AF37" stroke-width="1.7"/><path d="M4 12h16" stroke="#D4AF37" stroke-width="1.7"/></svg>
+      <img src="static/icon-192.png" class="jr-signin-mark" alt="">
       <h2>${up?'Create account':'Sign in'}</h2>
       <p class="muted">${up?'Your username is shown on the events you add.':'Yai Calendar, shared with your team.'}</p>
       <label class="field"><span>Username</span><input name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32"></label>
@@ -1471,8 +1471,7 @@ async function askToken(){
   ov.style.cssText='position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;'
     +'background:var(--bg);padding:1.5rem;animation:fadeIn .2s ease both';
   ov.innerHTML='<div style="width:100%;max-width:17rem;text-align:center">'
-    +'<svg viewBox="0 0 24 24" style="width:2.6rem;height:2.6rem;margin-bottom:.5rem" aria-hidden="true">'
-    +'<circle cx="12" cy="12" r="9" fill="none" stroke="#D4AF37" stroke-width="1.7"/><path d="M4 12h16" stroke="#D4AF37" stroke-width="1.7"/></svg>'
+    +'<img src="static/icon-192.png" alt="" style="width:3.4rem;height:3.4rem;border-radius:22%;margin-bottom:.6rem">'
     +'<h2 style="margin:0 0 1rem;font-size:1.15rem;font-weight:700">Enter PIN</h2>'
     +'<input id="pin-inp" type="tel" inputmode="numeric" autocomplete="off" placeholder="PIN" '
     +'style="font-size:1.5rem;text-align:center;letter-spacing:.35em">'
