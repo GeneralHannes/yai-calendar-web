@@ -704,7 +704,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   #jr-agenda { flex:1; min-height:0; overflow:auto; width:100%; max-width:760px; margin:0 auto; padding-bottom:1rem; }
   .jr-agenda-head { margin-bottom:.7rem; }
   .jr-agenda-head .view-title { margin:0; }
-  #jr-calendar { flex:1; min-height:0; display:flex; flex-direction:column; gap:.6rem; width:100%; max-width:1280px; margin:0 auto; }
+  #jr-calendar { flex:1; min-height:0; display:flex; flex-direction:column; gap:.6rem; width:100%; max-width:1800px; margin:0 auto; }   /* big monitors: the month uses the screen */
   .jr-split { flex:1; min-height:0; display:flex; flex-direction:column; gap:.75rem; }
 
   /* top: the month */
@@ -1007,10 +1007,10 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-ev, .jr-preview.tight .jr-ev { position:relative; z-index:2; display:block; width:max-content; min-width:0; max-width:var(--room,100%);
     white-space:nowrap; overflow:hidden; text-overflow:clip; -webkit-line-clamp:unset;
     background:color-mix(in srgb,var(--k-act) 30%,var(--k-bg2)); box-shadow:0 1px 3px rgba(0,0,0,.25); }
-  .jr-ev.wrap { white-space:normal; overflow-wrap:anywhere; }        /* reached the calendar's edge: wrap */
+  .jr-ev.wrap { white-space:normal; overflow-wrap:break-word; }      /* longer than its day: onto more lines */
   .jr-ev.cut { text-overflow:ellipsis; }                               /* …or, short of rows, one line ending "…" */
   .jr-ev.cut .jr-ev-t, .jr-ev.clamp .jr-ev-t { display:none; }        /* squeezed: the title matters more than the time */
-  #jr-cal-grid .jr-ev.clamp { white-space:normal; overflow-wrap:anywhere; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
+  #jr-cal-grid .jr-ev.clamp { white-space:normal; overflow-wrap:break-word; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
   /* a multi-day event: a bar locked from its first day to its last (width set by jrFitCells), one line, "…" if the
      title is longer; a stronger fill so it reads as a span, square ends where it carries on into the next row */
   #jr-cal-grid .jr-ev.span { max-width:none; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis;
@@ -1030,6 +1030,13 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   #jr-cal-grid .jr-cal-day.span-hover:not(.sel) { background:color-mix(in srgb,var(--k-act) 16%,transparent); }
   #jr-cal-grid .jr-ev.span.done.linked { background:color-mix(in srgb,var(--muted) 38%,var(--k-bg2)); }
   #jr-cal-grid .jr-ev.span.done { color:var(--muted); background:color-mix(in srgb,var(--muted) 22%,var(--k-bg2)); }
+  /* event text scales with its day square (cqi = 1% of the square's width): about 10.5px in a phone's narrow
+     squares, growing to about 16px in a monitor's wide ones, so titles are neither tiny on a big screen nor
+     crammed on a small one. Long words hyphenate ("Sup-plier") instead of breaking anywhere. */
+  #jr-cal-grid .jr-ev { font-size:clamp(.66rem, 3px + 7.5cqi, 1.05rem); line-height:1.22; padding:.14em .38em .14em .42em; }
+  #jr-cal-grid .jr-ev.wrap, #jr-cal-grid .jr-ev.clamp { -webkit-hyphens:auto; hyphens:auto; }
+  /* a narrow square (a phone): a wrapped event's time gets its own line, so the title starts on a fresh one */
+  @container (max-width:74px) { #jr-cal-grid .jr-ev.wrap .jr-ev-t { display:block; margin-right:0; } }
   .jr-ev.done { background:color-mix(in srgb,var(--muted) 14%,var(--k-bg2)); }
   .jr-ev-gap { display:block; flex:none; pointer-events:none; }      /* a row kept free for a title running in from the left */
   /* the time leads the title, short ("9:00"), a lighter tint so the title still reads first */
@@ -1044,7 +1051,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
       box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k-hi) 10%,transparent), 0 1px 3px rgba(0,0,0,.3); }
     .jr-ev.done { color:var(--muted); background:color-mix(in srgb,var(--muted) 16%,var(--k-bg2)); }
     .jr-ev-t { color:color-mix(in srgb,var(--accent) 45%,var(--k-hi)); }
-    .jr-ev.wrap { white-space:normal; overflow-wrap:anywhere; }
+    .jr-ev.wrap { white-space:normal; overflow-wrap:break-word; }
     .jr-preview { gap:1px; }
     .jr-daynum { font-size:.82rem !important; min-width:1.3rem !important; height:1.3rem !important; }
   }
@@ -2120,22 +2127,23 @@ function renderCalendar(opt={}){
 }
 
 // Lays out the titles in the day squares. Runs after every render and whenever the grid changes size.
-// A title gets the width it needs: it runs on to the right across the following days of its week and only
-// wraps when it reaches the calendar's edge, so it's always shown in full. Each week is filled in rows
-// ("lanes"), left to right: a title running into later days keeps its lane there, so those days' own
-// titles go below it instead of under it. Titles that don't fit a square's height become "+N".
+// A one-day event stays inside its own day: a long title wraps onto more lines (between words), and ends "…"
+// when the square has no more room — it never runs into the next days, where it would look like it lasts
+// longer. Only a multi-day event's bar crosses days, locked to the days it covers. Each week is filled in rows
+// ("lanes"), left to right: a bar running into later days keeps its lane there, so those days' own titles go
+// below it. Titles that don't fit a square's height become "+N".
 function jrFitCells(){
   const grid=document.getElementById('jr-cal-grid'); if(!grid) return;
   const cells=[...grid.querySelectorAll('.jr-cal-day')];
   grid.querySelectorAll('.jr-ev-gap').forEach(g=>g.remove());
-  const gridW=grid.clientWidth, laneOf={};          // laneOf[event id] = the line its bar had in the row above
+  const laneOf={};                                  // laneOf[event id] = the line its bar had in the row above
   for(let r=0; r<cells.length; r+=7){
     const busy=[];                                   // busy[lane] = first column where that lane is free again
     for(let c=0; c<7 && r+c<cells.length; c++){
       const cell=cells[r+c], pv=cell.querySelector('.jr-preview'); if(!pv) continue;
       const evs=[...pv.querySelectorAll('.jr-ev')], more=cell.querySelector('.jr-more');
       const pad=parseFloat(getComputedStyle(cell).paddingLeft)||0, colW=cell.offsetWidth;
-      const room=Math.max(colW-2*pad, gridW-cell.offsetLeft-pad-3);   // from here to the calendar's right edge
+      const room=colW-2*pad;                                          // its own day, never the next ones
       pv.classList.remove('tight');
       pv.style.setProperty('--room', room+'px');
       evs.forEach(e=>{ e.hidden=false; e.classList.remove('wrap'); });
