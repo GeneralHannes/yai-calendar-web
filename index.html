@@ -234,7 +234,7 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
   .modal-ov { position:fixed; left:0; right:0; top:var(--vvt,0px); height:var(--vvh,100dvh); background:rgba(0,0,0,.5); z-index:25;
               display:flex; align-items:center; justify-content:center; padding:1rem;
               animation:overlayIn .22s ease both; }
-  .modal-card { background:linear-gradient(to bottom,color-mix(in srgb,var(--k-bg2) 98%,transparent),color-mix(in srgb,var(--k-bg2) 95%,transparent));
+  .modal-card { background:var(--k-bg2);
                 border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift);
                 border-radius:20px; max-width:min(26rem,calc(100vw - 2rem)); width:100%;
                 max-height:calc(var(--vvh,100dvh) - 2rem); overflow:auto; overscroll-behavior:contain; touch-action:pan-y;
@@ -802,10 +802,15 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-dc-span { flex:none; font-size:.74rem; font-weight:700; color:var(--accent); cursor:pointer; }
   /* the add / edit form: date from–to, then time from–to with the place beside them */
   .jr-ae .field { margin:0 0 .5rem; }
-  .jr-ae-row { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; align-items:end; }
-  .jr-ae-row3 { grid-template-columns:1fr 1fr 1.35fr; }
-  @media (max-width:420px) { .jr-ae-row3 { grid-template-columns:1fr 1fr; } .jr-ae-row3 .jr-ae-loc { grid-column:1 / -1; } }
+  .jr-ae-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:.5rem; align-items:end; }
+  .jr-ae-row3 { grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.35fr); }
+  @media (max-width:420px) { .jr-ae-row3 { grid-template-columns:minmax(0,1fr) minmax(0,1fr); } .jr-ae-row3 .jr-ae-loc { grid-column:1 / -1; } }
   .jr-ae-row .field input { min-width:0; width:100%; }
+  /* iPhone draws date and time boxes at their own width (wider than a half column, and an empty one a different
+     height): without this they spill over their neighbour and off the sheet, with the date centred */
+  .jr-ae input[type=date], .jr-ae input[type=time] { -webkit-appearance:none; appearance:none; display:block; box-sizing:border-box;
+    width:100%; min-width:0; max-width:100%; min-height:2.75rem; text-align:left; }
+  .jr-ae input[type=date]::-webkit-date-and-time-value, .jr-ae input[type=time]::-webkit-date-and-time-value { text-align:left; min-height:1.3em; }
   /* a multi-day event's day tabs: Whole event, then one per day (a dot: that day has its own details) */
   .jr-ae-tabs { display:flex; gap:.3rem; overflow-x:auto; margin:-.1rem 0 .7rem; padding:.1rem 0 .25rem; scrollbar-width:none; touch-action:pan-x; }
   .jr-ae-tabs[hidden], #ae-daybox[hidden], #ae-all[hidden] { display:none; }
@@ -813,6 +818,15 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     font:600 .8rem var(--k-font); color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 45%,transparent); }
   .jr-ae-tab.on { color:var(--k-on-act); background:var(--accent); border-color:transparent; }
   .jr-ae-tab.has::after { content:""; position:absolute; top:3px; right:4px; width:6px; height:6px; border-radius:50%; background:var(--gold); }
+  .jr-ae-loc > span { display:flex; align-items:center; gap:.3rem; }
+  .jr-ae-map { all:unset; margin-left:auto; display:inline-flex; align-items:center; gap:.15rem; cursor:pointer;
+    font-size:.74rem; font-weight:700; color:var(--accent); padding:.05rem .15rem; border-radius:6px; }
+  .jr-ae-map svg { width:.9em; height:.9em; }
+  .jr-ae-map:focus-visible { outline:2px solid var(--accent); }
+  /* a place opens in Google Maps: it reads as a link (underlined on hover) wherever it's shown */
+  a.jr-map { color:inherit; text-decoration:none; cursor:pointer; white-space:nowrap; }
+  a.jr-map:hover, .jr-up-loc:hover { color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
+  a.jr-map svg { width:.9em; height:.9em; vertical-align:-.12em; margin-right:.1em; }
   .jr-ae-hint { margin:0 0 .65rem; font-size:.82rem; line-height:1.4; color:var(--muted); }
   .jr-ae-hint b { color:var(--ink); }
   #ad-reset { margin-top:.1rem; }
@@ -1010,6 +1024,10 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%, 6px 50%); }
   #jr-cal-grid .jr-ev.span.cont-l.cont-r { clip-path:polygon(0 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 0 100%, 6px 50%); }
   #jr-cal-grid .jr-ev.span.linked { background:color-mix(in srgb,var(--k-act) 94%,#000); }
+  /* the days a multi-day event covers: a soft tint for the ones through the selected day, stronger while its bar is
+     hovered or pressed (jrSpanCells) */
+  #jr-cal-grid .jr-cal-day.span-sel:not(.sel) { background:color-mix(in srgb,var(--k-act) 8%,transparent); }
+  #jr-cal-grid .jr-cal-day.span-hover:not(.sel) { background:color-mix(in srgb,var(--k-act) 16%,transparent); }
   #jr-cal-grid .jr-ev.span.done.linked { background:color-mix(in srgb,var(--muted) 38%,var(--k-bg2)); }
   #jr-cal-grid .jr-ev.span.done { color:var(--muted); background:color-mix(in srgb,var(--muted) 22%,var(--k-bg2)); }
   .jr-ev.done { background:color-mix(in srgb,var(--muted) 14%,var(--k-bg2)); }
@@ -1656,6 +1674,14 @@ function jrDay(e, iso){
 }
 // the same details moved n days (the whole event dragged, or its dates shifted in the form)
 function jrShiftDays(di, n){ const o={}; for(const k in di||{}) o[jrAddDays(k,n)]=di[k]; return o; }
+// A place opens in Google Maps (the Maps app on a phone that has it): a pasted Maps link as it is, a place name
+// as a Maps search. A link shows as "Map" rather than as a long address.
+const jrIsLink=loc=>/^https?:\/\//i.test(loc||'');
+const jrMapUrl=loc=>jrIsLink(loc) ? loc : 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(loc);
+const jrPlace=loc=>jrIsLink(loc) ? 'Map' : loc;
+function jrMapLink(loc, cls=''){
+  return `<a class="jr-map ${cls}" href="${esc(jrMapUrl(loc))}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Open in Google Maps">${JR_PIN}${esc(jrPlace(loc))}</a>`;
+}
 const JR_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
 
 // The month and the day are drawn straight away; the events fill in when they arrive, so a slow or
@@ -1711,7 +1737,7 @@ function jrRenderUpNext(){
       const rel=iso===today?'Today':(Math.round((d-new Date(today+'T00:00:00'))/86400000)===1?'Tomorrow':'');
       html+=`<div class="jr-up-day${day===JR_SEL?' sel':''}" style="--i:${n}"><b>${d.getDate()}</b><span>${DAY_NAMES[d.getDay()].slice(0,3)}${rel?` · <em>${rel}</em>`:''}</span></div>`;
     }
-    const more=[jrMulti(e)?`<em>${jrDateRange(e)}</em>`:'', e.location?`<span class="jr-up-loc">${JR_PIN}${esc(e.location)}</span>`:'',
+    const more=[jrMulti(e)?`<em>${jrDateRange(e)}</em>`:'', e.location?`<span class="jr-up-loc" role="link" title="Open in Google Maps" onclick="event.stopPropagation();open(jrMapUrl(${esc(JSON.stringify(e.location))}),'_blank','noopener')">${JR_PIN}${esc(jrPlace(e.location))}</span>`:'',
       e.category?`<i>${esc(e.category)}</i>`:'', e.created_by?`<b>${esc(e.created_by)}</b>`:'', e.notes?esc(e.notes):''].filter(Boolean).join('');
     html+=`<button type="button" class="jr-up-ev${e.done?' done':''}" style="--i:${n++}" onclick="jrUpOpen('${iso}',${e.id})">
       <span class="jr-up-time">${jrTimeRange(e,true)||(jrMulti(e)?'Days':'All day')}</span>
@@ -1747,7 +1773,7 @@ function renderAgenda(){
             <div class="jr-cell jr-time" onclick="editEventTime(${e.id})">${jrTimeRange(e)||'—'}</div>
             <div class="jr-cell jr-title" style="flex-direction:column;align-items:flex-start;white-space:normal">
               <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
-              ${jrMulti(e)||e.location?`<div class="jr-ag-where">${jrMulti(e)?`<b onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-end-date')">${jrDateRange(e)}</b>`:''}${e.location?`<span onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-loc')">${JR_PIN}${esc(e.location)}</span>`:''}</div>`:''}
+              ${jrMulti(e)||e.location?`<div class="jr-ag-where">${jrMulti(e)?`<b onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-end-date')">${jrDateRange(e)}</b>`:''}${e.location?jrMapLink(e.location):''}</div>`:''}
               <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ note'}</div>
               ${e.created_by?`<div class="jr-by">by ${esc(e.created_by)}</div>`:''}
               <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
@@ -1832,7 +1858,7 @@ async function openAddEvent(prefillDate, id, focus, day){
       <div class="jr-ae-row jr-ae-row3">
         <label class="field"><span>From <span class="muted">(time)</span></span><input id="ae-time" type="time" value="${t5(ev?.event_time)}"></label>
         <label class="field"><span>To</span><input id="ae-end-time" type="time" value="${t5(ev?.end_time)}"></label>
-        <label class="field jr-ae-loc"><span>Location <span class="muted">(optional)</span></span><input id="ae-loc" autocomplete="off" placeholder="Where" value="${v(ev?.location)}"></label>
+        <label class="field jr-ae-loc"><span>Location <span class="muted">(optional)</span><button type="button" class="jr-ae-map" data-for="#ae-loc">${JR_PIN}Map</button></span><input id="ae-loc" autocomplete="off" placeholder="A place, or a Google Maps link" value="${v(ev?.location)}"></label>
       </div>
       <label class="field"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" autocomplete="off" value="${v(ev?.category)}"></label>
       <label class="field"><span>Notes <span class="muted">(optional)</span></span><input id="ae-notes" autocomplete="off" value="${v(ev?.notes)}"></label>
@@ -1843,7 +1869,7 @@ async function openAddEvent(prefillDate, id, focus, day){
         <label class="field"><span>From <span class="muted">(time)</span></span><input id="ad-time" type="time"></label>
         <label class="field"><span>To</span><input id="ad-end-time" type="time"></label>
       </div>
-      <label class="field"><span>Location</span><input id="ad-loc" autocomplete="off" placeholder="Where"></label>
+      <label class="field jr-ae-loc"><span>Location<button type="button" class="jr-ae-map" data-for="#ad-loc">${JR_PIN}Map</button></span><input id="ad-loc" autocomplete="off" placeholder="A place, or a Google Maps link"></label>
       <label class="field"><span>Notes</span><input id="ad-notes" autocomplete="off"></label>
       <button type="button" class="mini" id="ad-reset">Use the whole event’s details for this day</button>
     </div>
@@ -1886,6 +1912,10 @@ async function openAddEvent(prefillDate, id, focus, day){
   }
   q('#ae-tabs').onclick=e=>{ const b=e.target.closest('.jr-ae-tab'); if(!b) return; stash(); cur=b.dataset.d; showPanel(); drawTabs(); };
   q('#ad-reset').onclick=()=>{ delete days[cur]; showPanel(); drawTabs(); };
+  // "Map" by a Location field: see the place as typed (to check it, or find the right one and paste its link back)
+  card.querySelectorAll('.jr-ae-map').forEach(b=>b.onclick=e=>{ e.preventDefault();
+    const loc=q(b.dataset.for).value.trim() || (b.dataset.for==='#ad-loc' ? q('#ae-loc').value.trim() : '');
+    if(!loc){ toast('Type a place first'); return; } open(jrMapUrl(loc),'_blank','noopener'); });
   // the end date can't be before the start: its picker starts there, and a start moved past it takes it along
   const syncEnd=()=>{ const a=q('#ae-date').value, b=q('#ae-end-date'); b.min=a; if(b.value && a && b.value<a) b.value=''; };
   q('#ae-date').addEventListener('change', ()=>{ stash(); syncEnd(); drawTabs(); });
@@ -2052,7 +2082,7 @@ function renderCalendar(opt={}){
     const n = singles.length + covering.length;
     const label = `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}${n?`, ${n} event${n>1?'s':''}`:''}`;
     html += `<button type="button" class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${iso===JR_SEL?' sel':''}${n?' has-events':''}"
-      onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
+      data-iso="${iso}" onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${n?`<span class="jr-more" hidden></span><span class="jr-count">${n}</span>`:''}</span>
       ${bars.length||singles.length?`<span class="jr-preview">${
         bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}" data-id="${e.id}" data-span="${span}">${esc(e.title)}</span>`).join('')
@@ -2084,6 +2114,7 @@ function renderCalendar(opt={}){
   // the day just picked springs a little, like it was pressed into place
   if(opt.enter && !opt.dir && !K_REDUCED.matches) grid.querySelector('.jr-cal-day.sel')?.classList.add('pick');
   jrFitCells();
+  jrSpanCells();
   renderDay(opt.enter, opt.dayDir);
   jrRenderUpNext();
 }
@@ -2154,11 +2185,22 @@ function jrFitCells(){
     setTimeout(()=>f.scrollIntoView({block:'nearest', behavior:'smooth'}), 300);   // after the keyboard has come up
   });
 })();
+// The days a multi-day event covers, lit up: softly for the events running through the selected day (`span-sel`),
+// more strongly while one of its bars is hovered or pressed (`span-hover`, id given).
+function jrSpanCells(hoverId){
+  const grid=document.getElementById('jr-cal-grid'); if(!grid) return;
+  const lit=(cls, evs)=>{
+    const on=new Set(); for(const e of evs) for(let d=e.event_date; d<=jrEnd(e); d=jrAddDays(d,1)) on.add(d);
+    grid.querySelectorAll('.jr-cal-day').forEach(c=>c.classList.toggle(cls, on.has(c.dataset.iso)));
+  };
+  if(hoverId===undefined) lit('span-sel', JR_SEL ? JOURNAL_EVENTS.filter(e=>jrMulti(e) && jrCovers(e,JR_SEL)) : []);
+  lit('span-hover', hoverId ? JOURNAL_EVENTS.filter(e=>String(e.id)===String(hoverId) && jrMulti(e)) : []);
+}
 // a multi-day event split over two rows lights up as one: hovering or pressing either piece marks both
 (function(){
   const grid=document.getElementById('jr-cal-grid'); let cur=null;
   const mark=(id,on)=>grid.querySelectorAll(`.jr-ev.span[data-id="${id}"]`).forEach(b=>b.classList.toggle('linked',on));
-  const set=id=>{ if(cur===id) return; if(cur) mark(cur,false); cur=id; if(id) mark(id,true); };
+  const set=id=>{ if(cur===id) return; if(cur) mark(cur,false); cur=id; if(id) mark(id,true); jrSpanCells(id||null); };
   const at=e=>e.target.closest?.('.jr-ev.span')?.dataset.id||null;
   grid.addEventListener('pointerover',e=>set(at(e)));
   grid.addEventListener('pointerdown',e=>set(at(e)));
@@ -2189,7 +2231,7 @@ function renderDay(enter, dir){
       // a multi-day event shows this day's own details (or the event's where the day has none)
       const x=jrMulti(e)?jrDay(e,iso):e;
       const sub=[jrMulti(e)?`<b>day ${jrDays(e.event_date,iso)+1} of ${jrDays(e.event_date,jrEnd(e))+1}</b>`:'',
-        x.location?`${JR_PIN}${esc(x.location)}`:'', e.category?esc(e.category):'',
+        x.location?jrMapLink(x.location):'', e.category?esc(e.category):'',
         x.notes?esc(x.notes.replace(/\s+/g,' ')):'', e.created_by?`by ${esc(e.created_by)}`:''].filter(Boolean).join(' · ');
       return `<article class="jr-dcard k-shine${e.done?' done':''}" data-id="${e.id}">
         <span class="jr-dc-time${x.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="Change time">${jrTimeRange(x,true)||'All day'}</span>
