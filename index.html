@@ -2295,6 +2295,19 @@ function jrEventPop(id, iso){
   const below=r.bottom+6+H<=innerHeight-m, top=below ? r.bottom+6 : Math.max(m, r.top-6-H);
   Object.assign(p.style,{left:left+'px', top:top+'px', transformOrigin:`${Math.min(W,Math.max(0,r.left+r.width/2-left))}px ${below?0:H}px`});
   requestAnimationFrame(()=>p.classList.add('on'));
+  // with a mouse it's a peek: it closes once the pointer has left both the event and the card (a short grace lets
+  // the pointer cross the gap between them). Touch screens keep it until a tap elsewhere.
+  if(matchMedia('(hover:hover) and (pointer:fine)').matches){
+    // by position (the calendar redraws on the click, and a browser only re-checks :hover once the mouse moves)
+    const inside=(el,x,y)=>{ const b=el.getBoundingClientRect(); return x>=b.left-2&&x<=b.right+2&&y>=b.top-2&&y<=b.bottom+2; };
+    let t=0;
+    const watch=ev=>{
+      if(!p.isConnected){ removeEventListener('pointermove', watch); return; }
+      const near=inside(p,ev.clientX,ev.clientY) || [...document.querySelectorAll(`#jr-cal-grid .jr-ev[data-id="${id}"]`)].some(c=>inside(c,ev.clientX,ev.clientY));
+      if(near){ clearTimeout(t); t=0; } else if(!t) t=setTimeout(()=>{ removeEventListener('pointermove', watch); jrPopClose(); }, 280);
+    };
+    addEventListener('pointermove', watch, {passive:true});
+  }
   p.onclick=ev=>{ const a=ev.target.closest('[data-a]')?.dataset.a; if(!a) return;
     jrPopClose(); if(a==='edit') openAddEvent(null,id,null,jrMulti(e)?iso:null); else if(a==='done') toggleEventDone(id); else deleteEventRow(id); };
   setTimeout(()=>{ document.addEventListener('pointerdown', jrPopOutside, true); document.addEventListener('keydown', jrPopKey); }, 0);
