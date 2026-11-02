@@ -39,11 +39,20 @@
     if (path === "/api/signup" && method === "POST")
       return rpc(origin, "yai_signup", { p_username: body.username ?? "", p_password: body.password ?? "", p_name: body.name ?? "", p_code: body.code ?? "" });
     if (path === "/api/login" && method === "POST") return rpc(origin, "yai_login", { p_username: body.username ?? "", p_password: body.password ?? "" });
+    if (path === "/api/login/code" && method === "POST") return rpc(origin, "yai_login_code", { p_ticket: body.ticket ?? "", p_code: body.code ?? "" });
+    if (path === "/api/password" && method === "POST") return rpc(origin, "yai_change_password", { p_token: token, p_current: body.current ?? "", p_new: body.password ?? "" });
+    if (path === "/api/totp/begin" && method === "POST") return rpc(origin, "yai_totp_begin", { p_token: token });
+    if (path === "/api/totp/confirm" && method === "POST") return rpc(origin, "yai_totp_confirm", { p_token: token, p_code: body.code ?? "" });
+    if (path === "/api/totp/disable" && method === "POST") return rpc(origin, "yai_totp_disable", { p_token: token, p_password: body.password ?? "" });
+    if (path === "/api/audit") return rpc(origin, "yai_audit", { p_token: token });
     if (path === "/api/logout") return rpc(origin, "yai_logout", { p_token: token });
     if (path === "/api/me") return rpc(origin, "yai_me", { p_token: token });
     if (path === "/api/users" && method === "GET") return rpc(origin, "yai_users", { p_token: token });
     const us = path.match(/^\/api\/users\/(\d+)(\/role)?$/);
     if (us && us[2] && method === "POST") return rpc(origin, "yai_set_role", { p_token: token, p_id: +us[1], p_role: body.role ?? "" });
+    const us2 = path.match(/^\/api\/users\/(\d+)\/(password|reset2fa)$/);
+    if (us2 && us2[2] === "password" && method === "POST") return rpc(origin, "yai_admin_set_password", { p_token: token, p_id: +us2[1], p_password: body.password ?? "" });
+    if (us2 && us2[2] === "reset2fa" && method === "POST") return rpc(origin, "yai_admin_reset_2fa", { p_token: token, p_id: +us2[1] });
     if (us && !us[2] && method === "DELETE") return rpc(origin, "yai_remove_user", { p_token: token, p_id: +us[1] });
     const pp = path.match(/^\/api\/people\/([^/]+)\/nickname$/);
     if (pp && method === "POST") return rpc(origin, "yai_set_nickname", { p_token: token, p_code: decodeURIComponent(pp[1]), p_nickname: body.nickname ?? "" });

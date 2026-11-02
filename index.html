@@ -1391,6 +1391,27 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-vt-btn[hidden] { display:none !important; }
   @media (max-width:640px) { #jr-people { padding-bottom:5rem; } .jr-pp { flex-wrap:wrap; } .jr-pp-who { flex:1 1 calc(100% - 4rem); } .jr-pp-nick { flex:1 1 100%; } }
 
+  /* ================= security ================= */
+  .jr-pwrules { font-size:.78rem !important; line-height:1.4; }
+  .jr-sec-row { display:flex; align-items:center; gap:.8rem; padding:.6rem 0; border-bottom:1px solid var(--glass-line); }
+  .jr-sec-row > div { flex:1; min-width:0; display:flex; flex-direction:column; gap:.15rem; }
+  .jr-sec-row small { color:var(--muted); font-size:.78rem; line-height:1.35; }
+  .jr-key { margin:.5rem 0; padding:.6rem .8rem; border-radius:12px; background:color-mix(in srgb,var(--k-bg3) 60%,transparent); border:1px solid var(--glass-line); }
+  .jr-key small { display:block; color:var(--muted); font-size:.72rem; }
+  .jr-key code, .jr-codes code { font:600 1rem/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.06em; word-break:break-all; }
+  .jr-key-open { display:inline-block; margin:.1rem 0 .7rem; text-decoration:none; }
+  .jr-codes { display:grid; grid-template-columns:1fr 1fr; gap:.35rem .8rem; margin:.5rem 0 .9rem; padding:.7rem; border-radius:12px; background:color-mix(in srgb,var(--k-bg3) 60%,transparent); }
+  .jr-acct { flex-wrap:wrap; }
+  .jr-acct-sec { flex:1 0 100%; display:flex; flex-wrap:wrap; align-items:center; gap:.3rem .5rem; font-size:.78rem; }
+  .jr-acct-sec:empty { display:none; }
+  .jr-role.warn { color:var(--warn); border-color:color-mix(in srgb,var(--warn) 45%,transparent); }
+  .jr-link { all:unset; cursor:pointer; color:var(--accent); font-size:.78rem; font-weight:600; }
+  .jr-link:hover, .jr-link:focus-visible { text-decoration:underline; }
+  .jr-audit { margin:.2rem 0 .9rem; font-size:.82rem; }
+  .jr-audit summary { cursor:pointer; color:var(--muted); font-weight:600; }
+  .jr-audit-list { max-height:10rem; overflow:auto; margin-top:.4rem; display:grid; gap:.2rem; }
+  .jr-audit-list time { color:var(--muted); font-variant-numeric:tabular-nums; }
+
   /* ================= roles ================= */
   .jr-role { font-style:normal; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:.08rem .45rem; border-radius:999px;
     color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 70%,transparent); border:1px solid var(--glass-line); }
@@ -1723,13 +1744,22 @@ en:{
   whyPushAndroid:'This phone couldn’t reach its push service. It needs Google Play services and internet (some Wi-Fi networks block it): try again on mobile data.',
   whyState:'Close the app completely, open it again, and try once more.', whyOther:v=>`Could not turn on reminders (${v.what}).`,
   newVersion:'New version — tap to reload',
-  addedBy:'Added by {name}', byName:'by {name}', lblPeople:'Attending', addPeople:'＋ Add people', findPeople:'Search the team', noPeopleFound:'No one found', nPicked:'{n} selected', lblPeopleDay:'Attending this day', sameAsEvent:'Same as the whole event', close:'Close', errNick:'Nicknames can be at most 30 characters.', roleAdmin:'Admin', roleEditor:'Editor', roleViewer:'Viewer', roleViewerNote:'View only', accounts:'Accounts', accountsHint:'Admins manage accounts and can do everything. Editors add, change and delete events. Viewers can only look.', removeAcct:'Remove', removeAcctAsk:'Remove the account “{name}”? They will be signed out and can no longer sign in.', acctRemoved:'Account removed', roleSaved:'Role changed', you:'you', viewOnly:'This account can only view events.', adminOnly:'Only an admin can do that.', lastAdmin:'There must be at least one admin.', ownAcct:'You can’t remove your own account.', peopleTab:'People', peopleHint:'Give people short names to use in the calendar. Everyone sees the nickname instead of the full name.', nickPh:'Nickname', nickSaved:'Nickname saved', nickCleared:'Nickname removed', noTeam:'No team has been added yet.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
+  addedBy:'Added by {name}', byName:'by {name}', lblPeople:'Attending', addPeople:'＋ Add people', findPeople:'Search the team', noPeopleFound:'No one found', nPicked:'{n} selected', lblPeopleDay:'Attending this day', sameAsEvent:'Same as the whole event', close:'Close', errNick:'Nicknames can be at most 30 characters.', roleAdmin:'Admin', roleEditor:'Editor', roleViewer:'Viewer', roleViewerNote:'View only', accounts:'Accounts', accountsHint:'Admins manage accounts and can do everything. Editors add, change and delete events. Viewers can only look.', removeAcct:'Remove', removeAcctAsk:'Remove the account “{name}”? They will be signed out and can no longer sign in.', acctRemoved:'Account removed', roleSaved:'Role changed', you:'you', viewOnly:'This account can only view events.', adminOnly:'Only an admin can do that.', lastAdmin:'There must be at least one admin.', ownAcct:'You can’t remove your own account.', peopleTab:'People', peopleHint:'Give people short names to use in the calendar. Everyone sees the nickname instead of the full name.', nickPh:'Nickname', nickSaved:'Nickname saved', nickCleared:'Nickname removed', noTeam:'No team has been added yet.', pwRules:'At least 10 characters. Not a common password, and not containing your username.', errWrongCode:'That code is wrong.', errAgain:'Please sign in again.', errWrongPw:'That password is wrong.', errTotpOn:'Two-step sign-in is already on.',
+  codeTitle:'Two-step sign-in', codeHint:'Enter the 6-digit code from your authenticator app, or one of your recovery codes.', verify:'Verify', back:'Back',
+  newPwTitle:'Choose a new password', newPwWhy:'Your password has to be changed before you continue.', curPw:'Current password', newPw:'New password', newPw2:'Repeat new password',
+  pwNoMatch:'The two new passwords don’t match.', pwChanged:'Password changed. Your other devices were signed out.', changePw:'Change password', savePw:'Save password',
+  security:'Security', twoStep:'Two-step sign-in', twoStepOn:'On: a code from your authenticator app is asked for when you sign in.', twoStepOff:'Off. Turn it on to be asked for a code from an authenticator app when you sign in.',
+  turnOn:'Turn on', turnOff:'Turn off', twoStepSetup:'Add this key to an authenticator app (Google Authenticator, Microsoft Authenticator, Authy, …), then enter the 6-digit code it shows.',
+  setupKey:'Setup key', openAuth:'Open in authenticator app', recoveryTitle:'Save your recovery codes', recoveryHint:'Each one works once if you lose your phone. They are shown only now.',
+  copyCodes:'Copy', copied:'Copied', savedThem:'I saved them', twoStepNowOn:'Two-step sign-in is on', twoStepNowOff:'Two-step sign-in is off', askPwOff:'Enter your password to turn off two-step sign-in.',
+  setPw:'Set password', setPwAsk:'A temporary password for {name}. They must change it when they next sign in.', reset2:'Reset 2-step', reset2Ask:'Turn off two-step sign-in for {name}? They will then sign in with just their password.',
+  pwSet:'Password set. {name} must change it at the next sign-in.', done2:'Two-step sign-in reset', recent:'Recent activity', tagTwoStep:'2-step', tagMustChange:'must change password', tagLocked:'locked', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
   nothingPlanned:'Nothing planned.', tapAdd:'Tap “Add event” to put something on it.', noEvents:'No events yet.',
   dayEmpty:'Double-tap a day or press + to add one.',
   evWord:n=>n>1?'events':'event', nEvents:n=>`${n} event${n>1?'s':''}`, nDone:'{n} done',
   tipChangeTime:'Change time', tipEditDetails:'Edit details', tipChangeDates:'Change dates',
   errLogin:'wrong username or password', errCode:'wrong team code', errTaken:'that username is taken',
-  errUsername:'username: 2–32 letters, digits, . _ or -', errPassword:'password: at least 6 characters',
+  errUsername:'username: 2–32 letters, digits, . _ or -', errPassword:'Choose a stronger password: at least 10 characters, not a common one, and not containing your username.',
   errSignIn:'please sign in', errDate:'dates must be YYYY-MM-DD', errTime:'times must be HH:MM', errNoEvent:'no such event',
 },
 zh:{
@@ -1773,13 +1803,22 @@ zh:{
   whyPushAndroid:'此手机无法连接推送服务。需要 Google Play 服务和网络（有些 Wi-Fi 会屏蔽）：请改用移动数据重试。',
   whyState:'请完全关闭应用，重新打开后再试一次。', whyOther:v=>`无法开启提醒（${v.what}）。`,
   newVersion:'有新版本，点按刷新',
-  addedBy:'添加者：{name}', byName:'添加者：{name}', lblPeople:'参加人员', addPeople:'＋ 添加人员', findPeople:'搜索团队', noPeopleFound:'没有找到', nPicked:'已选 {n} 人', lblPeopleDay:'当天参加人员', sameAsEvent:'与整个活动相同', close:'关闭', errNick:'昵称最多 30 个字符。', roleAdmin:'管理员', roleEditor:'编辑者', roleViewer:'查看者', roleViewerNote:'仅查看', accounts:'账号', accountsHint:'管理员可管理账号并执行所有操作。编辑者可添加、修改和删除活动。查看者只能查看。', removeAcct:'移除', removeAcctAsk:'移除账号“{name}”？该用户将被退出登录，并且无法再登录。', acctRemoved:'账号已移除', roleSaved:'角色已更改', you:'你', viewOnly:'此账号只能查看活动。', adminOnly:'只有管理员可以这样做。', lastAdmin:'至少需要一位管理员。', ownAcct:'你不能移除自己的账号。', peopleTab:'人员', peopleHint:'给成员起一个简短的昵称，日历中会显示昵称而不是全名，所有人可见。', nickPh:'昵称', nickSaved:'昵称已保存', nickCleared:'昵称已移除', noTeam:'还没有添加团队成员。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
+  addedBy:'添加者：{name}', byName:'添加者：{name}', lblPeople:'参加人员', addPeople:'＋ 添加人员', findPeople:'搜索团队', noPeopleFound:'没有找到', nPicked:'已选 {n} 人', lblPeopleDay:'当天参加人员', sameAsEvent:'与整个活动相同', close:'关闭', errNick:'昵称最多 30 个字符。', roleAdmin:'管理员', roleEditor:'编辑者', roleViewer:'查看者', roleViewerNote:'仅查看', accounts:'账号', accountsHint:'管理员可管理账号并执行所有操作。编辑者可添加、修改和删除活动。查看者只能查看。', removeAcct:'移除', removeAcctAsk:'移除账号“{name}”？该用户将被退出登录，并且无法再登录。', acctRemoved:'账号已移除', roleSaved:'角色已更改', you:'你', viewOnly:'此账号只能查看活动。', adminOnly:'只有管理员可以这样做。', lastAdmin:'至少需要一位管理员。', ownAcct:'你不能移除自己的账号。', peopleTab:'人员', peopleHint:'给成员起一个简短的昵称，日历中会显示昵称而不是全名，所有人可见。', nickPh:'昵称', nickSaved:'昵称已保存', nickCleared:'昵称已移除', noTeam:'还没有添加团队成员。', pwRules:'至少 10 个字符。不能是常见密码，也不能包含你的用户名。', errWrongCode:'验证码不正确。', errAgain:'请重新登录。', errWrongPw:'密码不正确。', errTotpOn:'两步验证已开启。',
+  codeTitle:'两步验证', codeHint:'请输入验证器应用中的 6 位验证码，或一个恢复码。', verify:'验证', back:'返回',
+  newPwTitle:'设置新密码', newPwWhy:'继续之前，需要先更改你的密码。', curPw:'当前密码', newPw:'新密码', newPw2:'再次输入新密码',
+  pwNoMatch:'两次输入的新密码不一致。', pwChanged:'密码已更改，其他设备已退出登录。', changePw:'更改密码', savePw:'保存密码',
+  security:'安全', twoStep:'两步验证', twoStepOn:'已开启：登录时需要输入验证器应用中的验证码。', twoStepOff:'未开启。开启后，登录时需要输入验证器应用中的验证码。',
+  turnOn:'开启', turnOff:'关闭', twoStepSetup:'把此密钥添加到验证器应用（Google Authenticator、Microsoft Authenticator、Authy 等），然后输入它显示的 6 位验证码。',
+  setupKey:'设置密钥', openAuth:'在验证器应用中打开', recoveryTitle:'保存你的恢复码', recoveryHint:'如果手机丢失，每个恢复码可使用一次。它们只显示这一次。',
+  copyCodes:'复制', copied:'已复制', savedThem:'我已保存', twoStepNowOn:'两步验证已开启', twoStepNowOff:'两步验证已关闭', askPwOff:'请输入密码以关闭两步验证。',
+  setPw:'设置密码', setPwAsk:'为 {name} 设置临时密码。对方下次登录时必须更改。', reset2:'重置两步验证', reset2Ask:'关闭 {name} 的两步验证？之后对方只需密码即可登录。',
+  pwSet:'密码已设置。{name} 下次登录时必须更改。', done2:'两步验证已重置', recent:'最近活动', tagTwoStep:'两步验证', tagMustChange:'须更改密码', tagLocked:'已锁定', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
   nothingPlanned:'暂时没有安排。', tapAdd:'点按“添加活动”来添加。', noEvents:'还没有活动。',
   dayEmpty:'双击某一天，或点按 + 来添加。',
   evWord:()=>'个活动', nEvents:n=>`${n} 个活动`, nDone:'已完成 {n}',
   tipChangeTime:'修改时间', tipEditDetails:'编辑详情', tipChangeDates:'修改日期',
   errLogin:'用户名或密码错误', errCode:'团队代码错误', errTaken:'该用户名已被使用',
-  errUsername:'用户名：2–32 位，可用字母、数字、. _ 或 -', errPassword:'密码：至少 6 个字符',
+  errUsername:'用户名：2–32 位，可用字母、数字、. _ 或 -', errPassword:'请使用更强的密码：至少 10 个字符，不能是常见密码，也不能包含你的用户名。',
   errSignIn:'请先登录', errDate:'日期格式应为 YYYY-MM-DD', errTime:'时间格式应为 HH:MM', errNoEvent:'找不到该活动',
 },
 km:{
@@ -1823,13 +1862,22 @@ km:{
   whyPushAndroid:'ទូរស័ព្ទនេះមិនអាចភ្ជាប់ទៅសេវាជូនដំណឹងបានទេ។ វាត្រូវការ Google Play services និងអ៊ីនធឺណិត (បណ្តាញ Wi-Fi មួយចំនួនរារាំង)៖ សូមសាកល្បងម្តងទៀតជាមួយទិន្នន័យទូរស័ព្ទ។',
   whyState:'សូមបិទកម្មវិធីទាំងស្រុង បើកម្តងទៀត រួចព្យាយាមម្តងទៀត។', whyOther:v=>`មិនអាចបើកការរំលឹកបានទេ (${v.what})។`,
   newVersion:'មានកំណែថ្មី ចុចដើម្បីផ្ទុកឡើងវិញ',
-  addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', lblPeople:'អ្នកចូលរួម', addPeople:'＋ បន្ថែមអ្នកចូលរួម', findPeople:'ស្វែងរកក្នុងក្រុម', noPeopleFound:'រកមិនឃើញ', nPicked:'បានជ្រើស {n}', lblPeopleDay:'អ្នកចូលរួមថ្ងៃនេះ', sameAsEvent:'ដូចព្រឹត្តិការណ៍ទាំងមូល', close:'បិទ', errNick:'ឈ្មោះហៅអតិបរមា ៣០ តួអក្សរ។', roleAdmin:'អ្នកគ្រប់គ្រង', roleEditor:'អ្នកកែសម្រួល', roleViewer:'អ្នកមើល', roleViewerNote:'មើលតែប៉ុណ្ណោះ', accounts:'គណនី', accountsHint:'អ្នកគ្រប់គ្រងអាចគ្រប់គ្រងគណនី និងធ្វើបានទាំងអស់។ អ្នកកែសម្រួលអាចបន្ថែម កែ និងលុបព្រឹត្តិការណ៍។ អ្នកមើលអាចមើលបានតែប៉ុណ្ណោះ។', removeAcct:'ដកចេញ', removeAcctAsk:'ដកគណនី “{name}” ចេញ? ពួកគេនឹងត្រូវចាកចេញ ហើយមិនអាចចូលបានទៀតទេ។', acctRemoved:'បានដកគណនីចេញ', roleSaved:'បានប្តូរតួនាទី', you:'អ្នក', viewOnly:'គណនីនេះអាចមើលព្រឹត្តិការណ៍បានតែប៉ុណ្ណោះ។', adminOnly:'មានតែអ្នកគ្រប់គ្រងទេដែលអាចធ្វើបាន។', lastAdmin:'ត្រូវមានអ្នកគ្រប់គ្រងយ៉ាងតិចម្នាក់។', ownAcct:'អ្នកមិនអាចដកគណនីខ្លួនឯងបានទេ។', peopleTab:'បុគ្គលិក', peopleHint:'ដាក់ឈ្មោះហៅខ្លីឲ្យបុគ្គលិក ដើម្បីប្រើក្នុងប្រតិទិន។ អ្នកទាំងអស់នឹងឃើញឈ្មោះហៅជំនួសឈ្មោះពេញ។', nickPh:'ឈ្មោះហៅ', nickSaved:'បានរក្សាទុកឈ្មោះហៅ', nickCleared:'បានលុបឈ្មោះហៅ', noTeam:'មិនទាន់មានបុគ្គលិកទេ។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
+  addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', lblPeople:'អ្នកចូលរួម', addPeople:'＋ បន្ថែមអ្នកចូលរួម', findPeople:'ស្វែងរកក្នុងក្រុម', noPeopleFound:'រកមិនឃើញ', nPicked:'បានជ្រើស {n}', lblPeopleDay:'អ្នកចូលរួមថ្ងៃនេះ', sameAsEvent:'ដូចព្រឹត្តិការណ៍ទាំងមូល', close:'បិទ', errNick:'ឈ្មោះហៅអតិបរមា ៣០ តួអក្សរ។', roleAdmin:'អ្នកគ្រប់គ្រង', roleEditor:'អ្នកកែសម្រួល', roleViewer:'អ្នកមើល', roleViewerNote:'មើលតែប៉ុណ្ណោះ', accounts:'គណនី', accountsHint:'អ្នកគ្រប់គ្រងអាចគ្រប់គ្រងគណនី និងធ្វើបានទាំងអស់។ អ្នកកែសម្រួលអាចបន្ថែម កែ និងលុបព្រឹត្តិការណ៍។ អ្នកមើលអាចមើលបានតែប៉ុណ្ណោះ។', removeAcct:'ដកចេញ', removeAcctAsk:'ដកគណនី “{name}” ចេញ? ពួកគេនឹងត្រូវចាកចេញ ហើយមិនអាចចូលបានទៀតទេ។', acctRemoved:'បានដកគណនីចេញ', roleSaved:'បានប្តូរតួនាទី', you:'អ្នក', viewOnly:'គណនីនេះអាចមើលព្រឹត្តិការណ៍បានតែប៉ុណ្ណោះ។', adminOnly:'មានតែអ្នកគ្រប់គ្រងទេដែលអាចធ្វើបាន។', lastAdmin:'ត្រូវមានអ្នកគ្រប់គ្រងយ៉ាងតិចម្នាក់។', ownAcct:'អ្នកមិនអាចដកគណនីខ្លួនឯងបានទេ។', peopleTab:'បុគ្គលិក', peopleHint:'ដាក់ឈ្មោះហៅខ្លីឲ្យបុគ្គលិក ដើម្បីប្រើក្នុងប្រតិទិន។ អ្នកទាំងអស់នឹងឃើញឈ្មោះហៅជំនួសឈ្មោះពេញ។', nickPh:'ឈ្មោះហៅ', nickSaved:'បានរក្សាទុកឈ្មោះហៅ', nickCleared:'បានលុបឈ្មោះហៅ', noTeam:'មិនទាន់មានបុគ្គលិកទេ។', pwRules:'យ៉ាងតិច ១០ តួអក្សរ។ មិនមែនជាពាក្យសម្ងាត់ដែលគេប្រើទូទៅ ហើយមិនមានឈ្មោះអ្នកប្រើទេ។', errWrongCode:'លេខកូដមិនត្រឹមត្រូវទេ។', errAgain:'សូមចូលគណនីម្តងទៀត។', errWrongPw:'ពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ។', errTotpOn:'ការចូលពីរជំហានបានបើករួចហើយ។',
+  codeTitle:'ការចូលពីរជំហាន', codeHint:'បញ្ចូលលេខកូដ ៦ ខ្ទង់ពីកម្មវិធីផ្ទៀងផ្ទាត់ ឬលេខកូដស្តារមួយ។', verify:'ផ្ទៀងផ្ទាត់', back:'ត្រឡប់',
+  newPwTitle:'ជ្រើសរើសពាក្យសម្ងាត់ថ្មី', newPwWhy:'ត្រូវប្តូរពាក្យសម្ងាត់របស់អ្នកមុនពេលបន្ត។', curPw:'ពាក្យសម្ងាត់បច្ចុប្បន្ន', newPw:'ពាក្យសម្ងាត់ថ្មី', newPw2:'បញ្ចូលពាក្យសម្ងាត់ថ្មីម្តងទៀត',
+  pwNoMatch:'ពាក្យសម្ងាត់ថ្មីទាំងពីរមិនដូចគ្នាទេ។', pwChanged:'បានប្តូរពាក្យសម្ងាត់។ ឧបករណ៍ផ្សេងទៀតត្រូវបានចាកចេញ។', changePw:'ប្តូរពាក្យសម្ងាត់', savePw:'រក្សាទុកពាក្យសម្ងាត់',
+  security:'សុវត្ថិភាព', twoStep:'ការចូលពីរជំហាន', twoStepOn:'បើក៖ នឹងសួររកលេខកូដពីកម្មវិធីផ្ទៀងផ្ទាត់ពេលអ្នកចូល។', twoStepOff:'បិទ។ បើកវា ដើម្បីឲ្យសួររកលេខកូដពីកម្មវិធីផ្ទៀងផ្ទាត់ពេលអ្នកចូល។',
+  turnOn:'បើក', turnOff:'បិទ', twoStepSetup:'បន្ថែមសោនេះទៅកម្មវិធីផ្ទៀងផ្ទាត់ (Google Authenticator, Microsoft Authenticator, Authy …) បន្ទាប់មកបញ្ចូលលេខកូដ ៦ ខ្ទង់ដែលវាបង្ហាញ។',
+  setupKey:'សោដំឡើង', openAuth:'បើកក្នុងកម្មវិធីផ្ទៀងផ្ទាត់', recoveryTitle:'រក្សាទុកលេខកូដស្តារ', recoveryHint:'លេខកូដនីមួយៗប្រើបានម្តង ប្រសិនបើអ្នកបាត់ទូរសព្ទ។ វាបង្ហាញតែពេលនេះប៉ុណ្ណោះ។',
+  copyCodes:'ចម្លង', copied:'បានចម្លង', savedThem:'ខ្ញុំបានរក្សាទុករួច', twoStepNowOn:'ការចូលពីរជំហានបានបើក', twoStepNowOff:'ការចូលពីរជំហានបានបិទ', askPwOff:'បញ្ចូលពាក្យសម្ងាត់របស់អ្នក ដើម្បីបិទការចូលពីរជំហាន។',
+  setPw:'កំណត់ពាក្យសម្ងាត់', setPwAsk:'ពាក្យសម្ងាត់បណ្តោះអាសន្នសម្រាប់ {name}។ គាត់ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', reset2:'កំណត់ពីរជំហានឡើងវិញ', reset2Ask:'បិទការចូលពីរជំហានរបស់ {name}? បន្ទាប់មកគាត់នឹងចូលដោយប្រើតែពាក្យសម្ងាត់។',
+  pwSet:'បានកំណត់ពាក្យសម្ងាត់។ {name} ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', done2:'បានកំណត់ពីរជំហានឡើងវិញ', recent:'សកម្មភាពថ្មីៗ', tagTwoStep:'ពីរជំហាន', tagMustChange:'ត្រូវប្តូរពាក្យសម្ងាត់', tagLocked:'ជាប់សោ', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
   nothingPlanned:'មិនមានអ្វីគ្រោងទុកទេ។', tapAdd:'ចុច «បន្ថែមព្រឹត្តិការណ៍» ដើម្បីបន្ថែម។', noEvents:'មិនទាន់មានព្រឹត្តិការណ៍ទេ។',
   dayEmpty:'ចុចពីរដងលើថ្ងៃ ឬចុច + ដើម្បីបន្ថែម។',
   evWord:()=>'ព្រឹត្តិការណ៍', nEvents:n=>`${n} ព្រឹត្តិការណ៍`, nDone:'រួចរាល់ {n}',
   tipChangeTime:'ប្តូរម៉ោង', tipEditDetails:'កែព័ត៌មាន', tipChangeDates:'ប្តូរកាលបរិច្ឆេទ',
   errLogin:'ឈ្មោះអ្នកប្រើ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ', errCode:'លេខកូដក្រុមមិនត្រឹមត្រូវ', errTaken:'ឈ្មោះអ្នកប្រើនេះមានគេប្រើរួចហើយ',
-  errUsername:'ឈ្មោះអ្នកប្រើ៖ 2–32 តួអក្សរ ជាអក្សរ លេខ . _ ឬ -', errPassword:'ពាក្យសម្ងាត់៖ យ៉ាងតិច 6 តួអក្សរ',
+  errUsername:'ឈ្មោះអ្នកប្រើ៖ 2–32 តួអក្សរ ជាអក្សរ លេខ . _ ឬ -', errPassword:'សូមប្រើពាក្យសម្ងាត់ដែលរឹងមាំជាងនេះ៖ យ៉ាងតិច ១០ តួអក្សរ មិនមែនជាពាក្យសម្ងាត់ទូទៅ ហើយមិនមានឈ្មោះអ្នកប្រើ។',
   errSignIn:'សូមចូលគណនីជាមុន', errDate:'កាលបរិច្ឆេទត្រូវតែជាទម្រង់ YYYY-MM-DD', errTime:'ម៉ោងត្រូវតែជាទម្រង់ HH:MM', errNoEvent:'រកមិនឃើញព្រឹត្តិការណ៍នោះទេ',
 },
 };
@@ -1846,7 +1894,7 @@ const JR_ERRS=[[/wrong username or password/i,'errLogin'],[/wrong team code/i,'e
   [/^username:/i,'errUsername'],[/^password:/i,'errPassword'],[/too many wrong/i,'tooMany'],[/please sign in/i,'errSignIn'],
   [/title (is required|cannot be blank)/i,'titleReq'],[/(event|end)_date must be/i,'errDate'],[/(event|end)_time must be/i,'errTime'],
   [/end date is before/i,'endBeforeStart'],[/end time is before/i,'endTimeBefore'],[/give a start time/i,'needStart'],[/no event #/i,'errNoEvent'],
-  [/^nickname:/i,'errNick'],[/can only view/i,'viewOnly'],[/only an admin/i,'adminOnly'],[/at least one admin/i,'lastAdmin'],[/own account/i,'ownAcct']];
+  [/^nickname:/i,'errNick'],[/wrong code/i,'errWrongCode'],[/sign in again/i,'errAgain'],[/^wrong password$/i,'errWrongPw'],[/already on/i,'errTotpOn'],[/can only view/i,'viewOnly'],[/only an admin/i,'adminOnly'],[/at least one admin/i,'lastAdmin'],[/own account/i,'ownAcct']];
 function jrErr(m){ const s=String(m||''); if(JR_LANG==='en') return s; for(const [re,k] of JR_ERRS) if(re.test(s)) return tx(k); return s; }
 
 // The words in the page's own markup (data-i18n = text, -title, -aria, -ph = placeholder), the weekday row, the
@@ -1940,6 +1988,7 @@ async function api(path, opts={}){
   catch(e){ throw new JrOffline('cannot reach the server'); }        // network down, server or tunnel gone
   if(r.status>=502 && r.status<=530) throw new JrOffline('server offline (HTTP '+r.status+')');   // the tunnel answers, the server doesn't
   if(r.status===401){ jrSetSession('', null); askToken(); throw new Error('please sign in'); }
+  if(r.status===403 && JR_USER){ let d; try{ d=(await r.clone().json()).detail; }catch(_){} if(/password change required/i.test(d||'')){ jrChangePassword(true); throw new Error('password change required'); } }
   if(r.status===429){ toast(tx('tooMany')); throw new Error('locked out for a while'); }
   if(!r.ok){ let d; try{ d=(await r.json()).detail; }catch(_){} throw new Error(d || r.statusText); }
   return r.json();
@@ -1982,7 +2031,7 @@ function jrRenderMe(){
   const el=document.getElementById('jr-me'); if(!el) return;
   el.innerHTML=JR_USER?`<span>${esc(JR_USER.name)}${!jrCanEdit()?` <em class="jr-role">${esc(tx('roleViewerNote'))}</em>`:''}</span>`
     +(jrRole()==='admin'?`<button type="button" class="mini" onclick="jrAccounts()">${esc(tx('accounts'))}</button>`:'')
-    +`<button type="button" class="mini" onclick="jrSignOut()">${esc(tx('signOut'))}</button>`:'';
+    +`<button type="button" class="mini" onclick="jrSecurity()">${esc(tx('security'))}</button><button type="button" class="mini" onclick="jrSignOut()">${esc(tx('signOut'))}</button>`:'';
 }
 // the signed-in account as the server has it now (an admin may have changed the role since)
 async function jrRefreshMe(){
@@ -2000,9 +2049,22 @@ async function jrAccounts(){
       <div class="jr-acct-list">${list.map(u=>`<div class="jr-acct" data-id="${u.id}">
         <span class="jr-acct-who"><b>${esc(u.name)}${u.id===JR_USER.id?` <em class="jr-role">${esc(tx('you'))}</em>`:''}</b><small>@${esc(u.username)}</small></span>
         <select aria-label="${esc(tx('accounts'))}: ${esc(u.name)}">${['admin','editor','viewer'].map(r=>`<option value="${r}"${u.role===r?' selected':''}>${esc(tx('role'+r[0].toUpperCase()+r.slice(1)))}</option>`).join('')}</select>
-        ${u.id===JR_USER.id?'<span class="jr-acct-gap"></span>':`<button type="button" class="mini jr-ae-del" data-rm="${u.id}">${esc(tx('removeAcct'))}</button>`}</div>`).join('')}</div>
+        ${u.id===JR_USER.id?'<span class="jr-acct-gap"></span>':`<button type="button" class="mini jr-ae-del" data-rm="${u.id}">${esc(tx('removeAcct'))}</button>`}
+        <div class="jr-acct-sec">${u.totp_on?`<em class="jr-role">${esc(tx('tagTwoStep'))}</em>`:''}${u.must_change?`<em class="jr-role warn">${esc(tx('tagMustChange'))}</em>`:''}${u.locked?`<em class="jr-role warn">${esc(tx('tagLocked'))}</em>`:''}
+          ${u.id!==JR_USER.id?`<button type="button" class="jr-link" data-pw="${u.id}">${esc(tx('setPw'))}</button>`:''}${u.totp_on&&u.id!==JR_USER.id?`<button type="button" class="jr-link" data-r2="${u.id}">${esc(tx('reset2'))}</button>`:''}</div></div>`).join('')}</div>
+      <details class="jr-audit"><summary>${esc(tx('recent'))}</summary><div class="jr-audit-list" id="jr-audit-list"></div></details>
       <div class="item-edit-actions"><button class="mini" id="ac-close">${esc(tx('close'))}</button></div>`;
     card.querySelector('#ac-close').onclick=()=>dismiss(ov);
+    card.querySelector('.jr-audit').ontoggle=async e=>{ if(!e.target.open) return; const box=card.querySelector('#jr-audit-list');
+      try{ const a=await api('/api/audit'); box.innerHTML=a.map(x=>`<div><time>${esc(new Date(x.at).toLocaleString(JR_LANG==='zh'?'zh-CN':JR_LANG==='km'?'km-KH':[],{dateStyle:'short',timeStyle:'short'}))}</time> <b>${esc(x.username||'?')}</b> ${esc(x.event)}</div>`).join('')||'—'; }catch(err){ box.textContent=jrErr(err.message); } };
+    card.querySelectorAll('[data-pw]').forEach(b=>b.onclick=async()=>{
+      const id=+b.dataset.pw, u=list.find(x=>x.id===id), pw=await jrAskPassword(tx('setPwAsk',{name:u.name}), tx('setPw')); if(!pw) return;
+      try{ await api('/api/users/'+id+'/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})}); u.must_change=true; toast(tx('pwSet',{name:u.name})); draw(); }
+      catch(err){ toast(tx('errPrefix')+jrErr(err.message)); } });
+    card.querySelectorAll('[data-r2]').forEach(b=>b.onclick=async()=>{
+      const id=+b.dataset.r2, u=list.find(x=>x.id===id); if(!await askConfirm(tx('reset2Ask',{name:u.name}), tx('reset2'), true)) return;
+      try{ await api('/api/users/'+id+'/reset2fa',{method:'POST'}); u.totp_on=false; toast(tx('done2')); draw(); }
+      catch(err){ toast(tx('errPrefix')+jrErr(err.message)); } });
     card.querySelectorAll('.jr-acct select').forEach(sel=>sel.onchange=async()=>{
       const id=+sel.closest('.jr-acct').dataset.id;
       try{ await api('/api/users/'+id+'/role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:sel.value})});
@@ -2021,10 +2083,134 @@ async function jrSignOut(){
   try{ await fetch(jrUrl('/api/logout'),{method:'POST',headers:{'X-Token':TOKEN}}); }catch(_){}
   jrSetSession('', null); JOURNAL_EVENTS=[]; jrRender(); askToken();
 }
+// a signed-in session: a password the server says must change stops here until it has
+function jrFinishSignIn(d, ov){
+  jrSetSession(d.token, d.user); dismiss(ov);
+  if(d.user.must_change){ jrChangePassword(true); return; }
+  toast(tx('signedInAs',{name:d.user.name})); loadJournal();
+}
+// a password typed into a small on-page box (or null if cancelled)
+function jrAskPassword(msg, yes){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div'); ov.className='modal-ov'; ov.style.zIndex=70;
+    const card=document.createElement('form'); card.className='modal-card'; card.style.cssText='max-width:22rem;width:100%';
+    card.innerHTML=`<p style="margin:0 0 .7rem;line-height:1.4">${esc(msg)}</p>
+      <label class="field"><span>${esc(tx('password'))}</span><input name="pw" type="password" autocomplete="off"></label>
+      <div class="item-edit-actions"><button type="button" class="mini" data-x>${esc(tx('cancel'))}</button><button class="act" type="submit">${esc(yes||tx('ok'))}</button></div>`;
+    ov.appendChild(card); document.body.appendChild(ov);
+    const done=v=>{ dismiss(ov); resolve(v); };
+    card.querySelector('[data-x]').onclick=()=>done(null); ov.onclick=e=>{ if(e.target===ov) done(null); };
+    card.onsubmit=e=>{ e.preventDefault(); if(card.pw.value) done(card.pw.value); };
+    setTimeout(()=>card.pw.focus(),40);
+  });
+}
+// change the password: the current one and the new one twice. `forced`: the account must, so nothing else shows yet
+function jrChangePassword(forced){
+  if(document.getElementById('pw-ov')) return;
+  const ov=document.createElement('div'); ov.id='pw-ov'; ov.className=forced?'jr-signin':'modal-ov';
+  const card=document.createElement('form'); card.className=forced?'jr-signin-card':'modal-card'; if(!forced) card.style.cssText='max-width:22rem;width:100%';
+  card.autocomplete='off';
+  card.innerHTML=`${forced?'<img src="static/icon-192.png" class="jr-signin-mark" alt="">':''}<h2>${esc(forced?tx('newPwTitle'):tx('changePw'))}</h2>
+    <p class="muted">${esc(forced?tx('newPwWhy'):tx('pwRules'))}</p>${forced?`<p class="muted jr-pwrules">${esc(tx('pwRules'))}</p>`:''}
+    <label class="field"><span>${esc(tx('curPw'))}</span><input name="cur" type="password" autocomplete="current-password"></label>
+    <label class="field"><span>${esc(tx('newPw'))}</span><input name="n1" type="password" autocomplete="new-password"></label>
+    <label class="field"><span>${esc(tx('newPw2'))}</span><input name="n2" type="password" autocomplete="new-password"></label>
+    <div class="jr-signin-err" role="alert"></div>
+    <div class="item-edit-actions">${forced?`<button type="button" class="mini" data-out>${esc(tx('signOut'))}</button>`:`<button type="button" class="mini" data-x>${esc(tx('cancel'))}</button>`}<button class="act" type="submit">${esc(tx('savePw'))}</button></div>`;
+  ov.appendChild(card); document.body.appendChild(ov);
+  const err=card.querySelector('.jr-signin-err'), go=card.querySelector('[type=submit]');
+  if(forced) card.querySelector('[data-out]').onclick=async()=>{ try{ await fetch(jrUrl('/api/logout'),{method:'POST',headers:{'X-Token':TOKEN}}); }catch(_){} jrSetSession('',null); JOURNAL_EVENTS=[]; dismiss(ov); askToken(); };
+  else { card.querySelector('[data-x]').onclick=()=>dismiss(ov); ov.onclick=e=>{ if(e.target===ov) dismiss(ov); }; }
+  card.onsubmit=async e=>{
+    e.preventDefault(); err.textContent='';
+    if(card.n1.value!==card.n2.value){ err.textContent=tx('pwNoMatch'); return; }
+    go.disabled=true;
+    try{
+      const r=await fetch(jrUrl('/api/password'),{method:'POST',headers:{'Content-Type':'application/json','X-Token':TOKEN},body:JSON.stringify({current:card.cur.value,password:card.n1.value})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok){ err.textContent=r.status===429?tx('tooMany'):(d.detail?jrErr(d.detail):tx('wentWrong')); go.disabled=false; return; }
+      jrSetSession(TOKEN, d.user); dismiss(ov); toast(tx('pwChanged')); if(forced) loadJournal();
+    }catch(_){ err.textContent=tx('cantReach'); go.disabled=false; }
+  };
+  setTimeout(()=>{ try{ card.cur.focus(); }catch(_){} }, 60);
+}
+// Security: the password, and two-step sign-in with an authenticator app
+function jrSecurity(){
+  const ov=document.createElement('div'); ov.className='modal-ov';
+  const card=document.createElement('div'); card.className='modal-card jr-sec'; card.style.cssText='max-width:26rem;width:100%';
+  ov.appendChild(card); document.body.appendChild(ov); ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
+  const call=async(path,body)=>{ const r=await fetch(jrUrl(path),{method:'POST',headers:{'Content-Type':'application/json','X-Token':TOKEN},body:JSON.stringify(body||{})});
+    const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.detail||'something went wrong'); return d; };
+  const grp=k=>k.replace(/(.{4})/g,'$1 ').trim();
+  const home=()=>{
+    card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('security'))}</h2></div>
+      <div class="jr-sec-row"><div><b>${esc(tx('changePw'))}</b><small>${esc(tx('pwRules'))}</small></div><button class="mini" data-a="pw">${esc(tx('changePw'))}</button></div>
+      <div class="jr-sec-row"><div><b>${esc(tx('twoStep'))}</b><small>${esc(JR_USER.totp_on?tx('twoStepOn'):tx('twoStepOff'))}</small></div>
+        <button class="mini${JR_USER.totp_on?' jr-ae-del':''}" data-a="2fa">${esc(JR_USER.totp_on?tx('turnOff'):tx('turnOn'))}</button></div>
+      <div class="item-edit-actions"><button class="mini" data-a="close">${esc(tx('close'))}</button></div>`;
+    card.onclick=async e=>{ const a=e.target.closest('[data-a]')?.dataset.a; if(!a) return;
+      if(a==='close') dismiss(ov);
+      if(a==='pw'){ dismiss(ov); jrChangePassword(false); }
+      if(a==='2fa'){
+        if(JR_USER.totp_on){
+          const pw=await jrAskPassword(tx('askPwOff'), tx('turnOff')); if(!pw) return;
+          try{ await call('/api/totp/disable',{password:pw}); jrSetSession(TOKEN,{...JR_USER,totp_on:false}); toast(tx('twoStepNowOff')); home(); }
+          catch(err){ toast(tx('errPrefix')+jrErr(err.message)); }
+        } else setup();
+      } };
+  };
+  const setup=async()=>{
+    let k; try{ k=await call('/api/totp/begin'); }catch(err){ toast(tx('errPrefix')+jrErr(err.message)); return; }
+    card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('twoStep'))}</h2></div><p class="jr-ae-hint">${esc(tx('twoStepSetup'))}</p>
+      <div class="jr-key"><small>${esc(tx('setupKey'))}</small><code>${esc(grp(k.secret))}</code></div>
+      <a class="mini jr-key-open" href="${esc(k.uri)}">${esc(tx('openAuth'))}</a>
+      <label class="field"><span>${esc(tx('codeTitle'))}</span><input name="c" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="letter-spacing:.3em;text-align:center"></label>
+      <div class="jr-signin-err" role="alert"></div>
+      <div class="item-edit-actions"><button class="mini" data-a="cancel">${esc(tx('cancel'))}</button><button class="act" data-a="ok">${esc(tx('verify'))}</button></div>`;
+    const inp=card.querySelector('input'), er=card.querySelector('.jr-signin-err');
+    card.onclick=async e=>{ const a=e.target.closest('[data-a]')?.dataset.a; if(a==='cancel') home(); if(a!=='ok') return;
+      try{ const d=await call('/api/totp/confirm',{code:inp.value.trim()}); jrSetSession(TOKEN,{...JR_USER,totp_on:true}); codes(d.codes); }
+      catch(err){ er.textContent=jrErr(err.message); } };
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); card.querySelector('[data-a=ok]').click(); } });
+    setTimeout(()=>inp.focus(),40);
+  };
+  const codes=list=>{
+    card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('recoveryTitle'))}</h2></div><p class="jr-ae-hint">${esc(tx('recoveryHint'))}</p>
+      <div class="jr-codes">${list.map(c=>`<code>${esc(c)}</code>`).join('')}</div>
+      <div class="item-edit-actions"><button class="mini" data-a="copy">${esc(tx('copyCodes'))}</button><button class="act" data-a="done">${esc(tx('savedThem'))}</button></div>`;
+    card.onclick=async e=>{ const a=e.target.closest('[data-a]')?.dataset.a;
+      if(a==='copy'){ try{ await navigator.clipboard.writeText(list.join('\n')); toast(tx('copied')); }catch(_){} }
+      if(a==='done'){ toast(tx('twoStepNowOn')); home(); } };
+  };
+  home();
+}
+
 function jrSignIn(){
   if(document.getElementById('pin-ov')) return;
   const ov=document.createElement('div'); ov.id='pin-ov'; ov.className='jr-signin';
   let mode='in';
+  // password accepted, and the account asks for a second step: the 6 digits from its authenticator (or a recovery code)
+  const drawCode=ticket=>{
+    ov.innerHTML=`<form class="jr-signin-card" autocomplete="off">
+      <img src="static/icon-192.png" class="jr-signin-mark" alt="">
+      <h2>${esc(tx('codeTitle'))}</h2>
+      <p class="muted">${esc(tx('codeHint'))}</p>
+      <label class="field"><span>${esc(tx('codeTitle'))}</span><input name="code" inputmode="text" autocomplete="one-time-code" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" style="letter-spacing:.2em;text-align:center"></label>
+      <button class="act" type="submit">${esc(tx('verify'))}</button>
+      <div class="jr-signin-err" role="alert"></div>
+      <button class="jr-signin-switch" type="button">${esc(tx('back'))}</button>
+    </form>`;
+    const f=ov.querySelector('form'), errEl=ov.querySelector('.jr-signin-err'), go=f.querySelector('[type=submit]');
+    ov.querySelector('.jr-signin-switch').onclick=()=>draw();
+    f.onsubmit=async e=>{ e.preventDefault(); const code=f.code.value.trim(); if(!code) return; go.disabled=true; errEl.textContent='';
+      try{
+        const r=await fetch(jrUrl('/api/login/code'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticket,code})});
+        const d=await r.json().catch(()=>({}));
+        if(!r.ok){ errEl.textContent=r.status===429?tx('tooMany'):(d.detail?jrErr(d.detail):tx('wentWrong')); go.disabled=false; if(d.detail==='sign in again') setTimeout(draw,1200); return; }
+        jrFinishSignIn(d, ov);
+      }catch(_){ errEl.textContent=tx('cantReach'); go.disabled=false; } };
+    setTimeout(()=>{ try{ f.code.focus(); }catch(_){} }, 60);
+  };
   const draw=()=>{
     const up=mode==='up';
     ov.innerHTML=`<form class="jr-signin-card" autocomplete="on">
@@ -2033,6 +2219,7 @@ function jrSignIn(){
       <p class="muted">${esc(up?tx('usernameShown'):tx('sharedTeam'))}</p>
       <label class="field"><span>${esc(tx('username'))}</span><input name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32"></label>
       <label class="field"><span>${esc(tx('password'))}</span><input name="password" type="password" autocomplete="${up?'new-password':'current-password'}"></label>
+      ${up?`<p class="muted jr-pwrules">${esc(tx('pwRules'))}</p>`:''}
       ${up&&JR_AUTH?.team_code?`<label class="field"><span>${esc(tx('teamCode'))}</span><input name="code" inputmode="numeric" autocomplete="off"></label>`:''}
       <button class="act" type="submit">${esc(up?tx('createAccount'):tx('signIn'))}</button>
       <div class="jr-signin-err" role="alert"></div>
@@ -2050,7 +2237,8 @@ function jrSignIn(){
         const r=await fetch(jrUrl(up?'/api/signup':'/api/login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)});
         const d=await r.json().catch(()=>({}));
         if(!r.ok){ errEl.textContent=r.status===429?tx('tooMany'):(d.detail?jrErr(d.detail):tx('wentWrong')); go.disabled=false; return; }
-        jrSetSession(d.token, d.user); dismiss(ov); toast(tx('signedInAs',{name:d.user.name})); loadJournal();
+        if(d.needs_code){ drawCode(d.ticket); return; }
+        jrFinishSignIn(d, ov);
       }catch(_){ errEl.textContent=tx('cantReach'); go.disabled=false; }
     };
     setTimeout(()=>{ try{ f.querySelector('input').focus(); }catch(_){} }, 60);
