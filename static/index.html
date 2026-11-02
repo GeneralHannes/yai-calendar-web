@@ -5,24 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>if(navigator.standalone)document.documentElement.classList.add("ios-app");
 /* iPhone only (not iPad or Android): its own safe-area layout, see "iPhone" in the styles */
-if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.add("ios-phone");
-/* iOS home-screen apps that run under the status bar lay out pinned (position:fixed) elements in a frame that is
-   shorter than the screen, by about the status bar's height, so anything pinned to the "bottom" stops that far
-   above the real bottom (seen on iOS 26: window.innerHeight is the full screen, the pinned frame isn't). Measure
-   that frame with a hidden pinned element stretched top to bottom, and put the shortfall against the real screen
-   height into --vgap; the styles extend the page and the bars down by it. 0 in Safari, on other phones, and if
-   iOS stops doing it. */
-if(navigator.standalone&&/iPhone|iPod/.test(navigator.userAgent)){(function(){
-  var h=document.documentElement;
-  function fix(){
-    var port=innerHeight>=innerWidth, s=port?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);
-    var p=document.createElement("div"); p.style.cssText="position:fixed;top:0;bottom:0;left:0;width:1px;visibility:hidden;pointer-events:none";
-    h.appendChild(p); var framed=p.getBoundingClientRect().height; p.remove();
-    var g=Math.round(s-Math.min(framed||innerHeight, innerHeight)); h.style.setProperty("--vgap",(g>0&&g<100?g:0)+"px");
-  }
-  fix(); addEventListener("resize",fix); addEventListener("orientationchange",function(){ setTimeout(fix,350); });
-  addEventListener("DOMContentLoaded",fix); addEventListener("load",fix);
-})();}</script>
+if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.add("ios-phone");</script>
 <script>try{var t=localStorage.getItem("sk_theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <meta name="theme-color" content="#1e2030">
 <script src="/static/local-api.js"></script>
@@ -1091,6 +1074,10 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     /* exactly the screen, also as an installed app: the older home-screen rule (min-height: screen + notch,
        from Odin's Keep) made the page taller than the screen and pushed the day panel under the tabs */
     body, html.ios-app body { min-height:0; }
+    /* …but the installed iPhone app needs the document itself at least screen + status bar tall (see the
+       home-screen note at the top of the styles): exactly-screen-tall, iOS cuts a status-bar-high strip off
+       the bottom and nothing pinned can reach it. The page is still pinned, so this doesn't scroll anything. */
+    html.ios-app { height:auto; min-height:calc(100vh + env(safe-area-inset-top)); }
     #jr-calendar, .jr-top, .jr-bottom, .jr-rail { touch-action:none; }
     #jr-agenda { touch-action:pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
     main { padding:.6rem .6rem calc(4.5rem + max(.6rem,env(safe-area-inset-bottom))); }
@@ -1195,17 +1182,14 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
                 to just above them. Each home-indicator iPhone gains about 25px of calendar.
      Android, iPad and desktop are untouched. */
   html.ios-phone { --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
-    --bar-b:max(.35rem, calc(var(--sab) * .5)); --vgap:0px; }
+    --bar-b:max(.35rem, calc(var(--sab) * .5)); }
   @media (max-width:760px) and (orientation:portrait) {
     html.ios-phone .keep-bar.jr-bar-bare { padding-top:var(--sat); }
-    /* --vgap (measured in <head>): the home-screen app's missing bottom strip. The pinned page reaches down
-       into it, and everything pinned to the bottom moves down by it, so the bars sit just above the home
-       indicator on the real screen */
-    html.ios-phone body { height:auto; bottom:calc(-1 * var(--vgap)); }
+    html.ios-phone body { height:auto; }
     html.ios-phone main { padding-top:.3rem; padding-bottom:calc(3.8rem + var(--bar-b) + .4rem); }
-    html.ios-phone .jr-rail { bottom:calc(var(--bar-b) - var(--vgap)); }
-    html.ios-phone #toast { bottom:calc(var(--bar-b) + 4.3rem - var(--vgap)); }
-    html.ios-phone #jr-remind { bottom:calc(var(--bar-b) + 4.4rem - var(--vgap)); }
+    html.ios-phone .jr-rail { bottom:var(--bar-b); }
+    html.ios-phone #toast { bottom:calc(var(--bar-b) + 4.3rem); }
+    html.ios-phone #jr-remind { bottom:calc(var(--bar-b) + 4.4rem); }
     html.ios-phone #jr-frozen-bar { top:calc(var(--sat) + .3rem); }
   }
   /* on its side: the notch is at one edge (the side menu and calendar already clear it), only the home
