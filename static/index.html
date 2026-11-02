@@ -841,6 +841,12 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-pop > * { animation:kRise .3s var(--k-smooth) both; }
   .jr-pop > :nth-child(2) { animation-delay:30ms; } .jr-pop > :nth-child(3) { animation-delay:60ms; } .jr-pop > :nth-child(n+4) { animation-delay:90ms; }
   @media (prefers-reduced-motion:reduce) { .jr-pop, .jr-pop > * { transition:none; animation:none; } }
+  /* event colours: the theme's eight, lightened (pastel), set once here so every event view and the colour balls
+     use the same ones */
+  :root { --c-blue:color-mix(in srgb,var(--k-act) 58%,#fff); --c-green:color-mix(in srgb,var(--k-money) 58%,#fff);
+    --c-yellow:color-mix(in srgb,var(--k-qty) 58%,#fff); --c-orange:color-mix(in srgb,var(--k-warn) 58%,#fff);
+    --c-red:color-mix(in srgb,var(--k-bad) 58%,#fff); --c-purple:color-mix(in srgb,var(--k-cat) 58%,#fff);
+    --c-teal:color-mix(in srgb,var(--k-tier) 58%,#fff); --c-sky:color-mix(in srgb,var(--k-size) 58%,#fff); }
   /* the colour ball by the form's heading, and the row of colours it opens */
   .jr-ae-head { display:flex; align-items:center; gap:.6rem; margin-bottom:.7rem; }
   .jr-ae-head h2 { margin:0; flex:1; }
@@ -848,7 +854,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     background:var(--ball); border:2px solid var(--k-bg2); box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 25%,transparent), 0 2px 6px -1px rgba(0,0,0,.25);
     transition:transform .25s var(--k-snappy), box-shadow .2s; }
   .jr-ball:active { transform:scale(.88); }
-  .jr-ball.auto { background:conic-gradient(var(--k-act),var(--k-money),var(--k-qty),var(--k-warn),var(--k-bad),var(--k-cat),var(--k-tier),var(--k-size),var(--k-act)); }
+  .jr-ball.auto { background:conic-gradient(var(--c-blue),var(--c-green),var(--c-yellow),var(--c-orange),var(--c-red),var(--c-purple),var(--c-teal),var(--c-sky),var(--c-blue)); }
   .jr-ball.on { box-shadow:0 0 0 2.5px var(--ink); transform:scale(1.08); }
   #ae-ball { width:2rem; height:2rem; }
   .jr-ae-colors { display:flex; flex-wrap:wrap; gap:.55rem; margin:-.2rem 0 .8rem; padding:.55rem .6rem; border-radius:14px;
@@ -1736,11 +1742,11 @@ function jrMapLink(loc, cls=''){
 }
 // Event colours: the theme's own eight, so they suit whichever theme is on. An event with no colour of its own gets
 // one from its id — a mix across the calendar, and the same one on every device and after every reload.
-const JR_COLORS={blue:'--k-act', green:'--k-money', yellow:'--k-qty', orange:'--k-warn', red:'--k-bad', purple:'--k-cat', teal:'--k-tier', sky:'--k-size'};
+const JR_COLORS={blue:'--c-blue', green:'--c-green', yellow:'--c-yellow', orange:'--c-orange', red:'--c-red', purple:'--c-purple', teal:'--c-teal', sky:'--c-sky'};
 const JR_COLOR_NAMES=Object.keys(JR_COLORS);
 function jrColor(e){ if(e.color && JR_COLORS[e.color]) return e.color; let h=e.id*2654435761>>>0; return JR_COLOR_NAMES[h%JR_COLOR_NAMES.length]; }
 // the style that tints an event's chip, bar, card, row or pop-up: every event rule reads --accent / --k-act
-const jrTint=e=>{ const k=JR_COLORS[jrColor(e)]; return k==='--k-act' ? '--accent:var(--k-act)' : `--accent:var(${k});--k-act:var(${k})`; };   // blue is --k-act itself
+const jrTint=e=>{ const k=JR_COLORS[jrColor(e)]; return `--accent:var(${k});--k-act:var(${k})`; };
 const JR_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
 
 // The month and the day are drawn straight away; the events fill in when they arrive, so a slow or
