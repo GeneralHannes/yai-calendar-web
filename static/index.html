@@ -846,7 +846,15 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   :root { --c-blue:color-mix(in srgb,var(--k-act) 58%,#fff); --c-green:color-mix(in srgb,var(--k-money) 58%,#fff);
     --c-yellow:color-mix(in srgb,var(--k-qty) 58%,#fff); --c-orange:color-mix(in srgb,var(--k-warn) 58%,#fff);
     --c-red:color-mix(in srgb,var(--k-bad) 58%,#fff); --c-purple:color-mix(in srgb,var(--k-cat) 58%,#fff);
-    --c-teal:color-mix(in srgb,var(--k-tier) 58%,#fff); --c-sky:color-mix(in srgb,var(--k-size) 58%,#fff); }
+    --c-teal:color-mix(in srgb,var(--k-tier) 58%,#fff); --c-sky:color-mix(in srgb,var(--k-size) 58%,#fff);
+    /* and each one's text colour: the same hue, darkened, so it reads clearly on its light fill */
+    --c-blue-ink:color-mix(in srgb,var(--k-act) 62%,#000); --c-green-ink:color-mix(in srgb,var(--k-money) 58%,#000);
+    --c-yellow-ink:color-mix(in srgb,var(--k-qty) 52%,#000); --c-orange-ink:color-mix(in srgb,var(--k-warn) 58%,#000);
+    --c-red-ink:color-mix(in srgb,var(--k-bad) 66%,#000); --c-purple-ink:color-mix(in srgb,var(--k-cat) 64%,#000);
+    --c-teal-ink:color-mix(in srgb,var(--k-tier) 55%,#000); --c-sky-ink:color-mix(in srgb,var(--k-size) 52%,#000); }
+  /* an event's words in its own dark shade (--accent, set per event by jrTint); the fill stays its light colour */
+  #jr-cal-grid .jr-ev:not(.done), #jr-cal-grid .jr-ev.span:not(.done) { color:var(--accent); }
+  #jr-cal-grid .jr-ev:not(.done) .jr-ev-t { color:var(--accent); }
   /* the colour ball by the form's heading, and the row of colours it opens */
   .jr-ae-head { display:flex; align-items:center; gap:.6rem; margin-bottom:.7rem; }
   .jr-ae-head h2 { margin:0; flex:1; }
@@ -1746,7 +1754,8 @@ const JR_COLORS={blue:'--c-blue', green:'--c-green', yellow:'--c-yellow', orange
 const JR_COLOR_NAMES=Object.keys(JR_COLORS);
 function jrColor(e){ if(e.color && JR_COLORS[e.color]) return e.color; let h=e.id*2654435761>>>0; return JR_COLOR_NAMES[h%JR_COLOR_NAMES.length]; }
 // the style that tints an event's chip, bar, card, row or pop-up: every event rule reads --accent / --k-act
-const jrTint=e=>{ const k=JR_COLORS[jrColor(e)]; return `--accent:var(${k});--k-act:var(${k})`; };
+// --k-act: the light fill; --accent: its dark shade, for words, times and edges
+const jrTint=e=>{ const k=JR_COLORS[jrColor(e)]; return `--accent:var(${k}-ink);--k-act:var(${k})`; };
 const JR_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
 
 // The month and the day are drawn straight away; the events fill in when they arrive, so a slow or
