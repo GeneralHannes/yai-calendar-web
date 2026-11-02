@@ -292,6 +292,7 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
            background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
            border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift);
            color:var(--k-hi); padding:.75rem 1.2rem; border-radius:14px;
+           width:max-content; max-width:min(26rem,calc(100vw - 2rem)); text-align:center; line-height:1.35;
            opacity:0; pointer-events:none; transition:opacity .28s var(--ease-out), transform .28s var(--ease-out); }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   /* phone: the Category column is hidden, so the tag moves under the note */
@@ -1385,7 +1386,8 @@ const esc = s => (s??'').toString().replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt
 let TOKEN = new URLSearchParams(location.search).get('token') || localStorage.getItem('sk_token') || '';
 if(TOKEN){ try{ localStorage.setItem('sk_token', TOKEN); }catch(_){} }
 
-function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+let toastT=0;
+function toast(msg, ms=2000){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),ms); }
 
 // ---- where the data lives: ONE setting, so the backend can be swapped ----
 // JR_API is the backend's address ('' = the server this page came from, or on a static host with no
@@ -2394,22 +2396,35 @@ async function jrSubscribe(test){
   // before then is refused ("permission denied"): so try a few times, a little longer apart each time.
   for(let i=0; !sub; i++){
     try{ sub=await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:jrB64(key)}); }
-    catch(e){ if(i>=4) throw e; await new Promise(r=>setTimeout(r, 600*(i+1))); }
+    catch(e){ if(i>=4 || Notification.permission==='denied') throw e; await new Promise(r=>setTimeout(r, 600*(i+1))); }
   }
   await api('/api/push/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON(), test:!!test})});
   return true;
+}
+// What went wrong turning reminders on, in words that say what to do about it (the raw browser errors say nothing)
+function jrPushWhy(e){
+  const m=String(e?.message||e||''), ios=jrIsIOS();
+  const where=ios?'Settings → Notifications → Yai Calendar':'Settings → Apps → Yai Calendar → Notifications';
+  if(e instanceof JrOffline || /Failed to fetch|NetworkError|cannot reach/i.test(m)) return 'No connection to the calendar. Check your internet and try again.';
+  if(/sign in/i.test(m)) return 'Sign in first, then turn reminders on.';
+  if(e?.name==='NotAllowedError' || /permission/i.test(m) || Notification.permission==='denied')
+    return `Notifications are blocked for this app. Open your phone’s ${where}, turn them on, then try again.`;
+  if(e?.name==='AbortError' || /push service|storage/i.test(m))
+    return ios ? 'The phone’s push service didn’t answer. Try again in a minute.'
+      : 'This phone couldn’t reach its push service. It needs Google Play services and internet (some Wi-Fi networks block it): try again on mobile data.';
+  if(e?.name==='InvalidStateError') return 'Close the app completely, open it again, and try once more.';
+  return `Could not turn on reminders (${e?.name||'error'}: ${m.slice(0,80)}).`;
 }
 async function jrTurnOnReminders(){
   jrReminderPrompt(false);
   try{
     const p=await Notification.requestPermission();
-    if(p!=='granted'){ toast('Reminders stay off — you can allow notifications in Settings'); return; }
+    if(p!=='granted'){ toast(`Reminders stay off. To allow them: ${jrIsIOS()?'Settings → Notifications → Yai Calendar':'Settings → Apps → Yai Calendar → Notifications'}.`, 6000); return; }
     toast('Turning on reminders…');
-    toast(await jrSubscribe(true) ? 'Reminders on — a test one is on its way' : 'This server doesn’t send reminders');
+    toast(await jrSubscribe(true) ? 'Reminders on — a test one is on its way' : 'This server doesn’t send reminders', 4000);
   }catch(e){
     console.warn('reminders:', e);
-    // allowed but not registered yet: every start registers again, so the next one finishes the job
-    toast(Notification.permission==='granted' ? 'Reminders will finish turning on next time you open the app' : 'Could not turn on reminders: '+e.message);
+    toast(jrPushWhy(e), 8000);
   }
 }
 function jrReminderPrompt(show, html){
