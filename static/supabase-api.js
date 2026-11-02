@@ -48,8 +48,18 @@
     if (ev && method === "DELETE") return rpc(origin, "yai_delete", { p_token: token, p_id: +ev[1] });
     if (ev && ev[2]) return rpc(origin, "yai_done", { p_token: token, p_id: +ev[1], p_done: !!body.done });
     if (ev && method === "POST") return rpc(origin, "yai_update", { p_token: token, p_id: +ev[1], p_patch: body });
-    // reminders (/api/push/*) aren't set up on Supabase yet: the app then doesn't offer them
+    // reminders: the "reminders" Edge Function (supabase/functions/reminders)
+    if (path === "/api/push/key") return reminders(origin, { action: "key" });
+    if (path === "/api/push/subscribe" && method === "POST")
+      return reminders(origin, { action: "subscribe", token, subscription: body.subscription ?? body, test: !!body.test });
+    if (path === "/api/push/unsubscribe" && method === "POST") return reminders(origin, { action: "unsubscribe", token, endpoint: body.endpoint });
     return reply({ detail: "not available on this backend" }, 404);
+  }
+
+  async function reminders(origin, body) {
+    const r = await real(`${origin}/functions/v1/reminders`, { method: "POST", headers: { "content-type": "application/json", apikey: await key() }, body: JSON.stringify(body) });
+    // not deployed (yet): 404, and the app doesn't offer reminders
+    return reply(await r.json().catch(() => ({ detail: r.statusText })), r.status);
   }
 
   window.fetch = async function (input, init) {
