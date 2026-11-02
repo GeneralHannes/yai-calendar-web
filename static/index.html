@@ -817,6 +817,26 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     font:600 .8rem var(--k-font); color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 45%,transparent); }
   .jr-ae-tab.on { color:var(--k-on-act); background:var(--accent); border-color:transparent; }
   .jr-ae-tab.has::after { content:""; position:absolute; top:3px; right:4px; width:6px; height:6px; border-radius:50%; background:var(--gold); }
+  /* an event's details, springing out of it (jrEventPop) */
+  .jr-pop { position:fixed; z-index:45; width:min(19rem, calc(100vw - 16px)); padding:.8rem .85rem .7rem;
+    border-radius:16px; background:var(--k-bg2); border:1px solid var(--glass-line);
+    box-shadow:var(--glass-edge),0 18px 44px -14px rgba(0,0,0,.4),0 3px 10px -4px rgba(0,0,0,.2); border-left:4px solid var(--accent);
+    opacity:0; transform:scale(.82) translateY(4px); transition:opacity .16s ease, transform .32s var(--k-snappy); }
+  .jr-pop.on { opacity:1; transform:none; }
+  .jr-pop.off { opacity:0; transform:scale(.9); transition-duration:.15s; transition-timing-function:var(--k-exit); }
+  .jr-pop.done { border-left-color:var(--muted); }
+  .jr-pop-title { font-size:1.05rem; font-weight:750; line-height:1.3; overflow-wrap:break-word; margin-bottom:.35rem; }
+  .jr-pop.done .jr-pop-title { text-decoration:line-through; color:var(--muted); }
+  .jr-pop-row { font-size:.85rem; color:var(--muted); margin:.2rem 0; }
+  .jr-pop-when b { color:var(--ink); margin-right:.45rem; font-variant-numeric:tabular-nums; }
+  .jr-pop-notes { font-size:.85rem; line-height:1.4; margin:.4rem 0 .1rem; white-space:pre-wrap; overflow-wrap:break-word; max-height:8.5rem; overflow:auto; }
+  .jr-pop-by { font-size:.74rem; color:var(--muted); font-style:italic; margin-top:.35rem; }
+  .jr-pop-acts { display:flex; gap:.35rem; margin-top:.65rem; }
+  .jr-pop-acts button { flex:1; }
+  .jr-pop-del { color:var(--warn); }
+  .jr-pop > * { animation:kRise .3s var(--k-smooth) both; }
+  .jr-pop > :nth-child(2) { animation-delay:30ms; } .jr-pop > :nth-child(3) { animation-delay:60ms; } .jr-pop > :nth-child(n+4) { animation-delay:90ms; }
+  @media (prefers-reduced-motion:reduce) { .jr-pop, .jr-pop > * { transition:none; animation:none; } }
   .jr-ae-loc > span { display:flex; align-items:center; gap:.3rem; }
   .jr-ae-map { all:unset; margin-left:auto; display:inline-flex; align-items:center; gap:.15rem; cursor:pointer;
     font-size:.74rem; font-weight:700; color:var(--accent); padding:.05rem .15rem; border-radius:6px; }
@@ -1978,6 +1998,7 @@ function calShiftMonth(n){
 function calGoToday(){ calSelect(jrToday()); }
 // Select a day: the month follows it, and the bottom panel switches to it.
 function calSelect(iso){
+  if(document.querySelector('.jr-pop') && !window.event?.target?.closest?.('.jr-ev')) jrPopClose();
   const d=new Date(iso+'T00:00:00'), dir=(d.getFullYear()-JR_CAL_YEAR)*12+d.getMonth()-JR_CAL_MONTH;
   const changed=iso!==JR_SEL, dayDir=JR_SEL&&changed?(iso>JR_SEL?1:-1):0;
   JR_SEL=iso; JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth();
@@ -1992,6 +2013,14 @@ let JR_EVDRAG=null, JR_GESTURE_AT=0;   // an event being dragged to another day;
 let JR_LAST_DAYCLICK={iso:'', at:0};
 function calDayClick(iso){
   if(jrJustSwiped()) return;
+  // a tap on an event in the square opens its details instead (a drag or swipe never does, see above)
+  const chip=window.event?.target?.closest?.('#jr-cal-grid .jr-ev[data-id]');
+  if(chip && !chip.hidden){
+    // a multi-day bar spans several squares: the day is the one under the finger, not where the bar starts
+    const ev=window.event, under=chip.dataset.span && ev?.clientX!=null &&
+      [...document.querySelectorAll('#jr-cal-grid .jr-cal-day')].find(d=>{ const b=d.getBoundingClientRect(); return ev.clientX>=b.left&&ev.clientX<b.right&&ev.clientY>=b.top&&ev.clientY<b.bottom; });
+    const day=under?.dataset.iso || iso;
+    calSelect(day); requestAnimationFrame(()=>jrEventPop(+chip.dataset.id, day)); return; }
   const now=Date.now(), again=JR_LAST_DAYCLICK.iso===iso && now-JR_LAST_DAYCLICK.at<400;
   JR_LAST_DAYCLICK=again?{iso:'',at:0}:{iso, at:now};
   if(again){ openAddEvent(iso); return; }
@@ -2197,6 +2226,47 @@ function jrFitCells(){
       more.hidden=shown>=evs.length; more.textContent=more.hidden?'':'+'+(evs.length-shown);
     }
   }
+}
+// An event's details in a small card that springs out of it: when, where (a Maps link), category, notes, who added
+// it, with Edit / Done / Delete. Tapping outside, Escape, or picking another day closes it.
+function jrEventPop(id, iso){
+  const e=jrEvent(id); if(!e) return;
+  jrPopClose(true);
+  const chip=document.querySelector(`#jr-cal-grid .jr-cal-day[data-iso="${iso}"] .jr-ev[data-id="${id}"]`)
+    || document.querySelector(`#jr-cal-grid .jr-ev[data-id="${id}"]`);
+  const r=chip?.getBoundingClientRect() || {left:innerWidth/2,right:innerWidth/2,top:innerHeight/2,bottom:innerHeight/2,width:0,height:0};
+  const x=jrMulti(e)?jrDay(e,iso):e, d=new Date(iso+'T00:00:00');
+  const when=jrMulti(e) ? `${jrDateRange(e)} · day ${jrDays(e.event_date,iso)+1} of ${jrDays(e.event_date,jrEnd(e))+1}`
+    : `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
+  const p=document.createElement('div'); p.className='jr-pop'+(e.done?' done':''); p.setAttribute('role','dialog'); p.setAttribute('aria-label',e.title);
+  p.innerHTML=`<div class="jr-pop-title">${esc(e.title)}</div>
+    <div class="jr-pop-row jr-pop-when"><b>${jrTimeRange(x)||'All day'}</b><span>${when}</span></div>
+    ${x.location?`<div class="jr-pop-row">${jrMapLink(x.location)}</div>`:''}
+    ${e.category?`<div class="jr-pop-row"><span class="chip-lbl">${esc(e.category)}</span></div>`:''}
+    ${x.notes?`<div class="jr-pop-notes">${esc(x.notes)}</div>`:''}
+    ${e.created_by?`<div class="jr-pop-by">Added by ${esc(e.created_by)}</div>`:''}
+    <div class="jr-pop-acts">
+      <button class="mini" data-a="edit">Edit</button>
+      <button class="mini" data-a="done">${e.done?'Not done':'Done ✓'}</button>
+      <button class="mini jr-pop-del" data-a="del">Delete</button>
+    </div>`;
+  document.body.appendChild(p);
+  // beside the event: below it if there's room, else above; kept on screen
+  const W=p.offsetWidth, H=p.offsetHeight, m=8;
+  const left=Math.min(Math.max(m, r.left+r.width/2-W/2), innerWidth-W-m);
+  const below=r.bottom+6+H<=innerHeight-m, top=below ? r.bottom+6 : Math.max(m, r.top-6-H);
+  Object.assign(p.style,{left:left+'px', top:top+'px', transformOrigin:`${Math.min(W,Math.max(0,r.left+r.width/2-left))}px ${below?0:H}px`});
+  requestAnimationFrame(()=>p.classList.add('on'));
+  p.onclick=ev=>{ const a=ev.target.closest('[data-a]')?.dataset.a; if(!a) return;
+    jrPopClose(); if(a==='edit') openAddEvent(null,id,null,jrMulti(e)?iso:null); else if(a==='done') toggleEventDone(id); else deleteEventRow(id); };
+  setTimeout(()=>{ document.addEventListener('pointerdown', jrPopOutside, true); document.addEventListener('keydown', jrPopKey); }, 0);
+}
+function jrPopOutside(e){ if(!e.target.closest?.('.jr-pop')) jrPopClose(); }
+function jrPopKey(e){ if(e.key==='Escape') jrPopClose(); }
+function jrPopClose(now){
+  document.removeEventListener('pointerdown', jrPopOutside, true); document.removeEventListener('keydown', jrPopKey);
+  document.querySelectorAll('.jr-pop').forEach(p=>{ if(now || K_REDUCED.matches){ p.remove(); return; }
+    p.classList.remove('on'); p.classList.add('off'); setTimeout(()=>p.remove(), 180); });
 }
 // The on-screen keyboard: dialogs fit what's still visible (--vvt/--vvh), and the field being typed in is scrolled
 // into view inside its dialog (iOS doesn't, as the page itself is pinned).
