@@ -1114,6 +1114,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
      on its own; the menu widens a little to fit it. Phones never show it. */
   .jr-upnext { display:none; }
   @media (min-width:761px) and (min-height:521px) {
+    /* desktop: the month's event chips show just the title (the time is in the day panel and Coming up) */
+    .jr-preview .jr-ev-t { display:none; }
     .jr-rail { width:16rem; }
     .jr-upnext { display:block; flex:1 1 0; min-height:0; overflow-y:auto; overscroll-behavior:contain; margin:.1rem -.3rem 0; padding:0 .3rem .6rem;
       scrollbar-width:thin; scrollbar-color:var(--glass-line) transparent;
