@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>if(navigator.standalone)document.documentElement.classList.add("ios-app");
 /* iPhone only (not iPad or Android): its own safe-area layout, see "iPhone" in the styles */
-if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.add("ios-phone");</script>
+if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.add("ios-phone");
+/* Android: its Chrome misdraws live background blur (stale strips over the month header), so the glass there
+   is drawn without it — see "Android" in the styles */
+if(/Android/.test(navigator.userAgent))document.documentElement.classList.add("android");</script>
 <script>/* light (Daylight) unless this device chose another theme */
 try{var t=localStorage.getItem("sk_theme");document.documentElement.setAttribute("data-theme",t||"daylight")}catch(e){document.documentElement.setAttribute("data-theme","daylight")}</script>
 <meta name="theme-color" content="#e1e2e7">
@@ -982,6 +985,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     background:color-mix(in srgb,var(--k-act) 30%,var(--k-bg2)); box-shadow:0 1px 3px rgba(0,0,0,.25); }
   .jr-ev.wrap { white-space:normal; overflow-wrap:anywhere; }        /* reached the calendar's edge: wrap */
   .jr-ev.cut { text-overflow:ellipsis; }                               /* …or, short of rows, one line ending "…" */
+  .jr-ev.cut .jr-ev-t, .jr-ev.clamp .jr-ev-t { display:none; }        /* squeezed: the title matters more than the time */
+  #jr-cal-grid .jr-ev.clamp { white-space:normal; overflow-wrap:anywhere; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
   /* a multi-day event: a bar locked from its first day to its last (width set by jrFitCells), one line, "…" if the
      title is longer; a stronger fill so it reads as a span, square ends where it carries on into the next row */
   #jr-cal-grid .jr-ev.span { max-width:none; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis;
@@ -1243,6 +1248,13 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     html.ios-phone main { padding-bottom:max(.5rem, calc(var(--sab) * .5)); }
     html.ios-phone .jr-rail { padding-bottom:max(.6rem, calc(var(--sab) * .5)); }
   }
+  /* ================= Android (script in <head> adds html.android) =================
+     Chrome on Android paints live background blur wrongly: a blurred panel leaves a stale strip over whatever
+     is below it (the month name and weekdays vanished under the day panel). So on Android nothing uses
+     backdrop-filter, and the glass is a little more solid to make up for the missing blur — same gradient,
+     edges and lift, so it still reads as glass. */
+  html.android *, html.android *::before, html.android *::after { -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+  html.android { --glass:linear-gradient(to bottom,color-mix(in srgb,var(--k-bg2) 95%,transparent),color-mix(in srgb,var(--k-bg2) 88%,transparent)); }
   /* ================= sign in / create account (script: jrSignIn) ================= */
   .jr-signin { position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:1.2rem;
     background:var(--bg); animation:kFadeIn .25s ease both; overflow:auto; }
@@ -2016,15 +2028,21 @@ function jrFitCells(){
       let lane=0, shown=0;
       const firstFree=(from, n)=>{ let at=from; while(at<from+64 && [...Array(n).keys()].some(k=>(busy[at+k]||0)>c)) at++; return at; };
       for(const e of evs){
-        e.classList.remove('cut');
+        e.classList.remove('cut','clamp'); e.style.webkitLineClamp='';
         // a multi-day bar is locked to its days: exactly from this square to its last one in the row, one line
         const span=+e.dataset.span||0;
         if(span){ const last=cells[r+c+span-1]||cell; e.style.width=(last.offsetLeft+colW-pad-(cell.offsetLeft+pad))+'px'; }
         else if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
         let lines=span?1:Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
         let at=firstFree(lane, lines);
-        // no room for all its wrapped lines: one line to the edge, ending "…" (the day panel has it in full)
-        if(at+lines>lanes && lines>1){ e.classList.replace('wrap','cut'); lines=1; at=firstFree(lane, 1); }
+        // no room for all its wrapped lines: as many lines as there are, the last ending "…"; or, with room for
+        // only one, a single line — title first, the time dropped (the day panel has both in full)
+        if(at+lines>lanes && lines>1){
+          at=firstFree(lane, 1);
+          const fit=Math.max(1, lanes-at);
+          if(fit>1){ e.classList.replace('wrap','clamp'); e.style.webkitLineClamp=fit; lines=fit; at=firstFree(lane, fit); }
+          else { e.classList.replace('wrap','cut'); lines=1; }
+        }
         if(at+lines>lanes) break;
         for(let k=lane; k<at; k++){ const g=document.createElement('span'); g.className='jr-ev-gap'; g.style.height=laneH+'px'; e.before(g); }
         // the first day it no longer reaches into (2px of breathing room before the next title)
@@ -2373,7 +2391,12 @@ async function jrSubscribe(test){
     const had=btoa(String.fromCharCode(...new Uint8Array(sub.options.applicationServerKey))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
     if(had!==key){ await sub.unsubscribe().catch(()=>{}); sub=null; }
   }
-  sub ||= await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:jrB64(key)});
+  // In the Android app, the phone's "Allow" reaches Chrome a moment after the prompt closes, and registering
+  // before then is refused ("permission denied"): so try a few times, a little longer apart each time.
+  for(let i=0; !sub; i++){
+    try{ sub=await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:jrB64(key)}); }
+    catch(e){ if(i>=4) throw e; await new Promise(r=>setTimeout(r, 600*(i+1))); }
+  }
   await api('/api/push/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON(), test:!!test})});
   return true;
 }
@@ -2382,8 +2405,13 @@ async function jrTurnOnReminders(){
   try{
     const p=await Notification.requestPermission();
     if(p!=='granted'){ toast('Reminders stay off — you can allow notifications in Settings'); return; }
+    toast('Turning on reminders…');
     toast(await jrSubscribe(true) ? 'Reminders on — a test one is on its way' : 'This server doesn’t send reminders');
-  }catch(e){ toast('Could not turn on reminders: '+e.message); }
+  }catch(e){
+    console.warn('reminders:', e);
+    // allowed but not registered yet: every start registers again, so the next one finishes the job
+    toast(Notification.permission==='granted' ? 'Reminders will finish turning on next time you open the app' : 'Could not turn on reminders: '+e.message);
+  }
 }
 function jrReminderPrompt(show, html){
   let b=document.getElementById('jr-remind');
