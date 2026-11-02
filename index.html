@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* the app's language: the one chosen on this device, else the device's own (Khmer, Chinese), else English; set on <html lang> first so the right fonts load from the first paint */
+(function(){var l="en";try{var s=localStorage.getItem("yai_lang");if(s==="en"||s==="zh"||s==="km")l=s;else{var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var c=String(n[i]).toLowerCase();if(c.indexOf("km")===0){l="km";break}if(c.indexOf("zh")===0){l="zh";break}if(c.indexOf("en")===0)break}}}catch(e){}document.documentElement.lang=l})();</script>
 <script>if(navigator.standalone)document.documentElement.classList.add("ios-app");
 /* iPhone only (not iPad or Android): its own safe-area layout, see "iPhone" in the styles */
 if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.add("ios-phone");
@@ -1351,6 +1353,37 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     html.ios-phone main { padding-bottom:max(.5rem, calc(var(--sab) * .5)); }
     html.ios-phone .jr-rail { padding-bottom:max(.6rem, calc(var(--sab) * .5)); }
   }
+  /* ================= languages (script: tx, jrSetLang) =================
+     The language switch, and what Chinese and Khmer need to look right: fonts that have their letters, no
+     letter-spacing (it pulls Khmer signs away from their letters), and more line height where a line holds tall
+     Khmer signs. The app's own text is set from the first paint, because <head> sets <html lang> first. */
+  .jr-lang { display:inline-flex; flex:none; gap:2px; padding:2px; border-radius:999px;
+    background:color-mix(in srgb,var(--k-bg3) 55%,transparent); border:1px solid var(--glass-line); }
+  .jr-lang button { all:unset; cursor:pointer; padding:.26rem .62rem; border-radius:999px; white-space:nowrap;
+    font:600 .76rem/1.5 var(--k-font); color:var(--muted); transition:background-color .2s, color .2s; }
+  .jr-lang button:hover { color:var(--ink); }
+  .jr-lang button.on { background:var(--accent); color:var(--k-on-act); }
+  .jr-lang button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  [data-lang-slot="rail"] { display:none; }
+  @media (min-width:761px) and (min-height:521px) { [data-lang-slot="rail"] { display:flex; justify-content:center; } }
+  [data-lang-slot="agenda"] { margin-left:auto; }
+  .jr-agenda-head .jr-me, .jr-agenda-head .jr-showpast { margin-left:.6rem; }
+  .jr-lang-signin { align-self:center; margin-top:.4rem; }
+  :root:lang(zh) { --k-font:"Archivo","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC",system-ui,sans-serif;
+    --k-display:Marcellus,"Songti SC","Noto Serif CJK SC","Noto Serif SC","Microsoft YaHei",serif; }
+  :root:lang(km) { --k-font:"Archivo","Khmer UI","Leelawadee UI","Noto Sans Khmer","Khmer Sangam MN",system-ui,sans-serif;
+    --k-display:Marcellus,"Noto Serif Khmer","Khmer Sangam MN","Khmer UI",serif; }
+  :root:is(:lang(zh),:lang(km)) :is(.view-title,.modal-card h2) { font-family:var(--k-display); }
+  :root:is(:lang(zh),:lang(km)) * { letter-spacing:normal !important; }
+  /* Chinese: the year goes first and small, then the month — "2026年 11月" */
+  :root:lang(zh) .jr-month { display:flex; flex-direction:row-reverse; justify-content:flex-end; align-items:baseline; gap:.3em; }
+  /* a little larger than Latin text at the same size: these scripts have finer strokes */
+  :root:is(:lang(zh),:lang(km)) #jr-cal-grid .jr-ev { font-size:clamp(.72rem, 3px + 7.5cqi, 1.05rem); }
+  :root:lang(km) :is(.jr-ev,.jr-dc-title,.jr-dc-sub,.jr-dc-time,.jr-up-title,.jr-up-more,.jr-up-time,.jr-up-month,.jr-up-head,.jr-up-empty,
+    .jr-pop,.jr-pop-title,.jr-pop-row,.jr-pop-notes,.jr-pop-by,.jr-day-wd,.jr-day-my,.jr-day-sum,.jr-day-empty,.jr-cal-dow span,.jr-mn-today,
+    #toast,.jr-h,.jr-cell,.jr-ae label,.jr-ae-hint,.jr-ae-tab,.jr-signin-card p,.jr-signin-card label,.jr-remind-txt,.jr-remind-txt *,
+    .mini,.act,.jr-lang button,.jr-signin-switch,.jr-showpast,.jr-me,.empty,.empty span,.jr-ag-where,.jr-by,.chip-lbl) { line-height:1.6; }
+  :root:lang(km) .jr-month { line-height:1.5; }
   /* ================= Android (script in <head> adds html.android) =================
      Chrome on Android paints live background blur wrongly: a blurred panel leaves a stale strip over whatever
      is below it (the month name and weekdays vanished under the day panel). So on Android nothing uses
@@ -1396,41 +1429,42 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
 <header class="keep-bar jr-bar-bare" aria-hidden="true"></header>
 <div class="jr-shell">
   <!-- the small side section: only the two views and Add event -->
-  <nav class="jr-rail" aria-label="Journal">
+  <nav class="jr-rail" aria-label="Journal" data-i18n-aria="journalAria">
     <div class="jr-viewtoggle k-shine" id="jr-viewtoggle">
-      <button class="jr-vt-btn" id="jr-view-calendar-btn" onclick="setJournalView('calendar')" title="Calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
-      <button class="jr-vt-btn" id="jr-view-agenda-btn" onclick="setJournalView('agenda')" title="Agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".9" fill="currentColor"/><circle cx="4" cy="12" r=".9" fill="currentColor"/><circle cx="4" cy="18" r=".9" fill="currentColor"/></svg><span>Agenda</span></button>
+      <button class="jr-vt-btn" id="jr-view-calendar-btn" onclick="setJournalView('calendar')" title="Calendar" data-i18n-title="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
+      <button class="jr-vt-btn" id="jr-view-agenda-btn" onclick="setJournalView('agenda')" title="Agenda" data-i18n-title="agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".9" fill="currentColor"/><circle cx="4" cy="12" r=".9" fill="currentColor"/><circle cx="4" cy="18" r=".9" fill="currentColor"/></svg><span>Agenda</span></button>
     </div>
     <!-- desktop: what's coming up, in date order (hidden on phones) -->
-    <section class="jr-upnext" id="jr-upnext" aria-label="Upcoming events"></section>
-    <button class="act jr-add k-shine" onclick="openAddEvent(JR_VIEW==='calendar'?JR_SEL:undefined)" title="Add event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add event</span></button>
+    <section class="jr-upnext" id="jr-upnext" aria-label="Upcoming events" data-i18n-aria="upcomingAria"></section>
+    <div data-lang-slot="rail"></div>
+    <button class="act jr-add k-shine" onclick="openAddEvent(JR_VIEW==='calendar'?JR_SEL:undefined)" title="Add event" data-i18n-title="addEvent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="addEvent">Add event</span></button>
   </nav>
 
   <main>
     <div id="jr-agenda" style="display:none">
-      <div class="row jr-agenda-head"><h2 class="view-title">Agenda</h2><div class="jr-me" id="jr-me"></div>
-        <label class="muted jr-showpast"><input type="checkbox" id="jr-show-past" onchange="renderAgenda()"> show past</label></div>
-      <div id="jr-agenda-list"><span class="empty">Loading&hellip;</span></div>
+      <div class="row jr-agenda-head"><h2 class="view-title" data-i18n="agenda">Agenda</h2><span data-lang-slot="agenda"></span><div class="jr-me" id="jr-me"></div>
+        <label class="muted jr-showpast"><input type="checkbox" id="jr-show-past" onchange="renderAgenda()"> <span data-i18n="showPast">show past</span></label></div>
+      <div id="jr-agenda-list"><span class="empty" data-i18n="loading">Loading&hellip;</span></div>
     </div>
 
     <div id="jr-calendar">
       <div class="jr-split">
       <!-- top: the month, sized to whatever space there is -->
-      <section class="jr-top" aria-label="Month">
+      <section class="jr-top" aria-label="Month" data-i18n-aria="monthAria">
         <div class="jr-cal-head">
           <h2 class="jr-month"><span id="jr-cal-month"></span> <span class="jr-year" id="jr-cal-year"></span></h2>
         </div>
-        <div class="jr-cal-dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+        <div class="jr-cal-dow" id="jr-cal-dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
         <div class="jr-cal-grid" id="jr-cal-grid"></div>
       </section>
       <!-- bottom: everything on the selected day, and only that day -->
       <section class="jr-bottom k-shine" id="jr-day" aria-live="polite"></section>
       </div>
       <!-- month arrows and Today, down where the thumb is -->
-      <div class="jr-monthnav k-shine" id="jr-monthnav" role="group" aria-label="Change month">
-        <button class="jr-mn-btn" onclick="calShiftMonth(-1)" aria-label="Previous month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <button class="jr-mn-today" onclick="calGoToday()">Today</button>
-        <button class="jr-mn-btn" onclick="calShiftMonth(1)" aria-label="Next month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      <div class="jr-monthnav k-shine" id="jr-monthnav" role="group" aria-label="Change month" data-i18n-aria="changeMonth">
+        <button class="jr-mn-btn" onclick="calShiftMonth(-1)" aria-label="Previous month" data-i18n-aria="prevMonth"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button class="jr-mn-today" onclick="calGoToday()" data-i18n="today">Today</button>
+        <button class="jr-mn-btn" onclick="calShiftMonth(1)" aria-label="Next month" data-i18n-aria="nextMonth"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
       </div>
     </div>
   </main>
@@ -1485,6 +1519,235 @@ if(document.fonts) document.fonts.ready.then(()=>kThumbs());
 const $ = s => document.querySelector(s);
 const esc = s => (s??'').toString().replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+// =================== languages: English, 中文 (Chinese), ខ្មែរ (Khmer) ===================
+// A device starts in its own language (from its settings); the language switch (Agenda header, sign-in screen,
+// desktop side menu) changes it, and the choice is remembered on this device ('yai_lang'). Every word the app shows
+// comes from T through tx(); dates come from L through the jrFmt* helpers. A word a language lacks shows in English.
+// (<head> sets <html lang> first thing, so the right fonts are used from the first paint.)
+const JR_LANGS={en:'English', zh:'中文', km:'ខ្មែរ'};
+let JR_LANG=JR_LANGS[document.documentElement.lang]?document.documentElement.lang:'en';
+const L={
+  en:{months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+      mon:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sept','Oct','Nov','Dec'],
+      days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+      dayAbbr:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], dow:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']},
+  zh:{months:['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+      mon:['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+      days:['星期日','星期一','星期二','星期三','星期四','星期五','星期六'],
+      dayAbbr:['周日','周一','周二','周三','周四','周五','周六'], dow:['日','一','二','三','四','五','六']},
+  km:{months:['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'],
+      mon:['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'],
+      days:['ថ្ងៃអាទិត្យ','ថ្ងៃច័ន្ទ','ថ្ងៃអង្គារ','ថ្ងៃពុធ','ថ្ងៃព្រហស្បតិ៍','ថ្ងៃសុក្រ','ថ្ងៃសៅរ៍'],
+      dayAbbr:['អាទិត្យ','ច័ន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍'], dow:['អា','ច','អ','ព','ព្រ','សុ','ស']},
+};
+const jrMonth=i=>L[JR_LANG].months[i], jrMonShort=i=>L[JR_LANG].mon[i];
+const jrDayName=i=>L[JR_LANG].days[i], jrDayAbbr=i=>L[JR_LANG].dayAbbr[i];
+// "10 Oct" · "10月10日" · "10 តុលា"
+const jrFmtDM=d=>JR_LANG==='zh' ? `${d.getMonth()+1}月${d.getDate()}日` : `${d.getDate()} ${jrMonShort(d.getMonth())}`;
+// "Sat 10 Oct" · "10月10日 周六" · "សៅរ៍ 10 តុលា"
+const jrFmtShort=d=>JR_LANG==='zh' ? `${jrFmtDM(d)} ${jrDayAbbr(d.getDay())}` : `${jrDayAbbr(d.getDay())} ${jrFmtDM(d)}`;
+// "Saturday 10 October" · "10月10日 星期六" · "ថ្ងៃសៅរ៍ 10 តុលា"
+const jrFmtLong=d=>JR_LANG==='zh' ? `${d.getMonth()+1}月${d.getDate()}日 ${jrDayName(d.getDay())}` : `${jrDayName(d.getDay())} ${d.getDate()} ${jrMonth(d.getMonth())}`;
+// "November 2026" · "2026年11月" · "វិច្ឆិកា 2026"
+const jrFmtMY=d=>JR_LANG==='zh' ? `${d.getFullYear()}年${d.getMonth()+1}月` : `${jrMonth(d.getMonth())} ${d.getFullYear()}`;
+// the month title's two parts (the page puts the year in gold beside the month)
+const jrCalTitle=(y,m)=>JR_LANG==='zh' ? [`${m+1}月`, `${y}年`] : [jrMonth(m), String(y)];
+
+const T={
+en:{
+  calendar:'Calendar', agenda:'Agenda', addEvent:'Add event', editEvent:'Edit event', journalAria:'Journal',
+  comingUp:'Coming up', upcomingAria:'Upcoming events', monthAria:'Month', changeMonth:'Change month',
+  prevMonth:'Previous month', nextMonth:'Next month', today:'Today', tomorrow:'Tomorrow', yesterday:'Yesterday',
+  nothingYet:'Nothing planned yet.', showPast:'show past', loading:'Loading…', language:'Language',
+  swapPanels:'Swap the month and this day', allDay:'All day', multiDay:'Days',
+  signOut:'Sign out', signIn:'Sign in', createAccount:'Create account', usernameShown:'Your username is shown on the events you add.',
+  sharedTeam:'Yai Calendar, shared with your team.', username:'Username', password:'Password', teamCode:'Team code',
+  haveAccount:'I already have an account', newHere:'New here? Create an account', fillIn:'Fill in your username and password',
+  tooMany:'Too many wrong tries — wait 15 minutes', wentWrong:'Something went wrong', cantReach:'Can’t reach the calendar — try again',
+  signedInAs:'Signed in as {name}', signOutAsk:'Sign out on this device?',
+  pinEnter:'Enter PIN', pinUnlock:'Unlock', pinChecking:'Checking…', pinWrong:'Wrong PIN — try again', pinConn:'Connection problem — try again',
+  lblTitle:'Title', lblDate:'Date', lblDateTo:'To', optional:'(optional)', lblFrom:'From', lblToTime:'To', hintTime:'(time)',
+  lblLoc:'Location', lblCat:'Category', lblNotes:'Notes', placeHint:'A place, or a Google Maps link', mapWord:'Map', openMaps:'Open in Google Maps',
+  wholeEvent:'Whole event',
+  dayHint:v=>`Day ${v.i} of ${v.n}, only for this day. Leave a field empty to use the whole event’s${v.base?` (<b>${v.base}</b>)`:''}.`,
+  resetDay:'Use the whole event’s details for this day', dayOf:'day {i} of {n}',
+  cancel:'Cancel', save:'Save', add:'Add event', edit:'Edit', del:'Delete', done:'Done ✓', notDone:'Not done',
+  markDone:'Mark done', markNotDone:'Mark not done', ok:'OK',
+  colour:'Colour', auto:'Automatic', colourIs:'Colour: {c}', colourAuto:'Colour: automatic',
+  c_blue:'Blue', c_green:'Green', c_yellow:'Yellow', c_orange:'Orange', c_red:'Red', c_purple:'Purple', c_teal:'Teal', c_sky:'Sky',
+  titleReq:'Title is required', dateReq:'Date is required', endBeforeStart:'The end date is before the start',
+  needStart:'Give a start time too', endTimeBefore:'The end time is before the start', typePlace:'Type a place first',
+  saved:'Saved', added:'Event added', deleted:'Deleted', offlinePaused:'Server offline — changes are paused', backOnline:'Back online',
+  frozen:v=>`<b>Server offline</b> · ${v.when?`showing the copy saved ${v.when}`:'nothing saved on this device yet'} · changes are paused`,
+  loadErr:'Error loading events: ', errPrefix:'Error: ', moveErr:'Could not move: ', movedTo:'Moved to {to}',
+  confirmDelete:'Delete "{title}"?\nThis can’t be undone, and it goes for everyone.',
+  localAsk:v=>`This device has ${v.n} event${v.n>1?'s':''} saved only on it. Copy ${v.n>1?'them':'it'} to the shared calendar so everyone can see ${v.n>1?'them':'it'}?`,
+  copied:v=>`Copied ${v.n} event${v.n===1?'':'s'}`, copyErr:'Could not copy: ',
+  remTitle:'Get reminders', remText:'A week and a day before each event, at 7:00 in working hours.',
+  remIphone:'On iPhone: tap Share, then “Add to Home Screen”, and open Yai Calendar from there.',
+  later:'Later', turnOn:'Turn on', remAria:'Reminders',
+  whereIos:'Settings → Notifications → Yai Calendar', whereAndroid:'Settings → Apps → Yai Calendar → Notifications',
+  remStayOff:v=>`Reminders stay off. To allow them: ${v.where}.`, remTurning:'Turning on reminders…',
+  remOn:'Reminders on — a test one is on its way', remNoServer:'This server doesn’t send reminders',
+  whyOffline:'No connection to the calendar. Check your internet and try again.', whySignIn:'Sign in first, then turn reminders on.',
+  whyBlocked:v=>`Notifications are blocked for this app. Open your phone’s ${v.where}, turn them on, then try again.`,
+  whyPushIos:'The phone’s push service didn’t answer. Try again in a minute.',
+  whyPushAndroid:'This phone couldn’t reach its push service. It needs Google Play services and internet (some Wi-Fi networks block it): try again on mobile data.',
+  whyState:'Close the app completely, open it again, and try once more.', whyOther:v=>`Could not turn on reminders (${v.what}).`,
+  newVersion:'New version — tap to reload',
+  addedBy:'Added by {name}', byName:'by {name}', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
+  nothingPlanned:'Nothing planned.', tapAdd:'Tap “Add event” to put something on it.', noEvents:'No events yet.',
+  dayEmpty:'Double-tap a day or press + to add one.',
+  evWord:n=>n>1?'events':'event', nEvents:n=>`${n} event${n>1?'s':''}`, nDone:'{n} done',
+  tipChangeTime:'Change time', tipEditDetails:'Edit details', tipChangeDates:'Change dates',
+  errLogin:'wrong username or password', errCode:'wrong team code', errTaken:'that username is taken',
+  errUsername:'username: 2–32 letters, digits, . _ or -', errPassword:'password: at least 6 characters',
+  errSignIn:'please sign in', errDate:'dates must be YYYY-MM-DD', errTime:'times must be HH:MM', errNoEvent:'no such event',
+},
+zh:{
+  calendar:'日历', agenda:'日程表', addEvent:'添加活动', editEvent:'编辑活动', journalAria:'日历',
+  comingUp:'即将到来', upcomingAria:'即将到来的活动', monthAria:'月份', changeMonth:'切换月份',
+  prevMonth:'上个月', nextMonth:'下个月', today:'今天', tomorrow:'明天', yesterday:'昨天',
+  nothingYet:'暂时没有安排。', showPast:'显示过去的', loading:'加载中…', language:'语言',
+  swapPanels:'交换月历和当天面板', allDay:'全天', multiDay:'多天',
+  signOut:'退出登录', signIn:'登录', createAccount:'创建账号', usernameShown:'你的用户名会显示在你添加的活动上。',
+  sharedTeam:'Yai Calendar，与你的团队共享。', username:'用户名', password:'密码', teamCode:'团队代码',
+  haveAccount:'我已有账号', newHere:'新用户？创建账号', fillIn:'请填写用户名和密码',
+  tooMany:'错误次数过多，请等待 15 分钟', wentWrong:'出错了', cantReach:'无法连接日历，请重试',
+  signedInAs:'已登录：{name}', signOutAsk:'在此设备上退出登录？',
+  pinEnter:'输入 PIN 码', pinUnlock:'解锁', pinChecking:'检查中…', pinWrong:'PIN 码错误，请重试', pinConn:'连接出现问题，请重试',
+  lblTitle:'标题', lblDate:'日期', lblDateTo:'结束日期', optional:'（可选）', lblFrom:'开始时间', lblToTime:'结束时间', hintTime:'',
+  lblLoc:'地点', lblCat:'分类', lblNotes:'备注', placeHint:'地点，或 Google 地图链接', mapWord:'地图', openMaps:'在 Google 地图中打开',
+  wholeEvent:'整个活动',
+  dayHint:v=>`第 ${v.i} 天（共 ${v.n} 天），仅适用于这一天。留空则使用整个活动的设置${v.base?`（<b>${v.base}</b>）`:''}。`,
+  resetDay:'这一天使用整个活动的设置', dayOf:'第 {i} 天 / 共 {n} 天',
+  cancel:'取消', save:'保存', add:'添加活动', edit:'编辑', del:'删除', done:'完成 ✓', notDone:'未完成',
+  markDone:'标记为完成', markNotDone:'标记为未完成', ok:'确定',
+  colour:'颜色', auto:'自动', colourIs:'颜色：{c}', colourAuto:'颜色：自动',
+  c_blue:'蓝色', c_green:'绿色', c_yellow:'黄色', c_orange:'橙色', c_red:'红色', c_purple:'紫色', c_teal:'青色', c_sky:'天蓝',
+  titleReq:'请填写标题', dateReq:'请选择日期', endBeforeStart:'结束日期早于开始日期',
+  needStart:'请同时填写开始时间', endTimeBefore:'结束时间早于开始时间', typePlace:'请先输入地点',
+  saved:'已保存', added:'活动已添加', deleted:'已删除', offlinePaused:'服务器离线，暂时无法修改', backOnline:'已恢复连接',
+  frozen:v=>`<b>服务器离线</b> · ${v.when?`显示 ${v.when} 保存的副本`:'此设备上还没有保存的副本'} · 暂时无法修改`,
+  loadErr:'加载活动出错：', errPrefix:'错误：', moveErr:'无法移动：', movedTo:'已移至 {to}',
+  confirmDelete:'删除“{title}”？\n此操作无法撤销，并且会对所有人生效。',
+  localAsk:v=>`此设备上有 ${v.n} 个活动仅保存在本机。要复制到共享日历，让所有人都能看到吗？`,
+  copied:v=>`已复制 ${v.n} 个活动`, copyErr:'无法复制：',
+  remTitle:'开启提醒', remText:'每个活动前一周和前一天，在工作时间的 7:00 提醒你。',
+  remIphone:'在 iPhone 上：点按“分享”，选择“添加到主屏幕”，然后从主屏幕打开 Yai Calendar。',
+  later:'稍后', turnOn:'开启', remAria:'提醒',
+  whereIos:'设置 → 通知 → Yai Calendar', whereAndroid:'设置 → 应用 → Yai Calendar → 通知',
+  remStayOff:v=>`提醒保持关闭。如需开启：${v.where}。`, remTurning:'正在开启提醒…',
+  remOn:'提醒已开启，测试通知马上就到', remNoServer:'此服务器不发送提醒',
+  whyOffline:'无法连接日历。请检查网络后重试。', whySignIn:'请先登录，再开启提醒。',
+  whyBlocked:v=>`此应用的通知已被关闭。请打开手机的“${v.where}”，开启通知后再试。`,
+  whyPushIos:'手机的推送服务没有响应。请一分钟后重试。',
+  whyPushAndroid:'此手机无法连接推送服务。需要 Google Play 服务和网络（有些 Wi-Fi 会屏蔽）：请改用移动数据重试。',
+  whyState:'请完全关闭应用，重新打开后再试一次。', whyOther:v=>`无法开启提醒（${v.what}）。`,
+  newVersion:'有新版本，点按刷新',
+  addedBy:'添加者：{name}', byName:'添加者：{name}', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
+  nothingPlanned:'暂时没有安排。', tapAdd:'点按“添加活动”来添加。', noEvents:'还没有活动。',
+  dayEmpty:'双击某一天，或点按 + 来添加。',
+  evWord:()=>'个活动', nEvents:n=>`${n} 个活动`, nDone:'已完成 {n}',
+  tipChangeTime:'修改时间', tipEditDetails:'编辑详情', tipChangeDates:'修改日期',
+  errLogin:'用户名或密码错误', errCode:'团队代码错误', errTaken:'该用户名已被使用',
+  errUsername:'用户名：2–32 位，可用字母、数字、. _ 或 -', errPassword:'密码：至少 6 个字符',
+  errSignIn:'请先登录', errDate:'日期格式应为 YYYY-MM-DD', errTime:'时间格式应为 HH:MM', errNoEvent:'找不到该活动',
+},
+km:{
+  calendar:'ប្រតិទិន', agenda:'កាលវិភាគ', addEvent:'បន្ថែមព្រឹត្តិការណ៍', editEvent:'កែសម្រួលព្រឹត្តិការណ៍', journalAria:'ប្រតិទិន',
+  comingUp:'ឆាប់ៗនេះ', upcomingAria:'ព្រឹត្តិការណ៍ខាងមុខ', monthAria:'ខែ', changeMonth:'ប្តូរខែ',
+  prevMonth:'ខែមុន', nextMonth:'ខែក្រោយ', today:'ថ្ងៃនេះ', tomorrow:'ថ្ងៃស្អែក', yesterday:'ម្សិលមិញ',
+  nothingYet:'មិនទាន់មានអ្វីគ្រោងទុកទេ។', showPast:'បង្ហាញអតីតកាល', loading:'កំពុងផ្ទុក…', language:'ភាសា',
+  swapPanels:'ប្តូរទីតាំងប្រតិទិន និងថ្ងៃដែលបានជ្រើស', allDay:'ពេញមួយថ្ងៃ', multiDay:'ច្រើនថ្ងៃ',
+  signOut:'ចាកចេញ', signIn:'ចូលគណនី', createAccount:'បង្កើតគណនី', usernameShown:'ឈ្មោះអ្នកប្រើរបស់អ្នកនឹងបង្ហាញលើព្រឹត្តិការណ៍ដែលអ្នកបន្ថែម។',
+  sharedTeam:'Yai Calendar ចែករំលែកជាមួយក្រុមរបស់អ្នក។', username:'ឈ្មោះអ្នកប្រើ', password:'ពាក្យសម្ងាត់', teamCode:'លេខកូដក្រុម',
+  haveAccount:'ខ្ញុំមានគណនីរួចហើយ', newHere:'ថ្មីមែនទេ? បង្កើតគណនី', fillIn:'សូមបំពេញឈ្មោះអ្នកប្រើ និងពាក្យសម្ងាត់',
+  tooMany:'ព្យាយាមខុសច្រើនពេក សូមរង់ចាំ 15 នាទី', wentWrong:'មានអ្វីមួយមិនប្រក្រតី', cantReach:'មិនអាចភ្ជាប់ទៅប្រតិទិនបានទេ សូមព្យាយាមម្តងទៀត',
+  signedInAs:'បានចូលគណនីជា {name}', signOutAsk:'ចាកចេញពីឧបករណ៍នេះ?',
+  pinEnter:'បញ្ចូលលេខ PIN', pinUnlock:'ដោះសោ', pinChecking:'កំពុងពិនិត្យ…', pinWrong:'លេខ PIN មិនត្រឹមត្រូវ សូមព្យាយាមម្តងទៀត', pinConn:'បញ្ហាការតភ្ជាប់ សូមព្យាយាមម្តងទៀត',
+  lblTitle:'ចំណងជើង', lblDate:'កាលបរិច្ឆេទ', lblDateTo:'ដល់ថ្ងៃ', optional:'(ស្រេចចិត្ត)', lblFrom:'ម៉ោងចាប់ផ្តើម', lblToTime:'ម៉ោងបញ្ចប់', hintTime:'',
+  lblLoc:'ទីតាំង', lblCat:'ប្រភេទ', lblNotes:'កំណត់ចំណាំ', placeHint:'ទីតាំង ឬតំណ Google Maps', mapWord:'ផែនទី', openMaps:'បើកក្នុង Google Maps',
+  wholeEvent:'ព្រឹត្តិការណ៍ទាំងមូល',
+  dayHint:v=>`ថ្ងៃទី ${v.i} ក្នុងចំណោម ${v.n} សម្រាប់តែថ្ងៃនេះ។ ទុកទទេដើម្បីប្រើតាមព្រឹត្តិការណ៍ទាំងមូល${v.base?` (<b>${v.base}</b>)`:''}។`,
+  resetDay:'ប្រើព័ត៌មានរបស់ព្រឹត្តិការណ៍ទាំងមូលសម្រាប់ថ្ងៃនេះ', dayOf:'ថ្ងៃទី {i} ក្នុង {n}',
+  cancel:'បោះបង់', save:'រក្សាទុក', add:'បន្ថែមព្រឹត្តិការណ៍', edit:'កែ', del:'លុប', done:'រួចរាល់ ✓', notDone:'មិនទាន់រួច',
+  markDone:'សម្គាល់ថារួចរាល់', markNotDone:'សម្គាល់ថាមិនទាន់រួច', ok:'យល់ព្រម',
+  colour:'ពណ៌', auto:'ស្វ័យប្រវត្តិ', colourIs:'ពណ៌៖ {c}', colourAuto:'ពណ៌៖ ស្វ័យប្រវត្តិ',
+  c_blue:'ខៀវ', c_green:'បៃតង', c_yellow:'លឿង', c_orange:'ទឹកក្រូច', c_red:'ក្រហម', c_purple:'ស្វាយ', c_teal:'ខៀវបៃតង', c_sky:'ខៀវថ្លា',
+  titleReq:'សូមបញ្ចូលចំណងជើង', dateReq:'សូមជ្រើសរើសកាលបរិច្ឆេទ', endBeforeStart:'ថ្ងៃបញ្ចប់មុនថ្ងៃចាប់ផ្តើម',
+  needStart:'សូមបញ្ចូលម៉ោងចាប់ផ្តើមផងដែរ', endTimeBefore:'ម៉ោងបញ្ចប់មុនម៉ោងចាប់ផ្តើម', typePlace:'សូមបញ្ចូលទីតាំងជាមុនសិន',
+  saved:'បានរក្សាទុក', added:'បានបន្ថែមព្រឹត្តិការណ៍', deleted:'បានលុប', offlinePaused:'ម៉ាស៊ីនមេក្រៅបណ្តាញ ការកែប្រែត្រូវបានផ្អាក', backOnline:'មានអ៊ីនធឺណិតវិញហើយ',
+  frozen:v=>`<b>ម៉ាស៊ីនមេក្រៅបណ្តាញ</b> · ${v.when?`កំពុងបង្ហាញច្បាប់ចម្លងដែលបានរក្សាទុកនៅ ${v.when}`:'មិនទាន់មានអ្វីរក្សាទុកក្នុងឧបករណ៍នេះទេ'} · ការកែប្រែត្រូវបានផ្អាក`,
+  loadErr:'មានបញ្ហាក្នុងការផ្ទុកព្រឹត្តិការណ៍៖ ', errPrefix:'កំហុស៖ ', moveErr:'មិនអាចផ្លាស់ទីបានទេ៖ ', movedTo:'បានផ្លាស់ទៅ {to}',
+  confirmDelete:'លុប «{title}»?\nមិនអាចត្រឡប់វិញបានទេ ហើយនឹងលុបសម្រាប់មនុស្សគ្រប់គ្នា។',
+  localAsk:v=>`ឧបករណ៍នេះមានព្រឹត្តិការណ៍ ${v.n} ដែលរក្សាទុកតែក្នុងឧបករណ៍នេះប៉ុណ្ណោះ។ ចម្លងទៅប្រតិទិនរួម ដើម្បីឱ្យអ្នកផ្សេងអាចមើលឃើញឬទេ?`,
+  copied:v=>`បានចម្លងព្រឹត្តិការណ៍ ${v.n}`, copyErr:'មិនអាចចម្លងបានទេ៖ ',
+  remTitle:'ទទួលការរំលឹក', remText:'មួយសប្តាហ៍ និងមួយថ្ងៃមុនព្រឹត្តិការណ៍នីមួយៗ នៅម៉ោង 7:00 ក្នុងម៉ោងធ្វើការ។',
+  remIphone:'នៅលើ iPhone៖ ចុច «ចែករំលែក» បន្ទាប់មក «បន្ថែមទៅអេក្រង់ដើម» ហើយបើក Yai Calendar ពីទីនោះ។',
+  later:'ពេលក្រោយ', turnOn:'បើក', remAria:'ការរំលឹក',
+  whereIos:'ការកំណត់ → ការជូនដំណឹង → Yai Calendar', whereAndroid:'ការកំណត់ → កម្មវិធី → Yai Calendar → ការជូនដំណឹង',
+  remStayOff:v=>`ការរំលឹកនៅតែបិទ។ ដើម្បីអនុញ្ញាត៖ ${v.where}។`, remTurning:'កំពុងបើកការរំលឹក…',
+  remOn:'បានបើកការរំលឹក ការជូនដំណឹងសាកល្បងកំពុងមកដល់', remNoServer:'ម៉ាស៊ីនមេនេះមិនផ្ញើការរំលឹកទេ',
+  whyOffline:'មិនអាចភ្ជាប់ទៅប្រតិទិនបានទេ។ សូមពិនិត្យអ៊ីនធឺណិត រួចព្យាយាមម្តងទៀត។', whySignIn:'សូមចូលគណនីជាមុន រួចបើកការរំលឹក។',
+  whyBlocked:v=>`ការជូនដំណឹងត្រូវបានបិទសម្រាប់កម្មវិធីនេះ។ សូមបើក «${v.where}» នៅលើទូរស័ព្ទរបស់អ្នក បើកការជូនដំណឹង រួចព្យាយាមម្តងទៀត។`,
+  whyPushIos:'សេវាជូនដំណឹងរបស់ទូរស័ព្ទមិនឆ្លើយតបទេ។ សូមព្យាយាមម្តងទៀតក្នុងមួយភ្លែត។',
+  whyPushAndroid:'ទូរស័ព្ទនេះមិនអាចភ្ជាប់ទៅសេវាជូនដំណឹងបានទេ។ វាត្រូវការ Google Play services និងអ៊ីនធឺណិត (បណ្តាញ Wi-Fi មួយចំនួនរារាំង)៖ សូមសាកល្បងម្តងទៀតជាមួយទិន្នន័យទូរស័ព្ទ។',
+  whyState:'សូមបិទកម្មវិធីទាំងស្រុង បើកម្តងទៀត រួចព្យាយាមម្តងទៀត។', whyOther:v=>`មិនអាចបើកការរំលឹកបានទេ (${v.what})។`,
+  newVersion:'មានកំណែថ្មី ចុចដើម្បីផ្ទុកឡើងវិញ',
+  addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
+  nothingPlanned:'មិនមានអ្វីគ្រោងទុកទេ។', tapAdd:'ចុច «បន្ថែមព្រឹត្តិការណ៍» ដើម្បីបន្ថែម។', noEvents:'មិនទាន់មានព្រឹត្តិការណ៍ទេ។',
+  dayEmpty:'ចុចពីរដងលើថ្ងៃ ឬចុច + ដើម្បីបន្ថែម។',
+  evWord:()=>'ព្រឹត្តិការណ៍', nEvents:n=>`${n} ព្រឹត្តិការណ៍`, nDone:'រួចរាល់ {n}',
+  tipChangeTime:'ប្តូរម៉ោង', tipEditDetails:'កែព័ត៌មាន', tipChangeDates:'ប្តូរកាលបរិច្ឆេទ',
+  errLogin:'ឈ្មោះអ្នកប្រើ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ', errCode:'លេខកូដក្រុមមិនត្រឹមត្រូវ', errTaken:'ឈ្មោះអ្នកប្រើនេះមានគេប្រើរួចហើយ',
+  errUsername:'ឈ្មោះអ្នកប្រើ៖ 2–32 តួអក្សរ ជាអក្សរ លេខ . _ ឬ -', errPassword:'ពាក្យសម្ងាត់៖ យ៉ាងតិច 6 តួអក្សរ',
+  errSignIn:'សូមចូលគណនីជាមុន', errDate:'កាលបរិច្ឆេទត្រូវតែជាទម្រង់ YYYY-MM-DD', errTime:'ម៉ោងត្រូវតែជាទម្រង់ HH:MM', errNoEvent:'រកមិនឃើញព្រឹត្តិការណ៍នោះទេ',
+},
+};
+// the text for `k` in the current language ({name}-style holes filled from v; some entries are functions of v)
+function tx(k, v){
+  const e=T[JR_LANG]?.[k] ?? T.en[k]; if(e==null) return k;
+  if(typeof e==='function') return e(v);
+  return v&&typeof v==='object' ? e.replace(/\{(\w+)\}/g,(_,n)=>v[n]??'') : e;
+}
+// a label with its muted hint: "Category (optional)"
+const jrLbl=(k,hint)=>`<span>${esc(tx(k))}${hint&&tx(hint)?` <span class="muted">${esc(tx(hint))}</span>`:''}</span>`;
+// What the server says when it refuses something is English (the database's own words); known ones are translated.
+const JR_ERRS=[[/wrong username or password/i,'errLogin'],[/wrong team code/i,'errCode'],[/username is taken/i,'errTaken'],
+  [/^username:/i,'errUsername'],[/^password:/i,'errPassword'],[/too many wrong/i,'tooMany'],[/please sign in/i,'errSignIn'],
+  [/title (is required|cannot be blank)/i,'titleReq'],[/(event|end)_date must be/i,'errDate'],[/(event|end)_time must be/i,'errTime'],
+  [/end date is before/i,'endBeforeStart'],[/end time is before/i,'endTimeBefore'],[/give a start time/i,'needStart'],[/no event #/i,'errNoEvent']];
+function jrErr(m){ const s=String(m||''); if(JR_LANG==='en') return s; for(const [re,k] of JR_ERRS) if(re.test(s)) return tx(k); return s; }
+
+// The words in the page's own markup (data-i18n = text, -title, -aria, -ph = placeholder), the weekday row, the
+// language switches. Run at start and whenever the language changes.
+const jrLangHtml=cls=>`<div class="jr-lang ${cls||''}" role="group" aria-label="${esc(tx('language'))}">`
+  +Object.keys(JR_LANGS).map(l=>`<button type="button" data-l="${l}" lang="${l}" class="${l===JR_LANG?'on':''}" aria-pressed="${l===JR_LANG}">${JR_LANGS[l]}</button>`).join('')+`</div>`;
+function jrTranslatePage(){
+  document.querySelectorAll('[data-i18n]').forEach(e=>{ e.textContent=tx(e.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-title]').forEach(e=>{ e.title=tx(e.dataset.i18nTitle); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(e=>{ e.setAttribute('aria-label', tx(e.dataset.i18nAria)); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(e=>{ e.placeholder=tx(e.dataset.i18nPh); });
+  document.querySelectorAll('#jr-cal-dow span').forEach((s,i)=>{ s.textContent=L[JR_LANG].dow[i]; });
+  document.querySelectorAll('[data-lang-slot]').forEach(s=>{ s.innerHTML=jrLangHtml('jr-lang-'+s.dataset.langSlot); });
+}
+function jrSetLang(l){
+  if(!JR_LANGS[l] || l===JR_LANG) return;
+  JR_LANG=l; document.documentElement.lang=l;
+  try{ localStorage.setItem('yai_lang', l); }catch(_){}
+  jrTranslatePage();
+  JR_UPNEXT_SIG=''; jrRender(); jrRenderMe();
+  const fb=document.getElementById('jr-frozen-bar'); if(fb) fb.innerHTML=jrFrozenHtml();
+  jrPopClose(true); jrReminderPrompt(false);
+  window.__jrSigninDraw?.();                                         // the sign-in card, if it's open
+  // a device that already gets reminders gets them in the new language: tell the server
+  if(window.Notification && Notification.permission==='granted' && jrPushable()) jrSubscribe(false).catch(()=>{});
+}
+document.addEventListener('click',e=>{ const b=e.target.closest?.('.jr-lang [data-l]'); if(b){ e.preventDefault(); jrSetLang(b.dataset.l); } });
+jrTranslatePage();
+
+
 // ---- auth: optional PIN (JOURNAL_TOKEN on the server), remembered on this device. ----
 let TOKEN = new URLSearchParams(location.search).get('token') || localStorage.getItem('sk_token') || '';
 if(TOKEN){ try{ localStorage.setItem('sk_token', TOKEN); }catch(_){} }
@@ -1528,23 +1791,26 @@ function jrFreeze(on){
   document.body.classList.toggle('jr-frozen', on);
   let b=document.getElementById('jr-frozen-bar');
   if(on){
-    const s=jrSnapshot(), when=s?.at?new Date(s.at).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}):null;
     if(!b){ b=document.createElement('div'); b.id='jr-frozen-bar'; b.setAttribute('role','status'); document.body.appendChild(b); }
-    b.innerHTML=`<b>Server offline</b> · ${when?`showing the copy saved ${esc(when)}`:'nothing saved on this device yet'} · changes are paused`;
-  } else if(b){ b.classList.add('leaving'); setTimeout(()=>b.remove(), 260); toast('Back online'); }
+    b.innerHTML=jrFrozenHtml();
+  } else if(b){ b.classList.add('leaving'); setTimeout(()=>b.remove(), 260); toast(tx('backOnline')); }
+}
+function jrFrozenHtml(){
+  const s=jrSnapshot(), when=s?.at?new Date(s.at).toLocaleString(JR_LANG==='zh'?'zh-CN':JR_LANG==='km'?'km-KH':[], {dateStyle:'medium', timeStyle:'short'}):null;
+  return tx('frozen',{when:when?esc(when):''});
 }
 class JrOffline extends Error {}
 
 async function api(path, opts={}){
   const method=(opts.method||'GET').toUpperCase();
-  if(JR_FROZEN && method!=='GET'){ toast('Server offline — changes are paused'); throw new JrOffline('offline'); }
+  if(JR_FROZEN && method!=='GET'){ toast(tx('offlinePaused')); throw new JrOffline('offline'); }
   opts.headers = Object.assign({}, opts.headers||{}, TOKEN?{'X-Token':TOKEN}:{});
   let r;
   try{ r = await fetch(jrUrl(path), opts); }
   catch(e){ throw new JrOffline('cannot reach the server'); }        // network down, server or tunnel gone
   if(r.status>=502 && r.status<=530) throw new JrOffline('server offline (HTTP '+r.status+')');   // the tunnel answers, the server doesn't
   if(r.status===401){ jrSetSession('', null); askToken(); throw new Error('please sign in'); }
-  if(r.status===429){ toast('Too many wrong PINs — try again in 15 minutes'); throw new Error('locked out for a while'); }
+  if(r.status===429){ toast(tx('tooMany')); throw new Error('locked out for a while'); }
   if(!r.ok){ let d; try{ d=(await r.json()).detail; }catch(_){} throw new Error(d || r.statusText); }
   return r.json();
 }
@@ -1578,10 +1844,10 @@ function jrSetSession(token, user){
 }
 function jrRenderMe(){
   const el=document.getElementById('jr-me'); if(!el) return;
-  el.innerHTML=JR_USER?`<span>${esc(JR_USER.name)}</span><button type="button" class="mini" onclick="jrSignOut()">Sign out</button>`:'';
+  el.innerHTML=JR_USER?`<span>${esc(JR_USER.name)}</span><button type="button" class="mini" onclick="jrSignOut()">${esc(tx('signOut'))}</button>`:'';
 }
 async function jrSignOut(){
-  if(!await askConfirm('Sign out on this device?')) return;
+  if(!await askConfirm(tx('signOutAsk'))) return;
   try{ await fetch(jrUrl('/api/logout'),{method:'POST',headers:{'X-Token':TOKEN}}); }catch(_){}
   jrSetSession('', null); JOURNAL_EVENTS=[]; jrRender(); askToken();
 }
@@ -1593,32 +1859,34 @@ function jrSignIn(){
     const up=mode==='up';
     ov.innerHTML=`<form class="jr-signin-card" autocomplete="on">
       <img src="static/icon-192.png" class="jr-signin-mark" alt="">
-      <h2>${up?'Create account':'Sign in'}</h2>
-      <p class="muted">${up?'Your username is shown on the events you add.':'Yai Calendar, shared with your team.'}</p>
-      <label class="field"><span>Username</span><input name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32"></label>
-      <label class="field"><span>Password</span><input name="password" type="password" autocomplete="${up?'new-password':'current-password'}"></label>
-      ${up&&JR_AUTH?.team_code?`<label class="field"><span>Team code</span><input name="code" inputmode="numeric" autocomplete="off"></label>`:''}
-      <button class="act" type="submit">${up?'Create account':'Sign in'}</button>
+      <h2>${esc(up?tx('createAccount'):tx('signIn'))}</h2>
+      <p class="muted">${esc(up?tx('usernameShown'):tx('sharedTeam'))}</p>
+      <label class="field"><span>${esc(tx('username'))}</span><input name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32"></label>
+      <label class="field"><span>${esc(tx('password'))}</span><input name="password" type="password" autocomplete="${up?'new-password':'current-password'}"></label>
+      ${up&&JR_AUTH?.team_code?`<label class="field"><span>${esc(tx('teamCode'))}</span><input name="code" inputmode="numeric" autocomplete="off"></label>`:''}
+      <button class="act" type="submit">${esc(up?tx('createAccount'):tx('signIn'))}</button>
       <div class="jr-signin-err" role="alert"></div>
-      <button class="jr-signin-switch" type="button">${up?'I already have an account':'New here? Create an account'}</button>
+      <button class="jr-signin-switch" type="button">${esc(up?tx('haveAccount'):tx('newHere'))}</button>
+      ${jrLangHtml('jr-lang-signin')}
     </form>`;
     const f=ov.querySelector('form'), errEl=ov.querySelector('.jr-signin-err'), go=f.querySelector('[type=submit]');
     ov.querySelector('.jr-signin-switch').onclick=()=>{ mode=up?'in':'up'; draw(); };
     f.onsubmit=async e=>{
       e.preventDefault();
       const v=Object.fromEntries(new FormData(f));
-      if(!v.username||!v.password){ errEl.textContent='Fill in your username and password'; return; }
+      if(!v.username||!v.password){ errEl.textContent=tx('fillIn'); return; }
       go.disabled=true; errEl.textContent='';
       try{
         const r=await fetch(jrUrl(up?'/api/signup':'/api/login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)});
         const d=await r.json().catch(()=>({}));
-        if(!r.ok){ errEl.textContent=r.status===429?'Too many wrong tries — wait 15 minutes':(d.detail||'Something went wrong'); go.disabled=false; return; }
-        jrSetSession(d.token, d.user); dismiss(ov); toast(`Signed in as ${d.user.name}`); loadJournal();
-      }catch(_){ errEl.textContent='Can’t reach the calendar — try again'; go.disabled=false; }
+        if(!r.ok){ errEl.textContent=r.status===429?tx('tooMany'):(d.detail?jrErr(d.detail):tx('wentWrong')); go.disabled=false; return; }
+        jrSetSession(d.token, d.user); dismiss(ov); toast(tx('signedInAs',{name:d.user.name})); loadJournal();
+      }catch(_){ errEl.textContent=tx('cantReach'); go.disabled=false; }
     };
     setTimeout(()=>{ try{ f.querySelector('input').focus(); }catch(_){} }, 60);
   };
   draw(); document.body.appendChild(ov);
+  window.__jrSigninDraw=()=>{ if(ov.isConnected) draw(); };          // the language switch redraws the card in place
 }
 
 // On-page PIN screen (NOT a native prompt — iOS home-screen web apps block prompt()/alert()).
@@ -1631,22 +1899,22 @@ async function askToken(){
     +'background:var(--bg);padding:1.5rem;animation:fadeIn .2s ease both';
   ov.innerHTML='<div style="width:100%;max-width:17rem;text-align:center">'
     +'<img src="static/icon-192.png" alt="" style="width:3.4rem;height:3.4rem;border-radius:22%;margin-bottom:.6rem">'
-    +'<h2 style="margin:0 0 1rem;font-size:1.15rem;font-weight:700">Enter PIN</h2>'
+    +'<h2 style="margin:0 0 1rem;font-size:1.15rem;font-weight:700">'+esc(tx('pinEnter'))+'</h2>'
     +'<input id="pin-inp" type="tel" inputmode="numeric" autocomplete="off" placeholder="PIN" '
     +'style="font-size:1.5rem;text-align:center;letter-spacing:.35em">'
-    +'<button class="act" id="pin-go" style="margin-top:.75rem;width:100%">Unlock</button>'
+    +'<button class="act" id="pin-go" style="margin-top:.75rem;width:100%">'+esc(tx('pinUnlock'))+'</button>'
     +'<div id="pin-err" style="margin-top:.55rem;color:var(--warn);font-size:.85rem;min-height:1.1em"></div></div>';
   document.body.appendChild(ov);
   const inp=ov.querySelector('#pin-inp'), go=ov.querySelector('#pin-go'), err=ov.querySelector('#pin-err');
   const submit=async()=>{ const pin=(inp.value||'').trim(); if(!pin) return;
-    go.disabled=true; err.textContent='Checking…';
+    go.disabled=true; err.textContent=tx('pinChecking');
     try{
       const r=await fetch(jrUrl('/api/journal/events'),{headers:{'X-Token':pin}});
-      if(r.status===429){ err.textContent='Too many wrong tries — wait 15 minutes'; go.disabled=false; return; }
-      if(!r.ok){ err.textContent='Wrong PIN — try again'; inp.value=''; inp.focus(); go.disabled=false; return; }
+      if(r.status===429){ err.textContent=tx('tooMany'); go.disabled=false; return; }
+      if(!r.ok){ err.textContent=tx('pinWrong'); inp.value=''; inp.focus(); go.disabled=false; return; }
       TOKEN=pin; try{ localStorage.setItem('sk_token',pin); }catch(_){}
       dismiss(ov); loadJournal();
-    }catch(e){ err.textContent='Connection problem — try again'; go.disabled=false; }
+    }catch(e){ err.textContent=tx('pinConn'); go.disabled=false; }
   };
   go.onclick=submit;
   inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
@@ -1663,7 +1931,7 @@ async function checkAuth(){
 
 // On-page confirm/prompt replacements.
 // a yes/no question on the page; `yes` names the button, and `danger` makes it red (for deleting)
-function askConfirm(msg, yes='OK', danger=false){
+function askConfirm(msg, yes=tx('ok'), danger=false){
   return new Promise(resolve=>{
     const ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;'
@@ -1671,7 +1939,7 @@ function askConfirm(msg, yes='OK', danger=false){
     ov.innerHTML='<div style="width:100%;max-width:20rem;background:var(--bg);border:1px solid var(--line);'
       +'border-radius:12px;padding:1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.35)">'
       +'<div style="font-size:.98rem;line-height:1.4;margin-bottom:1rem;white-space:pre-wrap">'+esc(msg)+'</div>'
-      +'<div style="display:flex;gap:.5rem"><button class="mini" id="ac-no" style="flex:1">Cancel</button>'
+      +'<div style="display:flex;gap:.5rem"><button class="mini" id="ac-no" style="flex:1">'+esc(tx('cancel'))+'</button>'
       +'<button class="act'+(danger?' jr-danger':'')+'" id="ac-yes" style="flex:1">'+esc(yes)+'</button></div></div>';
     document.body.appendChild(ov);
     const done=v=>{ document.removeEventListener('keydown',onKey); dismiss(ov); resolve(v); };
@@ -1695,21 +1963,17 @@ const jrToday = () => jrISO(new Date());
 // Local-calendar-day ISO string — never toISOString(), which is UTC and can
 // land on the wrong day near midnight in this timezone.
 function jrISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-// en-GB dates by hand, the same text the browser gives: every toLocaleDateString call builds a
+// Dates are written by hand from the language tables (L, above): every toLocaleDateString call builds a
 // formatter (the clock alone asked for three a second) and the first one loads the Intl engine.
-const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sept','Oct','Nov','Dec'];
-const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const p2=n=>String(n).padStart(2,'0');
-const dayMonthYear=d=>`${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;   // 10 October 2026
 function jrDayLabel(iso){
   const today=jrToday();
-  if(iso===today) return '<span class="rel">Today</span>';
+  if(iso===today) return `<span class="rel">${esc(tx('today'))}</span>`;
   const t=new Date(today+'T00:00:00'), d=new Date(iso+'T00:00:00');
   const diffDays=Math.round((d-t)/86400000);
-  if(diffDays===1) return '<span class="rel">Tomorrow</span>';
-  if(diffDays===-1) return '<span class="rel">Yesterday</span>';
-  return `${DAY_NAMES[d.getDay()].slice(0,3)} ${d.getDate()} ${MON[d.getMonth()]}`;   // Sat 10 Oct
+  if(diffDays===1) return `<span class="rel">${esc(tx('tomorrow'))}</span>`;
+  if(diffDays===-1) return `<span class="rel">${esc(tx('yesterday'))}</span>`;
+  return jrFmtShort(d);   // Sat 10 Oct
 }
 function jrTimeLabel(t){ return t ? t.slice(0,5) : '—'; }
 // for the day squares, where every letter counts: "09:30:00" → "9:30"
@@ -1728,8 +1992,9 @@ function jrTimeRange(e, short){
 // "20–23 Nov", or "30 Nov – 2 Dec" across months
 function jrDateRange(e){
   const a=new Date(e.event_date+'T00:00:00'), b=new Date(jrEnd(e)+'T00:00:00');
-  return a.getMonth()===b.getMonth() && a.getFullYear()===b.getFullYear()
-    ? `${a.getDate()}–${b.getDate()} ${MON[a.getMonth()]}` : `${a.getDate()} ${MON[a.getMonth()]} – ${b.getDate()} ${MON[b.getMonth()]}`;
+  if(a.getMonth()===b.getMonth() && a.getFullYear()===b.getFullYear())
+    return JR_LANG==='zh' ? `${a.getMonth()+1}月${a.getDate()}日–${b.getDate()}日` : `${a.getDate()}–${b.getDate()} ${jrMonShort(a.getMonth())}`;
+  return `${jrFmtDM(a)} – ${jrFmtDM(b)}`;
 }
 const jrDays=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);
 function jrAddDays(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return jrISO(d); }
@@ -1745,9 +2010,9 @@ function jrShiftDays(di, n){ const o={}; for(const k in di||{}) o[jrAddDays(k,n)
 // as a Maps search. A link shows as "Map" rather than as a long address.
 const jrIsLink=loc=>/^https?:\/\//i.test(loc||'');
 const jrMapUrl=loc=>jrIsLink(loc) ? loc : 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(loc);
-const jrPlace=loc=>jrIsLink(loc) ? 'Map' : loc;
+const jrPlace=loc=>jrIsLink(loc) ? tx('mapWord') : loc;
 function jrMapLink(loc, cls=''){
-  return `<a class="jr-map ${cls}" href="${esc(jrMapUrl(loc))}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Open in Google Maps">${JR_PIN}${esc(jrPlace(loc))}</a>`;
+  return `<a class="jr-map ${cls}" href="${esc(jrMapUrl(loc))}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${esc(tx('openMaps'))}">${JR_PIN}${esc(jrPlace(loc))}</a>`;
 }
 // Event colours: the theme's own eight, so they suit whichever theme is on. An event with no colour of its own gets
 // one from its id — a mix across the calendar, and the same one on every device and after every reload.
@@ -1767,7 +2032,7 @@ async function loadJournal(){
   if(first) setJournalView(JR_VIEW, true);
   let live=false;
   try{ JOURNAL_EVENTS = await jrFetchEvents(); live=!JR_FROZEN; }
-  catch(e){ if(e.message!=='please sign in') toast('Error loading events: '+e.message); JOURNAL_EVENTS=jrSnapshot()?.events || []; }
+  catch(e){ if(e.message!=='please sign in') toast(tx('loadErr')+jrErr(e.message)); JOURNAL_EVENTS=jrSnapshot()?.events || []; }
   if(!first) setJournalView(JR_VIEW, true);
   else if(JR_VIEW==='calendar') renderCalendar({enter:true});   // the day's cards deal in as they arrive
   else renderAgenda();
@@ -1802,20 +2067,20 @@ function jrRenderUpNext(){
   const evs=JOURNAL_EVENTS.filter(e=>jrEnd(e)>=today)
     .sort((a,b)=>at(a).localeCompare(at(b)) || jrMulti(b)-jrMulti(a) || jrByTime(a,b)).slice(0,60);
   const sig=JSON.stringify([today,JR_SEL,evs]); if(sig===JR_UPNEXT_SIG) return; JR_UPNEXT_SIG=sig;   // nothing new: leave it be
-  if(!evs.length){ box.innerHTML='<div class="jr-up-head">Coming up</div><div class="jr-up-empty">Nothing planned yet.</div>'; return; }
-  let html='<div class="jr-up-head">Coming up</div>', month='', day='', n=0;
+  if(!evs.length){ box.innerHTML=`<div class="jr-up-head">${esc(tx('comingUp'))}</div><div class="jr-up-empty">${esc(tx('nothingYet'))}</div>`; return; }
+  let html=`<div class="jr-up-head">${esc(tx('comingUp'))}</div>`, month='', day='', n=0;
   for(const e of evs){
-    const iso=at(e), d=new Date(iso+'T00:00:00'), m=`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    const iso=at(e), d=new Date(iso+'T00:00:00'), m=jrFmtMY(d);
     if(m!==month){ month=m; html+=`<div class="jr-up-month">${esc(m)}</div>`; }
     if(iso!==day){
       day=iso;
-      const rel=iso===today?'Today':(Math.round((d-new Date(today+'T00:00:00'))/86400000)===1?'Tomorrow':'');
-      html+=`<div class="jr-up-day${day===JR_SEL?' sel':''}" style="--i:${n}"><b>${d.getDate()}</b><span>${DAY_NAMES[d.getDay()].slice(0,3)}${rel?` · <em>${rel}</em>`:''}</span></div>`;
+      const rel=iso===today?tx('today'):(Math.round((d-new Date(today+'T00:00:00'))/86400000)===1?tx('tomorrow'):'');
+      html+=`<div class="jr-up-day${day===JR_SEL?' sel':''}" style="--i:${n}"><b>${d.getDate()}</b><span>${jrDayAbbr(d.getDay())}${rel?` · <em>${esc(rel)}</em>`:''}</span></div>`;
     }
-    const more=[jrMulti(e)?`<em>${jrDateRange(e)}</em>`:'', e.location?`<span class="jr-up-loc" role="link" title="Open in Google Maps" onclick="event.stopPropagation();open(jrMapUrl(${esc(JSON.stringify(e.location))}),'_blank','noopener')">${JR_PIN}${esc(jrPlace(e.location))}</span>`:'',
+    const more=[jrMulti(e)?`<em>${jrDateRange(e)}</em>`:'', e.location?`<span class="jr-up-loc" role="link" title="${esc(tx('openMaps'))}" onclick="event.stopPropagation();open(jrMapUrl(${esc(JSON.stringify(e.location))}),'_blank','noopener')">${JR_PIN}${esc(jrPlace(e.location))}</span>`:'',
       e.category?`<i>${esc(e.category)}</i>`:'', e.created_by?`<b>${esc(e.created_by)}</b>`:'', e.notes?esc(e.notes):''].filter(Boolean).join('');
     html+=`<button type="button" class="jr-up-ev${e.done?' done':''}" style="--i:${n++};${jrTint(e)}" onclick="jrUpOpen('${iso}',${e.id})">
-      <span class="jr-up-time">${jrTimeRange(e,true)||(jrMulti(e)?'Days':'All day')}</span>
+      <span class="jr-up-time">${jrTimeRange(e,true)||(jrMulti(e)?tx('multiDay'):tx('allDay'))}</span>
       <span class="jr-up-title">${esc(e.title)}</span>
       ${more?`<span class="jr-up-more">${more}</span>`:''}
     </button>`;
@@ -1834,7 +2099,7 @@ function renderAgenda(){
   const today = jrToday();
   const events = JOURNAL_EVENTS.filter(e => showPast || jrEnd(e) >= today);
   const box = $('#jr-agenda-list');
-  if(!events.length){ box.innerHTML = '<div class="empty">'+(showPast?'No events yet.':'Nothing planned.')+'<span class="muted">Tap “Add event” to put something on it.</span></div>'; return; }
+  if(!events.length){ box.innerHTML = '<div class="empty">'+esc(showPast?tx('noEvents'):tx('nothingPlanned'))+'<span class="muted">'+esc(tx('tapAdd'))+'</span></div>'; return; }
   const groups = {};
   for(const e of events){ (groups[e.event_date] = groups[e.event_date] || []).push(e); }
   const dates = Object.keys(groups).sort();
@@ -1842,20 +2107,20 @@ function renderAgenda(){
     <div class="jr-day-group" data-iso="${date}">
       <div class="jr-day-head">${jrDayLabel(date)}</div>
       <div class="jr-table">
-        <div class="jr-h">Time</div><div class="jr-h">Title</div><div class="jr-h jr-h-cat">Category</div><div class="jr-h"></div><div class="jr-h"></div>
+        <div class="jr-h">${esc(tx('thTime'))}</div><div class="jr-h">${esc(tx('thTitle'))}</div><div class="jr-h jr-h-cat">${esc(tx('thCat'))}</div><div class="jr-h"></div><div class="jr-h"></div>
         ${groups[date].map(e => `
           <div class="jr-row${e.done?' done':''}" style="display:contents;${jrTint(e)}">
             <div class="jr-cell jr-time" onclick="editEventTime(${e.id})">${jrTimeRange(e)||'—'}</div>
             <div class="jr-cell jr-title" style="flex-direction:column;align-items:flex-start;white-space:normal">
               <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
               ${jrMulti(e)||e.location?`<div class="jr-ag-where">${jrMulti(e)?`<b onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-end-date')">${jrDateRange(e)}</b>`:''}${e.location?jrMapLink(e.location):''}</div>`:''}
-              <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ note'}</div>
-              ${e.created_by?`<div class="jr-by">by ${esc(e.created_by)}</div>`:''}
-              <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
+              <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):esc(tx('addNote'))}</div>
+              ${e.created_by?`<div class="jr-by">${esc(tx('byName',{name:e.created_by}))}</div>`:''}
+              <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:`<span class="muted">${esc(tx('addTag'))}</span>`}</div>
             </div>
-            <div class="jr-cell jr-cat" onclick="editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
-            <div class="jr-cell jr-check${e.done?' done':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}">${e.done?'✓':'○'}</div>
-            <div class="jr-cell jr-del" onclick="deleteEventRow(${e.id})" title="Delete">✕</div>
+            <div class="jr-cell jr-cat" onclick="editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:`<span class="muted">${esc(tx('addTag'))}</span>`}</div>
+            <div class="jr-cell jr-check${e.done?' done':''}" onclick="toggleEventDone(${e.id})" title="${esc(e.done?tx('markNotDone'):tx('markDone'))}">${e.done?'✓':'○'}</div>
+            <div class="jr-cell jr-del" onclick="deleteEventRow(${e.id})" title="${esc(tx('del'))}">✕</div>
           </div>`).join('')}
       </div>
     </div>`).join('');
@@ -1894,18 +2159,18 @@ async function toggleEventDone(id){
       const c=document.querySelector(`.jr-dcard[data-id="${id}"]`);
       c?.querySelector('.ok')?.classList.add('tick'); c?.classList.add('just-done');
     }
-  }catch(err){ toast('Error: '+err.message); }
+  }catch(err){ toast(tx('errPrefix')+jrErr(err.message)); }
 }
 async function deleteEventRow(id){
   const e=jrEvent(id); if(!e || jrJustSwiped()) return;
-  if(!await askConfirm('Delete "'+e.title+'"?\nThis can’t be undone, and it goes for everyone.', 'Delete', true)) return;
+  if(!await askConfirm(tx('confirmDelete',{title:e.title}), tx('del'), true)) return;
   try{
     await api('/api/journal/events/'+id,{method:'DELETE'});
     await jrFold(document.querySelector(`.jr-dcard[data-id="${id}"]`));
     JOURNAL_EVENTS = JOURNAL_EVENTS.filter(x=>x.id!==id);
     jrRender();
-    toast('Deleted');
-  }catch(err){ toast('Error: '+err.message); }
+    toast(tx('deleted'));
+  }catch(err){ toast(tx('errPrefix')+jrErr(err.message)); }
 }
 
 // Add an event, or (with an id) change one: the same form, with from–to dates, from–to times and a place.
@@ -1913,7 +2178,7 @@ async function deleteEventRow(id){
 // A multi-day event also gets a tab for each of its days: a day's own times, place and notes (empty = the event's).
 // Opened from a day of the calendar it starts on that day's tab, unless the title, dates or category were tapped.
 async function openAddEvent(prefillDate, id, focus, day){
-  if(JR_FROZEN){ toast('Server offline — changes are paused'); return; }
+  if(JR_FROZEN){ toast(tx('offlinePaused')); return; }
   const ev=id?jrEvent(id):null; if(id && !ev) return;
   const PERDAY={'#ae-time':'#ad-time','#ae-end-time':'#ad-end-time','#ae-loc':'#ad-loc','#ae-notes':'#ad-notes'};
   if(day===undefined) day = ev && jrMulti(ev) && JR_VIEW==='calendar' && JR_SEL && jrCovers(ev,JR_SEL) && (!focus || PERDAY[focus]) ? JR_SEL : null;
@@ -1922,47 +2187,47 @@ async function openAddEvent(prefillDate, id, focus, day){
   const ov=document.createElement('div'); ov.className='modal-ov';
   const card=document.createElement('div'); card.className='modal-card jr-ae'; card.style.cssText='max-width:26rem;width:100%';
   const v=(x)=>esc(x||''), t5=t=>t?t.slice(0,5):'';
-  card.innerHTML=`<div class="jr-ae-head"><h2>${ev?'Edit event':'＋ Add event'}</h2>
-      <button type="button" class="jr-ball" id="ae-ball" aria-label="Colour" aria-expanded="false"></button></div>
+  card.innerHTML=`<div class="jr-ae-head"><h2>${ev?esc(tx('editEvent')):'＋ '+esc(tx('addEvent'))}</h2>
+      <button type="button" class="jr-ball" id="ae-ball" aria-label="${esc(tx('colour'))}" aria-expanded="false"></button></div>
     <div class="jr-ae-colors" id="ae-colors" hidden>
-      <button type="button" class="jr-ball auto" data-c="" title="Automatic"></button>
-      ${JR_COLOR_NAMES.map(c=>`<button type="button" class="jr-ball" data-c="${c}" title="${c[0].toUpperCase()+c.slice(1)}" style="--ball:var(${JR_COLORS[c]})"></button>`).join('')}
+      <button type="button" class="jr-ball auto" data-c="" title="${esc(tx('auto'))}"></button>
+      ${JR_COLOR_NAMES.map(c=>`<button type="button" class="jr-ball" data-c="${c}" title="${esc(tx('c_'+c))}" style="--ball:var(${JR_COLORS[c]})"></button>`).join('')}
     </div>
     <div class="jr-ae-tabs" id="ae-tabs" hidden></div>
     <div id="ae-all">
-      <label class="field"><span>Title</span><input id="ae-title" autocomplete="off" value="${v(ev?.title)}"></label>
+      <label class="field">${jrLbl('lblTitle')}<input id="ae-title" autocomplete="off" value="${v(ev?.title)}"></label>
       <div class="jr-ae-row">
-        <label class="field"><span>Date</span><input id="ae-date" type="date" value="${ev?.event_date||prefillDate||jrToday()}"></label>
-        <label class="field"><span>To <span class="muted">(optional)</span></span><input id="ae-end-date" type="date" value="${ev&&jrMulti(ev)?ev.end_date:''}"></label>
+        <label class="field">${jrLbl('lblDate')}<input id="ae-date" type="date" value="${ev?.event_date||prefillDate||jrToday()}"></label>
+        <label class="field">${jrLbl('lblDateTo','optional')}<input id="ae-end-date" type="date" value="${ev&&jrMulti(ev)?ev.end_date:''}"></label>
       </div>
       <div class="jr-ae-row jr-ae-row3">
-        <label class="field"><span>From <span class="muted">(time)</span></span><input id="ae-time" type="time" value="${t5(ev?.event_time)}"></label>
-        <label class="field"><span>To</span><input id="ae-end-time" type="time" value="${t5(ev?.end_time)}"></label>
-        <label class="field jr-ae-loc"><span>Location <span class="muted">(optional)</span><button type="button" class="jr-ae-map" data-for="#ae-loc">${JR_PIN}Map</button></span><input id="ae-loc" autocomplete="off" placeholder="A place, or a Google Maps link" value="${v(ev?.location)}"></label>
+        <label class="field">${jrLbl('lblFrom','hintTime')}<input id="ae-time" type="time" value="${t5(ev?.event_time)}"></label>
+        <label class="field">${jrLbl('lblToTime')}<input id="ae-end-time" type="time" value="${t5(ev?.end_time)}"></label>
+        <label class="field jr-ae-loc"><span>${esc(tx('lblLoc'))} <span class="muted">${esc(tx('optional'))}</span><button type="button" class="jr-ae-map" data-for="#ae-loc">${JR_PIN}${esc(tx('mapWord'))}</button></span><input id="ae-loc" autocomplete="off" placeholder="${esc(tx('placeHint'))}" value="${v(ev?.location)}"></label>
       </div>
-      <label class="field"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" autocomplete="off" value="${v(ev?.category)}"></label>
-      <label class="field"><span>Notes <span class="muted">(optional)</span></span><input id="ae-notes" autocomplete="off" value="${v(ev?.notes)}"></label>
+      <label class="field">${jrLbl('lblCat','optional')}<input id="ae-cat" autocomplete="off" value="${v(ev?.category)}"></label>
+      <label class="field">${jrLbl('lblNotes','optional')}<input id="ae-notes" autocomplete="off" value="${v(ev?.notes)}"></label>
     </div>
     <div id="ae-daybox" hidden>
       <p class="jr-ae-hint" id="ae-hint"></p>
       <div class="jr-ae-row">
-        <label class="field"><span>From <span class="muted">(time)</span></span><input id="ad-time" type="time"></label>
-        <label class="field"><span>To</span><input id="ad-end-time" type="time"></label>
+        <label class="field">${jrLbl('lblFrom','hintTime')}<input id="ad-time" type="time"></label>
+        <label class="field">${jrLbl('lblToTime')}<input id="ad-end-time" type="time"></label>
       </div>
-      <label class="field jr-ae-loc"><span>Location<button type="button" class="jr-ae-map" data-for="#ad-loc">${JR_PIN}Map</button></span><input id="ad-loc" autocomplete="off" placeholder="A place, or a Google Maps link"></label>
-      <label class="field"><span>Notes</span><input id="ad-notes" autocomplete="off"></label>
-      <button type="button" class="mini" id="ad-reset">Use the whole event’s details for this day</button>
+      <label class="field jr-ae-loc"><span>${esc(tx('lblLoc'))}<button type="button" class="jr-ae-map" data-for="#ad-loc">${JR_PIN}${esc(tx('mapWord'))}</button></span><input id="ad-loc" autocomplete="off" placeholder="${esc(tx('placeHint'))}"></label>
+      <label class="field">${jrLbl('lblNotes')}<input id="ad-notes" autocomplete="off"></label>
+      <button type="button" class="mini" id="ad-reset">${esc(tx('resetDay'))}</button>
     </div>
     <div class="item-edit-actions">
-      ${ev?'<button class="mini jr-ae-del" id="ae-del">Delete</button>':''}
-      <button class="mini" id="ae-cancel">Cancel</button>
-      <button class="act" id="ae-save">${ev?'Save':'Add event'}</button>
+      ${ev?`<button class="mini jr-ae-del" id="ae-del">${esc(tx('del'))}</button>`:''}
+      <button class="mini" id="ae-cancel">${esc(tx('cancel'))}</button>
+      <button class="act" id="ae-save">${esc(ev?tx('save'):tx('add'))}</button>
     </div>`;
   ov.appendChild(card); document.body.appendChild(ov);
   ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
   const q=s=>card.querySelector(s);
-  const lbl=iso=>{ const d=new Date(iso+'T00:00:00'); return DAY_NAMES[d.getDay()].slice(0,3)+' '+d.getDate(); };
-  const longLbl=iso=>{ const d=new Date(iso+'T00:00:00'); return `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`; };
+  const lbl=iso=>{ const d=new Date(iso+'T00:00:00'); return jrDayAbbr(d.getDay())+' '+d.getDate(); };
+  const longLbl=iso=>jrFmtLong(new Date(iso+'T00:00:00'));
   // the days of the event as the dates stand now (a span of one day or under has no day tabs)
   const spanList=()=>{ const a=q('#ae-date').value, b=q('#ae-end-date').value;
     if(!a||!b||b<=a||jrDays(a,b)>60) return []; return Array.from({length:jrDays(a,b)+1},(_,i)=>jrAddDays(a,i)); };
@@ -1976,18 +2241,18 @@ async function openAddEvent(prefillDate, id, focus, day){
   function showPanel(){
     const dm=cur!=='all', list=spanList();
     q('#ae-all').hidden=dm; q('#ae-daybox').hidden=!dm;
-    q('.jr-ae-head h2').textContent=dm?longLbl(cur):(ev?'Edit event':'＋ Add event');
+    q('.jr-ae-head h2').textContent=dm?longLbl(cur):(ev?tx('editEvent'):'＋ '+tx('addEvent'));
     if(!dm) return;
     const o=days[cur]||{};
     q('#ad-time').value=t5(o.event_time); q('#ad-end-time').value=t5(o.end_time); q('#ad-loc').value=o.location||''; q('#ad-notes').value=o.notes||'';
     const base=[jrTimeRange({event_time:q('#ae-time').value||null,end_time:q('#ae-end-time').value||null}), q('#ae-loc').value.trim()].filter(Boolean).join(' · ');
-    q('#ae-hint').innerHTML=`Day ${Math.max(1,list.indexOf(cur)+1)} of ${list.length}, only for this day. Leave a field empty to use the whole event’s${base?` (<b>${esc(base)}</b>)`:''}.`;
+    q('#ae-hint').innerHTML=tx('dayHint',{i:Math.max(1,list.indexOf(cur)+1), n:list.length, base:base?esc(base):''});
   }
   function drawTabs(){
     const list=spanList(), tabs=q('#ae-tabs');
     tabs.hidden=list.length<2;
     if(list.length<2 || (cur!=='all' && !list.includes(cur))){ if(cur!=='all'){ cur='all'; showPanel(); } }
-    tabs.innerHTML=`<button type="button" class="jr-ae-tab${cur==='all'?' on':''}" data-d="all">Whole event</button>`
+    tabs.innerHTML=`<button type="button" class="jr-ae-tab${cur==='all'?' on':''}" data-d="all">${esc(tx('wholeEvent'))}</button>`
       +list.map(iso=>`<button type="button" class="jr-ae-tab${cur===iso?' on':''}${days[iso]?' has':''}" data-d="${iso}">${lbl(iso)}</button>`).join('');
   }
   q('#ae-tabs').onclick=e=>{ const b=e.target.closest('.jr-ae-tab'); if(!b) return; stash(); cur=b.dataset.d; showPanel(); drawTabs(); };
@@ -1998,7 +2263,7 @@ async function openAddEvent(prefillDate, id, focus, day){
     const b=q('#ae-ball'), auto=!color;
     b.classList.toggle('auto', auto && !ev);
     b.style.setProperty('--ball', auto ? (ev?`var(${JR_COLORS[jrColor({id:ev.id})]})`:'') : `var(${JR_COLORS[color]})`);
-    b.title=auto?'Colour: automatic':'Colour: '+color;
+    b.title=auto?tx('colourAuto'):tx('colourIs',{c:tx('c_'+color)});
     card.querySelectorAll('#ae-colors .jr-ball').forEach(x=>x.classList.toggle('on', (x.dataset.c||null)===color));
   };
   q('#ae-ball').onclick=()=>{ const c=q('#ae-colors'); c.hidden=!c.hidden; q('#ae-ball').setAttribute('aria-expanded', String(!c.hidden)); };
@@ -2007,7 +2272,7 @@ async function openAddEvent(prefillDate, id, focus, day){
   // "Map" by a Location field: see the place as typed (to check it, or find the right one and paste its link back)
   card.querySelectorAll('.jr-ae-map').forEach(b=>b.onclick=e=>{ e.preventDefault();
     const loc=q(b.dataset.for).value.trim() || (b.dataset.for==='#ad-loc' ? q('#ae-loc').value.trim() : '');
-    if(!loc){ toast('Type a place first'); return; } open(jrMapUrl(loc),'_blank','noopener'); });
+    if(!loc){ toast(tx('typePlace')); return; } open(jrMapUrl(loc),'_blank','noopener'); });
   // the end date can't be before the start: its picker starts there, and a start moved past it takes it along
   const syncEnd=()=>{ const a=q('#ae-date').value, b=q('#ae-end-date'); b.min=a; if(b.value && a && b.value<a) b.value=''; };
   q('#ae-date').addEventListener('change', ()=>{ stash(); syncEnd(); drawTabs(); });
@@ -2022,12 +2287,12 @@ async function openAddEvent(prefillDate, id, focus, day){
     const title=q('#ae-title').value.trim(), event_date=q('#ae-date').value;
     let end_date=q('#ae-end-date').value||null;
     const event_time=q('#ae-time').value||null, end_time=q('#ae-end-time').value||null;
-    if(!title){ toast('Title is required'); return; }
-    if(!event_date){ toast('Date is required'); return; }
-    if(end_date && end_date<event_date){ toast('The end date is before the start'); return; }
+    if(!title){ toast(tx('titleReq')); return; }
+    if(!event_date){ toast(tx('dateReq')); return; }
+    if(end_date && end_date<event_date){ toast(tx('endBeforeStart')); return; }
     if(end_date===event_date) end_date=null;
-    if(end_time && !event_time){ toast('Give a start time too'); return; }
-    if(end_time && !end_date && end_time<=event_time){ toast('The end time is before the start'); return; }
+    if(end_time && !event_time){ toast(tx('needStart')); return; }
+    if(end_time && !end_date && end_time<=event_time){ toast(tx('endTimeBefore')); return; }
     // the days' own details: gone when it's one day; moved along when the whole span was moved
     let di=end_date?days:{};
     if(end_date && ev && jrMulti(ev) && event_date!==ev.event_date && jrDays(event_date,end_date)===jrDays(ev.event_date,ev.end_date))
@@ -2037,10 +2302,10 @@ async function openAddEvent(prefillDate, id, focus, day){
     try{
       const saved=await api('/api/journal/events'+(ev?'/'+ev.id:''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       const i=JOURNAL_EVENTS.findIndex(x=>x.id===saved.id); if(i>=0) JOURNAL_EVENTS[i]=saved; else JOURNAL_EVENTS.push(saved);
-      dismiss(ov); toast(ev?'Saved':'Event added');
+      dismiss(ov); toast(ev?tx('saved'):tx('added'));
       if(JR_VIEW==='calendar'){ calSelect(cur!=='all'?cur:saved.event_date); if(!K_REDUCED.matches) document.querySelector(`.jr-dcard[data-id="${saved.id}"]`)?.classList.add('flash'); }
       else renderAgenda();
-    }catch(e){ toast('Error: '+e.message); }
+    }catch(e){ toast(tx('errPrefix')+jrErr(e.message)); }
   };
   setTimeout(()=>{ try{ q(cur!=='all'?(PERDAY[focus]||'#ad-time'):(focus||'#ae-title')).focus(); }catch(_){} }, 30);
 }
@@ -2166,8 +2431,9 @@ function renderCalendar(opt={}){
   const gridStart = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1 - firstOfMonth.getDay());   // weeks start on Sunday
   // 5 or 6 weeks, whichever the month needs, so the rows are as tall as they can be
   const weeks = Math.ceil((firstOfMonth.getDay() + new Date(JR_CAL_YEAR, JR_CAL_MONTH+1, 0).getDate()) / 7);
-  $('#jr-cal-month').textContent = MONTH_NAMES[JR_CAL_MONTH];
-  $('#jr-cal-year').textContent = JR_CAL_YEAR;
+  const [mTitle,yTitle]=jrCalTitle(JR_CAL_YEAR,JR_CAL_MONTH);
+  $('#jr-cal-month').textContent = mTitle;
+  $('#jr-cal-year').textContent = yTitle;
 
   let html='';
   for(let i=0;i<weeks*7;i++){
@@ -2181,7 +2447,7 @@ function renderCalendar(opt={}){
       return {e, span, l:e.event_date<iso, r:left>span};
     });
     const n = singles.length + covering.length;
-    const label = `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}${n?`, ${n} event${n>1?'s':''}`:''}`;
+    const label = `${jrFmtLong(d)}${n?`, ${tx('nEvents',n)}`:''}`;
     html += `<button type="button" class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${iso===JR_SEL?' sel':''}${n?' has-events':''}"
       data-iso="${iso}" onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${n?`<span class="jr-more" hidden></span><span class="jr-count">${n}</span>`:''}</span>
@@ -2296,19 +2562,19 @@ function jrEventPop(id, iso){
     || document.querySelector(`#jr-cal-grid .jr-ev[data-id="${id}"]`);
   const r=chip?.getBoundingClientRect() || {left:innerWidth/2,right:innerWidth/2,top:innerHeight/2,bottom:innerHeight/2,width:0,height:0};
   const x=jrMulti(e)?jrDay(e,iso):e, d=new Date(iso+'T00:00:00');
-  const when=jrMulti(e) ? `${jrDateRange(e)} · day ${jrDays(e.event_date,iso)+1} of ${jrDays(e.event_date,jrEnd(e))+1}`
-    : `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
+  const when=jrMulti(e) ? `${jrDateRange(e)} · ${tx('dayOf',{i:jrDays(e.event_date,iso)+1, n:jrDays(e.event_date,jrEnd(e))+1})}`
+    : jrFmtLong(d);
   const p=document.createElement('div'); p.className='jr-pop'+(e.done?' done':''); p.style.cssText=jrTint(e); p.setAttribute('role','dialog'); p.setAttribute('aria-label',e.title);
   p.innerHTML=`<div class="jr-pop-title">${esc(e.title)}</div>
-    <div class="jr-pop-row jr-pop-when"><b>${jrTimeRange(x)||'All day'}</b><span>${when}</span></div>
+    <div class="jr-pop-row jr-pop-when"><b>${esc(jrTimeRange(x)||tx('allDay'))}</b><span>${esc(when)}</span></div>
     ${x.location?`<div class="jr-pop-row">${jrMapLink(x.location)}</div>`:''}
     ${e.category?`<div class="jr-pop-row"><span class="chip-lbl">${esc(e.category)}</span></div>`:''}
     ${x.notes?`<div class="jr-pop-notes">${esc(x.notes)}</div>`:''}
-    ${e.created_by?`<div class="jr-pop-by">Added by ${esc(e.created_by)}</div>`:''}
+    ${e.created_by?`<div class="jr-pop-by">${esc(tx('addedBy',{name:e.created_by}))}</div>`:''}
     <div class="jr-pop-acts">
-      <button class="mini" data-a="edit">Edit</button>
-      <button class="mini" data-a="done">${e.done?'Not done':'Done ✓'}</button>
-      <button class="mini jr-pop-del" data-a="del"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:3px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>Delete</button>
+      <button class="mini" data-a="edit">${esc(tx('edit'))}</button>
+      <button class="mini" data-a="done">${esc(e.done?tx('notDone'):tx('done'))}</button>
+      <button class="mini jr-pop-del" data-a="del"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:3px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>${esc(tx('del'))}</button>
     </div>`;
   document.body.appendChild(p);
   // beside the event: below it if there's room, else above; kept on screen
@@ -2354,13 +2620,19 @@ function jrPopClose(now){
 })();
 // A title's short form, for when there's no room for it: the first letter of each word, then the year if it has
 // one — "Phnom Penh trade fair 2026" → "PPTF 2026". The day panel (and a hover) still has the full title.
+// Chinese, Khmer and Japanese have no spaces between words
+const JR_NOSPACE=/[\u1780-\u17FF\u3040-\u30FF\u3400-\u9FFF\uF900-\uFAFF]/;
+const jrSeg=(t,g)=>window.Intl&&Intl.Segmenter ? [...new Intl.Segmenter(undefined,{granularity:g}).segment(t)] : null;
 function jrAbbr(t){
-  const year=(t.match(/\b(19|20)\d{2}\b/)||[])[0];
-  let words=t.replace(/\b(19|20)\d{2}\b/g,' ').split(/[\s\-–—/&,.:;()]+/).filter(Boolean);
+  const year=(t.match(/\b(19|20)\d{2}\b/)||[])[0], rest=t.replace(/\b(19|20)\d{2}\b/g,' ');
+  // where there are no spaces the browser knows where the words end (it has dictionaries for them)
+  const seg=JR_NOSPACE.test(rest) && jrSeg(rest,'word');
+  let words=seg ? seg.filter(x=>x.isWordLike).map(x=>x.segment) : rest.split(/[\s\-–—/&,.:;()]+/).filter(Boolean);
   // long titles leave out the little words ("Quarterly review with the accountant about taxes" → "QRAT")
   if(words.length>4) words=words.filter(w=>!/^(a|an|the|of|to|in|on|at|for|with|and|or|about|by|from)$/i.test(w));
-  const letters=words.map(w=>w[0].toUpperCase()).join('');
-  const out=[letters, year].filter(Boolean).join(' ');
+  // the first letter of each: for Khmer a whole letter with its signs, not half of one
+  const first=w=>((jrSeg(w,'grapheme')||[])[0]?.segment || w[0]).toUpperCase();
+  const out=[words.map(first).join(''), year].filter(Boolean).join(' ');
   return out.length && out.length<t.length ? out : t;
 }
 // the title text of an event chip (after its time, if it has one)
@@ -2374,6 +2646,7 @@ function jrSetTitle(e, text){
 const jrMeasure=document.createElement('canvas').getContext('2d');
 function jrFitWords(e, room){
   e.style.fontSize=''; e.classList.remove('hy');
+  if(JR_NOSPACE.test(e.dataset.t||'')) return;      // no spaces to break at: it wraps wherever it must
   const cs=getComputedStyle(e), fs=parseFloat(cs.fontSize);
   const avail=room-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-parseFloat(cs.borderLeftWidth)-parseFloat(cs.borderRightWidth)-1;
   if(avail<=0) return;
@@ -2424,29 +2697,29 @@ function renderDay(enter, dir){
   const relHtml=jrDayLabel(iso), rel=relHtml.includes('class="rel"')?` <span class="rel">· ${relHtml.replace(/<[^>]+>/g,'')}</span>`:'';
   box.innerHTML=`<div class="jr-day-headrow">
       <div class="jr-day-big">${d.getDate()}</div>
-      <div class="jr-day-meta"><span class="jr-day-wd">${DAY_NAMES[d.getDay()]}${rel}</span>
-        <span class="jr-day-my">${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}</span></div>
-      <div class="jr-day-sum">${evs.length?`<b>${evs.length}</b>event${evs.length>1?'s':''}${done?` · ${done} done`:''}`:''}</div>
-      <button type="button" class="jr-swap" onclick="jrSwapPanels()" title="Swap the month and this day" aria-label="Swap the month and this day">
+      <div class="jr-day-meta"><span class="jr-day-wd">${jrDayName(d.getDay())}${rel}</span>
+        <span class="jr-day-my">${jrFmtMY(d)}</span></div>
+      <div class="jr-day-sum">${evs.length?`<b>${evs.length}</b>${esc(tx('evWord',evs.length))}${done?` · ${esc(tx('nDone',{n:done}))}`:''}`:''}</div>
+      <button type="button" class="jr-swap" onclick="jrSwapPanels()" title="${esc(tx('swapPanels'))}" aria-label="${esc(tx('swapPanels'))}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></svg></button>
     </div>
     ${evs.length?`<div class="jr-day-list">${evs.map(e=>{
       // a multi-day event shows this day's own details (or the event's where the day has none)
       const x=jrMulti(e)?jrDay(e,iso):e;
-      const sub=[jrMulti(e)?`<b>day ${jrDays(e.event_date,iso)+1} of ${jrDays(e.event_date,jrEnd(e))+1}</b>`:'',
+      const sub=[jrMulti(e)?`<b>${esc(tx('dayOf',{i:jrDays(e.event_date,iso)+1, n:jrDays(e.event_date,jrEnd(e))+1}))}</b>`:'',
         x.location?jrMapLink(x.location):'', e.category?esc(e.category):'',
-        x.notes?esc(x.notes.replace(/\s+/g,' ')):'', e.created_by?`by ${esc(e.created_by)}`:''].filter(Boolean).join(' · ');
+        x.notes?esc(x.notes.replace(/\s+/g,' ')):'', e.created_by?esc(tx('byName',{name:e.created_by})):''].filter(Boolean).join(' · ');
       return `<article class="jr-dcard k-shine${e.done?' done':''}" style="${jrTint(e)}" data-id="${e.id}">
-        <span class="jr-dc-time${x.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="Change time">${jrTimeRange(x,true)||'All day'}</span>
+        <span class="jr-dc-time${x.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="${esc(tx('tipChangeTime'))}">${esc(jrTimeRange(x,true)||tx('allDay'))}</span>
         <span class="jr-dc-title" onclick="editEventTitle(${e.id})" title="${esc(e.title)}">${esc(e.title)}</span>
         <span class="jr-dc-acts">
-          <button class="edit" onclick="openAddEvent(null,${e.id})" title="Edit" aria-label="Edit ${esc(e.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></button>
-          <button class="ok${e.done?' on':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}" aria-label="${e.done?'Mark not done':'Mark done'}">✓</button>
-          <button class="del" onclick="deleteEventRow(${e.id})" title="Delete" aria-label="Delete">✕</button>
+          <button class="edit" onclick="openAddEvent(null,${e.id})" title="${esc(tx('edit'))}" aria-label="${esc(tx('edit'))} ${esc(e.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></button>
+          <button class="ok${e.done?' on':''}" onclick="toggleEventDone(${e.id})" title="${esc(e.done?tx('markNotDone'):tx('markDone'))}" aria-label="${esc(e.done?tx('markNotDone'):tx('markDone'))}">✓</button>
+          <button class="del" onclick="deleteEventRow(${e.id})" title="${esc(tx('del'))}" aria-label="${esc(tx('del'))}">✕</button>
         </span>
-        ${sub?`<span class="jr-dc-sub" onclick="editEventWhen(${e.id},'#ae-loc')" title="Edit details">${sub}</span>`:''}
+        ${sub?`<span class="jr-dc-sub" onclick="editEventWhen(${e.id},'#ae-loc')" title="${esc(tx('tipEditDetails'))}">${sub}</span>`:''}
       </article>`;}).join('')}</div>`
-    :`<div class="jr-day-empty">Nothing planned.<span>Double-tap a day or press + to add one.</span></div>`}`;
+    :`<div class="jr-day-empty">${esc(tx('nothingPlanned'))}<span>${esc(tx('dayEmpty'))}</span></div>`}`;
   if(enter && !K_REDUCED.matches){ box.classList.remove('enter'); void box.offsetWidth; box.classList.add('enter'); box.scrollTop=0;
     // a later day comes in from the right, an earlier one from the left
     const row=box.querySelector('.jr-day-list,.jr-day-empty');
@@ -2462,14 +2735,14 @@ async function jrOfferLocalEvents(){
   const doneKey='journal_local_offered:'+JR_API;
   if(!local.length || localStorage.getItem(doneKey)) return;
   const n=local.length;
-  const yes=await askConfirm(`This device has ${n} event${n>1?'s':''} saved only on it. Copy ${n>1?'them':'it'} to the shared calendar so everyone can see ${n>1?'them':'it'}?`);
+  const yes=await askConfirm(tx('localAsk',{n}));
   try{ localStorage.setItem(doneKey, yes?'copied':'declined'); }catch(_){}
   if(!yes) return;
   try{
     const r=await api('/api/journal/import', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({events:local})});
-    toast(`Copied ${r.imported} event${r.imported===1?'':'s'}`);
+    toast(tx('copied',{n:r.imported}));
     JOURNAL_EVENTS=await jrFetchEvents(); jrRender();
-  }catch(e){ toast('Could not copy: '+e.message); localStorage.removeItem(doneKey); }
+  }catch(e){ toast(tx('copyErr')+jrErr(e.message)); localStorage.removeItem(doneKey); }
 }
 
 // ---- liquid glass bead (Odin's Keep's tab bar) ----
@@ -2635,7 +2908,7 @@ jrBead(document.getElementById('jr-monthnav'));
   const isoOf=cell=>(cell?.getAttribute('onclick')||'').match(/'(\d{4}-\d{2}-\d{2})'/)?.[1]||null;
   function begin(){
     const {chip,x,y,id}=pend; pend=null;
-    if(JR_FROZEN){ toast('Server offline — changes are paused'); return; }
+    if(JR_FROZEN){ toast(tx('offlinePaused')); return; }
     const ev=JOURNAL_EVENTS.find(e=>e.id===id); if(!ev) return;
     const r=chip.getBoundingClientRect();
     const ghost=chip.cloneNode(true); ghost.className=chip.className+' jr-ev-ghost'; ghost.removeAttribute('data-id');
@@ -2679,10 +2952,10 @@ jrBead(document.getElementById('jr-monthnav'));
     try{
       const upd=await api('/api/journal/events/'+ev.id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)});
       const i=JOURNAL_EVENTS.findIndex(x=>x.id===ev.id); if(i>=0) JOURNAL_EVENTS[i]=upd;
-      toast(jrMulti(upd)?`Moved to ${jrDateRange(upd)}`:`Moved to ${DAY_NAMES[d2.getDay()].slice(0,3)} ${d2.getDate()} ${MONTH_NAMES[d2.getMonth()].slice(0,3)}`);
+      toast(tx('movedTo',{to:jrMulti(upd)?jrDateRange(upd):jrFmtShort(d2)}));
     }catch(e){
       ev.event_date=before; ev.end_date=beforeEnd; ev.day_info=beforeDays; jrRender();
-      if(!(e instanceof JrOffline)) toast('Could not move: '+e.message);
+      if(!(e instanceof JrOffline)) toast(tx('moveErr')+jrErr(e.message));
     }
   }
   addEventListener('pointerdown',e=>{
@@ -2733,30 +3006,26 @@ async function jrSubscribe(test){
     try{ sub=await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:jrB64(key)}); }
     catch(e){ if(i>=4 || Notification.permission==='denied') throw e; await new Promise(r=>setTimeout(r, 600*(i+1))); }
   }
-  await api('/api/push/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON(), test:!!test})});
+  await api('/api/push/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON(), test:!!test, lang:JR_LANG})});
   return true;
 }
 // What went wrong turning reminders on, in words that say what to do about it (the raw browser errors say nothing)
 function jrPushWhy(e){
-  const m=String(e?.message||e||''), ios=jrIsIOS();
-  const where=ios?'Settings → Notifications → Yai Calendar':'Settings → Apps → Yai Calendar → Notifications';
-  if(e instanceof JrOffline || /Failed to fetch|NetworkError|cannot reach/i.test(m)) return 'No connection to the calendar. Check your internet and try again.';
-  if(/sign in/i.test(m)) return 'Sign in first, then turn reminders on.';
-  if(e?.name==='NotAllowedError' || /permission/i.test(m) || Notification.permission==='denied')
-    return `Notifications are blocked for this app. Open your phone’s ${where}, turn them on, then try again.`;
-  if(e?.name==='AbortError' || /push service|storage/i.test(m))
-    return ios ? 'The phone’s push service didn’t answer. Try again in a minute.'
-      : 'This phone couldn’t reach its push service. It needs Google Play services and internet (some Wi-Fi networks block it): try again on mobile data.';
-  if(e?.name==='InvalidStateError') return 'Close the app completely, open it again, and try once more.';
-  return `Could not turn on reminders (${e?.name||'error'}: ${m.slice(0,80)}).`;
+  const m=String(e?.message||e||''), ios=jrIsIOS(), where=tx(ios?'whereIos':'whereAndroid');
+  if(e instanceof JrOffline || /Failed to fetch|NetworkError|cannot reach/i.test(m)) return tx('whyOffline');
+  if(/sign in/i.test(m)) return tx('whySignIn');
+  if(e?.name==='NotAllowedError' || /permission/i.test(m) || Notification.permission==='denied') return tx('whyBlocked',{where});
+  if(e?.name==='AbortError' || /push service|storage/i.test(m)) return tx(ios?'whyPushIos':'whyPushAndroid');
+  if(e?.name==='InvalidStateError') return tx('whyState');
+  return tx('whyOther',{what:`${e?.name||'error'}: ${m.slice(0,80)}`});
 }
 async function jrTurnOnReminders(){
   jrReminderPrompt(false);
   try{
     const p=await Notification.requestPermission();
-    if(p!=='granted'){ toast(`Reminders stay off. To allow them: ${jrIsIOS()?'Settings → Notifications → Yai Calendar':'Settings → Apps → Yai Calendar → Notifications'}.`, 6000); return; }
-    toast('Turning on reminders…');
-    toast(await jrSubscribe(true) ? 'Reminders on — a test one is on its way' : 'This server doesn’t send reminders', 4000);
+    if(p!=='granted'){ toast(tx('remStayOff',{where:tx(jrIsIOS()?'whereIos':'whereAndroid')}), 6000); return; }
+    toast(tx('remTurning'));
+    toast(await jrSubscribe(true) ? tx('remOn') : tx('remNoServer'), 4000);
   }catch(e){
     console.warn('reminders:', e);
     toast(jrPushWhy(e), 8000);
@@ -2766,7 +3035,7 @@ function jrReminderPrompt(show, html){
   let b=document.getElementById('jr-remind');
   if(!show){ if(b){ b.classList.add('leaving'); setTimeout(()=>b.remove(),260); } return; }
   if(b) return;
-  b=document.createElement('div'); b.id='jr-remind'; b.setAttribute('role','dialog'); b.setAttribute('aria-label','Reminders');
+  b=document.createElement('div'); b.id='jr-remind'; b.setAttribute('role','dialog'); b.setAttribute('aria-label',tx('remAria'));
   b.innerHTML=html; document.body.appendChild(b);
   b.querySelector('[data-later]').onclick=()=>{ try{ localStorage.setItem('jr_remind_later', String(Date.now())); }catch(_){} jrReminderPrompt(false); };
   b.querySelector('[data-on]')?.addEventListener('click', jrTurnOnReminders);
@@ -2778,14 +3047,14 @@ async function jrOfferReminders(){
   if(!jrPushable()){
     // iPhone in Safari: it works once the app is on the home screen
     if(jrIsIOS() && !navigator.standalone && await jrPushKey())
-      jrReminderPrompt(true, `<div class="jr-remind-txt"><b>Get reminders</b><span>On iPhone: tap Share, then “Add to Home Screen”, and open Yai Calendar from there.</span></div>
-        <button class="mini" data-later>Later</button>`);
+      jrReminderPrompt(true, `<div class="jr-remind-txt"><b>${esc(tx('remTitle'))}</b><span>${esc(tx('remIphone'))}</span></div>
+        <button class="mini" data-later>${esc(tx('later'))}</button>`);
     return;
   }
   if(Notification.permission==='granted'){ jrSubscribe(false).catch(()=>{}); return; }   // already on: keep this backend in step
   if(Notification.permission==='denied' || !(await jrPushKey())) return;
-  jrReminderPrompt(true, `<div class="jr-remind-txt"><b>Get reminders</b><span>A week and a day before each event, at 7:00 in working hours.</span></div>
-    <button class="mini" data-later>Later</button><button class="act" data-on>Turn on</button>`);
+  jrReminderPrompt(true, `<div class="jr-remind-txt"><b>${esc(tx('remTitle'))}</b><span>${esc(tx('remText'))}</span></div>
+    <button class="mini" data-later>${esc(tx('later'))}</button><button class="act" data-on>${esc(tx('turnOn'))}</button>`);
 }
 
 (async function boot(){
@@ -2827,7 +3096,7 @@ if("serviceWorker" in navigator&&window.isSecureContext&&!/[?&]nosw\b/.test(loca
   ["pointerdown","keydown"].forEach(function(t){addEventListener(t,function(){window.__kTouched=1;},{once:true,capture:true});});
   navigator.serviceWorker.addEventListener("message",function(e){ if(!e.data||e.data.type!=="odin:updated"||document.getElementById("k-upd"))return;
     if(performance.now()<6000&&!window.__kTouched){location.reload();return;}
-    var b=document.createElement("button");b.id="k-upd";b.type="button";b.textContent="New version — tap to reload";
+    var b=document.createElement("button");b.id="k-upd";b.type="button";b.textContent=typeof tx==="function"?tx("newVersion"):"New version — tap to reload";
     b.style.cssText="position:fixed;left:50%;top:calc(.7rem + env(safe-area-inset-top));transform:translateX(-50%);z-index:99;border:0;border-radius:999px;padding:.55rem 1rem;font:600 .85rem system-ui,sans-serif;background:#82aaff;color:#16182a;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer";
     b.onclick=function(){location.reload();};document.body.appendChild(b);});
 }</script>

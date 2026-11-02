@@ -51,7 +51,7 @@
     // reminders: the "reminders" Edge Function (supabase/functions/reminders)
     if (path === "/api/push/key") return reminders(origin, { action: "key" });
     if (path === "/api/push/subscribe" && method === "POST")
-      return reminders(origin, { action: "subscribe", token, subscription: body.subscription ?? body, test: !!body.test });
+      return reminders(origin, { action: "subscribe", token, subscription: body.subscription ?? body, test: !!body.test, lang: body.lang });
     if (path === "/api/push/unsubscribe" && method === "POST") return reminders(origin, { action: "unsubscribe", token, endpoint: body.endpoint });
     return reply({ detail: "not available on this backend" }, 404);
   }
