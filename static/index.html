@@ -1432,8 +1432,7 @@ function jrSignIn(){
     ov.innerHTML=`<form class="jr-signin-card" autocomplete="on">
       <svg viewBox="0 0 24 24" class="jr-signin-mark" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#D4AF37" stroke-width="1.7"/><path d="M4 12h16" stroke="#D4AF37" stroke-width="1.7"/></svg>
       <h2>${up?'Create account':'Sign in'}</h2>
-      <p class="muted">${up?'Your name is shown on the events you add.':'Yai Calendar, shared with your team.'}</p>
-      ${up?`<label class="field"><span>Your name</span><input name="name" autocomplete="name" maxlength="40" placeholder="Dara"></label>`:''}
+      <p class="muted">${up?'Your username is shown on the events you add.':'Yai Calendar, shared with your team.'}</p>
       <label class="field"><span>Username</span><input name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32"></label>
       <label class="field"><span>Password</span><input name="password" type="password" autocomplete="${up?'new-password':'current-password'}"></label>
       ${up&&JR_AUTH?.team_code?`<label class="field"><span>Team code</span><input name="code" inputmode="numeric" autocomplete="off"></label>`:''}
