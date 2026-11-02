@@ -1034,7 +1034,12 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
      squares, growing to about 16px in a monitor's wide ones, so titles are neither tiny on a big screen nor
      crammed on a small one. Long words hyphenate ("Sup-plier") instead of breaking anywhere. */
   #jr-cal-grid .jr-ev { font-size:clamp(.66rem, 3px + 7.5cqi, 1.05rem); line-height:1.22; padding:.14em .38em .14em .42em; }
-  #jr-cal-grid .jr-ev.wrap, #jr-cal-grid .jr-ev.clamp { -webkit-hyphens:auto; hyphens:auto; }
+  /* words break only at spaces, never inside a word (jrFitWords sizes an event's text so its longest word fits) */
+  #jr-cal-grid .jr-ev.wrap, #jr-cal-grid .jr-ev.clamp { overflow-wrap:normal; word-break:normal; -webkit-hyphens:manual; hyphens:manual; }
+  #jr-cal-grid .jr-ev.hy { overflow-wrap:break-word; -webkit-hyphens:auto; hyphens:auto; }   /* the rare word too long for its day */
+  /* phones: the squares can't get wider, so their insides give the titles the room: thinner padding in the
+     square and in the event, a thinner edge */
+  @container (max-width:74px) { #jr-cal-grid .jr-ev:not(.span) { padding:.12em .22em .12em .3em; border-left-width:2px; } }
   /* a narrow square (a phone): a wrapped event's time gets its own line, so the title starts on a fresh one */
   @container (max-width:74px) { #jr-cal-grid .jr-ev.wrap .jr-ev-t { display:block; margin-right:0; } }
   .jr-ev.done { background:color-mix(in srgb,var(--muted) 14%,var(--k-bg2)); }
@@ -1055,7 +1060,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-preview { gap:1px; }
     .jr-daynum { font-size:.82rem !important; min-width:1.3rem !important; height:1.3rem !important; }
   }
-  @media (max-width:560px) { .jr-cal-day { padding:3px 3px 2px; gap:1px; } }
+  @media (max-width:560px) { .jr-cal-day { padding:3px 1px 2px 2px; gap:1px; } }
 
   /* ================= liquid glass bead (Odin's Keep's tab bar; script: jrBead) ================= */
   .jr-beadbar { position:relative; isolation:isolate; touch-action:none; -webkit-user-select:none; user-select:none; }
@@ -2153,6 +2158,7 @@ function jrFitCells(){
       const firstFree=(from, n)=>{ let at=from; while(at<from+64 && [...Array(n).keys()].some(k=>(busy[at+k]||0)>c)) at++; return at; };
       for(const e of evs){
         e.classList.remove('cut','clamp'); e.style.webkitLineClamp='';
+        if(!e.dataset.span) jrFitWords(e, room);
         // a multi-day bar is locked to its days: exactly from this square to its last one in the row, one line
         const span=+e.dataset.span||0;
         if(span){ const last=cells[r+c+span-1]||cell; e.style.width=(last.offsetLeft+colW-pad-(cell.offsetLeft+pad))+'px'; }
@@ -2193,6 +2199,25 @@ function jrFitCells(){
     setTimeout(()=>f.scrollIntoView({block:'nearest', behavior:'smooth'}), 300);   // after the keyboard has come up
   });
 })();
+// An event's text, made just small enough that its longest word fits its day whole (never below 8.5px), so words
+// break only at spaces. Most titles keep the size the square gives them (see "event text scales").
+const jrMeasure=document.createElement('canvas').getContext('2d');
+function jrFitWords(e, room){
+  e.style.fontSize=''; e.classList.remove('hy');
+  const cs=getComputedStyle(e), fs=parseFloat(cs.fontSize);
+  const avail=room-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-parseFloat(cs.borderLeftWidth)-parseFloat(cs.borderRightWidth)-1;
+  if(avail<=0) return;
+  jrMeasure.font=`${cs.fontWeight} ${fs}px ${cs.fontFamily}`;
+  const ls=parseFloat(cs.letterSpacing)||0;
+  // the title's own words (the time is its own element, on its own line when the event wraps)
+  const title=[...e.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(' ');
+  let widest=0;
+  for(const w of title.split(/\s+/)) if(w) widest=Math.max(widest, jrMeasure.measureText(w).width+ls*w.length);
+  if(widest<=avail) return;
+  const fit=fs*avail/widest*.97;
+  e.style.fontSize=Math.max(8, fit)+'px';
+  if(fit<8) e.classList.add('hy');          // too long even at the smallest size: that one word gets a hyphen
+}
 // The days a multi-day event covers, lit up: softly for the events running through the selected day (`span-sel`),
 // more strongly while one of its bars is hovered or pressed (`span-hover`, id given).
 function jrSpanCells(hoverId){
