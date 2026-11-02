@@ -6,15 +6,16 @@
 <script>if(navigator.standalone)document.documentElement.classList.add("ios-app");
 /* iPhone only (not iPad or Android): its own safe-area layout, see "iPhone" in the styles */
 if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.add("ios-phone");</script>
-<script>try{var t=localStorage.getItem("sk_theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
-<meta name="theme-color" content="#1e2030">
+<script>/* light (Daylight) unless this device chose another theme */
+try{var t=localStorage.getItem("sk_theme");document.documentElement.setAttribute("data-theme",t||"daylight")}catch(e){document.documentElement.setAttribute("data-theme","daylight")}</script>
+<meta name="theme-color" content="#e1e2e7">
 <script src="/static/local-api.js"></script>
 <script src="/static/supabase-api.js"></script>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/static/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Yai Calendar">
 <title>Yai Calendar</title>
 <!--
@@ -1021,7 +1022,12 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
       background-size:250% 100%; background-position:0% 0; -webkit-background-clip:text; background-clip:text;
       -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 8px rgba(212,175,55,.35)); }
     .jr-bottom.enter .jr-day-big { animation:jrNumIn .5s var(--k-bouncy) both, kGlint 1.6s ease-in-out .25s both; }
+    /* light: a deeper gold, so it reads on white */
+    :root[data-theme="daylight"] .jr-day-big { background-image:linear-gradient(100deg,#7a5a05 0%,#b8901f 28%,#e0b94a 44%,#a47c12 60%,#6e5004 80%,#9a7608 100%);
+      filter:drop-shadow(0 1px 0 rgba(255,255,255,.6)); }
   }
+  /* light: the "Coming up" heading sits on the panel's own glass, not a grey band */
+  :root[data-theme="daylight"] .jr-up-head { background:none; -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
   @keyframes kGlint { from { background-position:0% 0; } to { background-position:100% 0; } }
 
   /* ================= dragging an event to another day (script: drag an event) ================= */
