@@ -773,6 +773,26 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-dc-title:hover, .jr-dc-time:hover, .jr-dc-notes:hover, .jr-dc-tags .chip-lbl:hover { color:var(--accent); }
   .jr-dc-top { flex:none; display:flex; align-items:flex-start; justify-content:space-between; gap:.3rem; }
   .jr-dc-top .jr-dc-time { min-width:0; }
+  /* time and place side by side ("9:30–11:00  ⌖ Office"), wrapping under each other when the card is narrow */
+  .jr-dc-when { display:flex; flex-wrap:wrap; align-items:baseline; column-gap:.55rem; row-gap:.15rem; min-width:0; }
+  .jr-dc-loc { all:unset; display:inline-flex; align-items:center; gap:.2rem; min-width:0; max-width:100%; cursor:pointer;
+    font-size:.8rem; font-weight:600; color:var(--muted); }
+  .jr-dc-loc svg { width:.9em; height:.9em; flex:none; }
+  .jr-dc-loc span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .jr-dc-loc.empty { opacity:.55; font-weight:500; }
+  .jr-dc-loc:hover, .jr-dc-span:hover { color:var(--accent); }
+  .jr-dc-loc:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  .jr-ag-where { display:flex; flex-wrap:wrap; gap:.15rem .6rem; font-size:.75rem; color:var(--muted); }
+  .jr-ag-where b { color:var(--accent); cursor:pointer; }
+  .jr-ag-where span { display:inline-flex; align-items:center; gap:.2rem; cursor:pointer; }
+  .jr-ag-where svg { width:.85em; height:.85em; }
+  .jr-dc-span { flex:none; font-size:.74rem; font-weight:700; color:var(--accent); cursor:pointer; }
+  /* the add / edit form: date from–to, then time from–to with the place beside them */
+  .jr-ae .field { margin:0 0 .5rem; }
+  .jr-ae-row { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; align-items:end; }
+  .jr-ae-row3 { grid-template-columns:1fr 1fr 1.35fr; }
+  @media (max-width:420px) { .jr-ae-row3 { grid-template-columns:1fr 1fr; } .jr-ae-row3 .jr-ae-loc { grid-column:1 / -1; } }
+  .jr-ae-row .field input { min-width:0; width:100%; }
   .jr-dc-acts { flex:none; display:flex; gap:.25rem; margin:-.2rem -.25rem 0 0; }
   .jr-dc-acts button { width:2rem; height:2rem; border-radius:999px; border:1px solid var(--glass-line); cursor:pointer;
     background:color-mix(in srgb,var(--k-bg3) 50%,transparent); color:var(--muted); font-size:1rem;
@@ -957,6 +977,14 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     background:color-mix(in srgb,var(--k-act) 30%,var(--k-bg2)); box-shadow:0 1px 3px rgba(0,0,0,.25); }
   .jr-ev.wrap { white-space:normal; overflow-wrap:anywhere; }        /* reached the calendar's edge: wrap */
   .jr-ev.cut { text-overflow:ellipsis; }                               /* …or, short of rows, one line ending "…" */
+  /* a multi-day event: a bar locked from its first day to its last (width set by jrFitCells), one line, "…" if the
+     title is longer; a stronger fill so it reads as a span, square ends where it carries on into the next row */
+  #jr-cal-grid .jr-ev.span { max-width:none; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis;
+    display:block; -webkit-line-clamp:unset; color:var(--k-on-act);
+    background:color-mix(in srgb,var(--k-act) 78%,var(--k-bg2)); border-left-color:color-mix(in srgb,var(--k-act) 60%,#000); }
+  #jr-cal-grid .jr-ev.span.cont-l { border-top-left-radius:0; border-bottom-left-radius:0; border-left-color:transparent; }
+  #jr-cal-grid .jr-ev.span.cont-r { border-top-right-radius:0; border-bottom-right-radius:0; }
+  #jr-cal-grid .jr-ev.span.done { color:var(--muted); background:color-mix(in srgb,var(--muted) 22%,var(--k-bg2)); }
   .jr-ev.done { background:color-mix(in srgb,var(--muted) 14%,var(--k-bg2)); }
   .jr-ev-gap { display:block; flex:none; pointer-events:none; }      /* a row kept free for a title running in from the left */
   /* the time leads the title, short ("9:00"), a lighter tint so the title still reads first */
@@ -1178,6 +1206,9 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-up-title { grid-row:1; font-size:.86rem; font-weight:650; color:var(--ink); line-height:1.3; overflow-wrap:anywhere; }
   .jr-up-more { grid-column:2; font-size:.74rem; color:var(--muted); line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .jr-up-more i { font-style:normal; font-weight:700; color:var(--ink); opacity:.75; margin-right:.4em; }
+  .jr-up-more em { font-style:normal; font-weight:700; color:var(--accent); margin-right:.4em; }
+  .jr-up-loc { display:inline-flex; align-items:center; gap:.15em; margin-right:.45em; }
+  .jr-up-loc svg { width:.9em; height:.9em; flex:none; }
   .jr-up-ev.done { border-left-color:var(--muted); opacity:.6; }
   .jr-up-ev.done .jr-up-title { text-decoration:line-through; color:var(--muted); }
 
@@ -1585,6 +1616,26 @@ function jrDayLabel(iso){
 function jrTimeLabel(t){ return t ? t.slice(0,5) : '—'; }
 // for the day squares, where every letter counts: "09:30:00" → "9:30"
 function jrShortTime(t){ return t ? t.slice(0,5).replace(/^0(\d)/,'$1') : ''; }
+// An event can run from a time to a time, and over several days (end_date). These say where it ends and
+// how to write its span; every view uses them, so a multi-day event shows on each day it covers.
+const jrEnd=e=>e.end_date && e.end_date>e.event_date ? e.end_date : e.event_date;   // its last day
+const jrCovers=(e,iso)=>e.event_date<=iso && iso<=jrEnd(e);
+const jrMulti=e=>jrEnd(e)!==e.event_date;
+// "9:30–11:00" (short: no leading zero), "" when all day
+function jrTimeRange(e, short){
+  if(!e.event_time) return '';
+  const f=short?jrShortTime:jrTimeLabel;
+  return f(e.event_time)+(e.end_time?'–'+f(e.end_time):'');
+}
+// "20–23 Nov", or "30 Nov – 2 Dec" across months
+function jrDateRange(e){
+  const a=new Date(e.event_date+'T00:00:00'), b=new Date(jrEnd(e)+'T00:00:00');
+  return a.getMonth()===b.getMonth() && a.getFullYear()===b.getFullYear()
+    ? `${a.getDate()}–${b.getDate()} ${MON[a.getMonth()]}` : `${a.getDate()} ${MON[a.getMonth()]} – ${b.getDate()} ${MON[b.getMonth()]}`;
+}
+const jrDays=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);
+function jrAddDays(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return jrISO(d); }
+const JR_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
 
 // The month and the day are drawn straight away; the events fill in when they arrive, so a slow or
 // failed load never leaves an empty screen.
@@ -1624,23 +1675,27 @@ let JR_UPNEXT_SIG='';
 function jrRenderUpNext(){
   const box=document.getElementById('jr-upnext'); if(!box) return;
   const today=jrToday();
-  const evs=JOURNAL_EVENTS.filter(e=>e.event_date>=today)
-    .sort((a,b)=>a.event_date.localeCompare(b.event_date) || jrByTime(a,b)).slice(0,60);
+  // listed under its first day, or under today while it's still running
+  const at=e=>e.event_date<today?today:e.event_date;
+  const evs=JOURNAL_EVENTS.filter(e=>jrEnd(e)>=today)
+    .sort((a,b)=>at(a).localeCompare(at(b)) || jrMulti(b)-jrMulti(a) || jrByTime(a,b)).slice(0,60);
   const sig=JSON.stringify([today,JR_SEL,evs]); if(sig===JR_UPNEXT_SIG) return; JR_UPNEXT_SIG=sig;   // nothing new: leave it be
   if(!evs.length){ box.innerHTML='<div class="jr-up-head">Coming up</div><div class="jr-up-empty">Nothing planned yet.</div>'; return; }
   let html='<div class="jr-up-head">Coming up</div>', month='', day='', n=0;
   for(const e of evs){
-    const d=new Date(e.event_date+'T00:00:00'), m=`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    const iso=at(e), d=new Date(iso+'T00:00:00'), m=`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
     if(m!==month){ month=m; html+=`<div class="jr-up-month">${esc(m)}</div>`; }
-    if(e.event_date!==day){
-      day=e.event_date;
-      const rel=e.event_date===today?'Today':(Math.round((d-new Date(today+'T00:00:00'))/86400000)===1?'Tomorrow':'');
+    if(iso!==day){
+      day=iso;
+      const rel=iso===today?'Today':(Math.round((d-new Date(today+'T00:00:00'))/86400000)===1?'Tomorrow':'');
       html+=`<div class="jr-up-day${day===JR_SEL?' sel':''}" style="--i:${n}"><b>${d.getDate()}</b><span>${DAY_NAMES[d.getDay()].slice(0,3)}${rel?` · <em>${rel}</em>`:''}</span></div>`;
     }
-    html+=`<button type="button" class="jr-up-ev${e.done?' done':''}" style="--i:${n++}" onclick="jrUpOpen('${e.event_date}',${e.id})">
-      <span class="jr-up-time">${e.event_time?jrShortTime(e.event_time):'All day'}</span>
+    const more=[jrMulti(e)?`<em>${jrDateRange(e)}</em>`:'', e.location?`<span class="jr-up-loc">${JR_PIN}${esc(e.location)}</span>`:'',
+      e.category?`<i>${esc(e.category)}</i>`:'', e.created_by?`<b>${esc(e.created_by)}</b>`:'', e.notes?esc(e.notes):''].filter(Boolean).join('');
+    html+=`<button type="button" class="jr-up-ev${e.done?' done':''}" style="--i:${n++}" onclick="jrUpOpen('${iso}',${e.id})">
+      <span class="jr-up-time">${jrTimeRange(e,true)||(jrMulti(e)?'Days':'All day')}</span>
       <span class="jr-up-title">${esc(e.title)}</span>
-      ${e.category||e.notes||e.created_by?`<span class="jr-up-more">${e.category?`<i>${esc(e.category)}</i>`:''}${e.created_by?`<b>${esc(e.created_by)}</b>`:''}${e.notes?esc(e.notes):''}</span>`:''}
+      ${more?`<span class="jr-up-more">${more}</span>`:''}
     </button>`;
   }
   box.innerHTML=html;
@@ -1655,7 +1710,7 @@ function renderAgenda(){
   jrRenderUpNext();
   const showPast = $('#jr-show-past')?.checked;
   const today = jrToday();
-  const events = JOURNAL_EVENTS.filter(e => showPast || e.event_date >= today);
+  const events = JOURNAL_EVENTS.filter(e => showPast || jrEnd(e) >= today);
   const box = $('#jr-agenda-list');
   if(!events.length){ box.innerHTML = '<div class="empty">'+(showPast?'No events yet.':'Nothing planned.')+'<span class="muted">Tap “Add event” to put something on it.</span></div>'; return; }
   const groups = {};
@@ -1668,9 +1723,10 @@ function renderAgenda(){
         <div class="jr-h">Time</div><div class="jr-h">Title</div><div class="jr-h jr-h-cat">Category</div><div class="jr-h"></div><div class="jr-h"></div>
         ${groups[date].map(e => `
           <div class="jr-row${e.done?' done':''}" style="display:contents">
-            <div class="jr-cell jr-time" onclick="editEventTime(${e.id})">${jrTimeLabel(e.event_time)}</div>
+            <div class="jr-cell jr-time" onclick="editEventTime(${e.id})">${jrTimeRange(e)||'—'}</div>
             <div class="jr-cell jr-title" style="flex-direction:column;align-items:flex-start;white-space:normal">
               <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
+              ${jrMulti(e)||e.location?`<div class="jr-ag-where">${jrMulti(e)?`<b onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-end-date')">${jrDateRange(e)}</b>`:''}${e.location?`<span onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-loc')">${JR_PIN}${esc(e.location)}</span>`:''}</div>`:''}
               <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ note'}</div>
               ${e.created_by?`<div class="jr-by">by ${esc(e.created_by)}</div>`:''}
               <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:'<span class="muted">+ tag</span>'}</div>
@@ -1709,14 +1765,7 @@ async function jrPatch(id, patch){
     jrRender();
   }catch(e){ toast('Error: '+e.message); }
 }
-async function editEventTime(id){
-  const e=jrEvent(id); if(!e) return;
-  const v=await askInput('Time (HH:MM, blank = all-day):', e.event_time?e.event_time.slice(0,5):'');
-  if(v===null) return;
-  const t=v.trim();
-  if(t && !/^\d{1,2}:\d{2}$/.test(t)){ toast('Use HH:MM, e.g. 09:00'); return; }
-  await jrPatch(id, {event_time: t || null});
-}
+function editEventTime(id){ openAddEvent(null, id, '#ae-time'); }
 async function editEventTitle(id){
   const e=jrEvent(id); if(!e) return;
   const v=await askInput('Event title:', e.title);
@@ -1760,44 +1809,62 @@ async function deleteEventRow(id){
   }catch(err){ toast('Error: '+err.message); }
 }
 
-async function openAddEvent(prefillDate){
+// Add an event, or (with an id) change one: the same form, with from–to dates, from–to times and a place.
+// "To" is optional in both: no end date is a one-day event, no end time is a moment.
+async function openAddEvent(prefillDate, id, focus){
   if(JR_FROZEN){ toast('Server offline — changes are paused'); return; }
+  const ev=id?jrEvent(id):null; if(id && !ev) return;
   const ov=document.createElement('div'); ov.className='modal-ov';
-  const card=document.createElement('div'); card.className='modal-card'; card.style.cssText='max-width:24rem;width:100%';
-  const today=jrToday();
-  card.innerHTML=`<h2>＋ Add event</h2>
-    <label class="field" style="margin-bottom:.5rem"><span>Date</span><input id="ae-date" type="date" value="${prefillDate||today}"></label>
-    <label class="field" style="margin-bottom:.5rem"><span>Time <span class="muted">(optional)</span></span><input id="ae-time" type="time"></label>
-    <label class="field" style="margin-bottom:.5rem"><span>Title</span><input id="ae-title" autocomplete="off"></label>
-    <label class="field" style="margin-bottom:.5rem"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" autocomplete="off"></label>
-    <label class="field" style="margin-bottom:.85rem"><span>Notes <span class="muted">(optional)</span></span><input id="ae-notes" autocomplete="off"></label>
+  const card=document.createElement('div'); card.className='modal-card jr-ae'; card.style.cssText='max-width:26rem;width:100%';
+  const v=(x)=>esc(x||''), t5=t=>t?t.slice(0,5):'';
+  card.innerHTML=`<h2>${ev?'Edit event':'＋ Add event'}</h2>
+    <label class="field"><span>Title</span><input id="ae-title" autocomplete="off" value="${v(ev?.title)}"></label>
+    <div class="jr-ae-row">
+      <label class="field"><span>Date</span><input id="ae-date" type="date" value="${ev?.event_date||prefillDate||jrToday()}"></label>
+      <label class="field"><span>To <span class="muted">(optional)</span></span><input id="ae-end-date" type="date" value="${ev&&jrMulti(ev)?ev.end_date:''}"></label>
+    </div>
+    <div class="jr-ae-row jr-ae-row3">
+      <label class="field"><span>From <span class="muted">(time)</span></span><input id="ae-time" type="time" value="${t5(ev?.event_time)}"></label>
+      <label class="field"><span>To</span><input id="ae-end-time" type="time" value="${t5(ev?.end_time)}"></label>
+      <label class="field jr-ae-loc"><span>Location <span class="muted">(optional)</span></span><input id="ae-loc" autocomplete="off" placeholder="Where" value="${v(ev?.location)}"></label>
+    </div>
+    <label class="field"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" autocomplete="off" value="${v(ev?.category)}"></label>
+    <label class="field" style="margin-bottom:.85rem"><span>Notes <span class="muted">(optional)</span></span><input id="ae-notes" autocomplete="off" value="${v(ev?.notes)}"></label>
     <div class="item-edit-actions">
       <button class="mini" id="ae-cancel">Cancel</button>
-      <button class="act" id="ae-save">Add event</button>
+      <button class="act" id="ae-save">${ev?'Save':'Add event'}</button>
     </div>`;
   ov.appendChild(card); document.body.appendChild(ov);
   ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
-  card.querySelector('#ae-cancel').onclick=()=>dismiss(ov);
-  card.querySelector('#ae-save').onclick=async()=>{
-    const title=card.querySelector('#ae-title').value.trim();
-    const event_date=card.querySelector('#ae-date').value;
+  const q=s=>card.querySelector(s);
+  // the end date can't be before the start: its picker starts there, and a start moved past it takes it along
+  const syncEnd=()=>{ const a=q('#ae-date').value, b=q('#ae-end-date'); b.min=a; if(b.value && a && b.value<a) b.value=''; };
+  q('#ae-date').addEventListener('change', syncEnd); syncEnd();
+  q('#ae-cancel').onclick=()=>dismiss(ov);
+  q('#ae-save').onclick=async()=>{
+    const title=q('#ae-title').value.trim(), event_date=q('#ae-date').value;
+    let end_date=q('#ae-end-date').value||null;
+    const event_time=q('#ae-time').value||null, end_time=q('#ae-end-time').value||null;
     if(!title){ toast('Title is required'); return; }
     if(!event_date){ toast('Date is required'); return; }
+    if(end_date && end_date<event_date){ toast('The end date is before the start'); return; }
+    if(end_date===event_date) end_date=null;
+    if(end_time && !event_time){ toast('Give a start time too'); return; }
+    if(end_time && !end_date && end_time<=event_time){ toast('The end time is before the start'); return; }
+    const body={event_date, end_date, event_time, end_time, title,
+      location:q('#ae-loc').value.trim()||null, category:q('#ae-cat').value.trim()||null, notes:q('#ae-notes').value.trim()||null};
     try{
-      const created=await api('/api/journal/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-        event_date, title,
-        event_time: card.querySelector('#ae-time').value || null,
-        category: card.querySelector('#ae-cat').value.trim() || null,
-        notes: card.querySelector('#ae-notes').value.trim() || null,
-      })});
-      JOURNAL_EVENTS.push(created);
-      dismiss(ov); toast('Event added');
-      if(JR_VIEW==='calendar'){ calSelect(created.event_date); if(!K_REDUCED.matches) document.querySelector(`.jr-dcard[data-id="${created.id}"]`)?.classList.add('flash'); }
+      const saved=await api('/api/journal/events'+(ev?'/'+ev.id:''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const i=JOURNAL_EVENTS.findIndex(x=>x.id===saved.id); if(i>=0) JOURNAL_EVENTS[i]=saved; else JOURNAL_EVENTS.push(saved);
+      dismiss(ov); toast(ev?'Saved':'Event added');
+      if(JR_VIEW==='calendar'){ calSelect(saved.event_date); if(!K_REDUCED.matches) document.querySelector(`.jr-dcard[data-id="${saved.id}"]`)?.classList.add('flash'); }
       else renderAgenda();
     }catch(e){ toast('Error: '+e.message); }
   };
-  setTimeout(()=>{ try{ card.querySelector('#ae-title').focus(); }catch(_){} }, 30);
+  setTimeout(()=>{ try{ q(focus||'#ae-title').focus(); }catch(_){} }, 30);
 }
+// tapping an event's time, dates or place opens the form at that field
+const editEventWhen=(id, field)=>openAddEvent(null, id, field);
 
 function calShiftMonth(n){
   JR_CAL_MONTH += n;
@@ -1902,8 +1969,9 @@ const jrByTime=(a,b)=>(a.event_time?1:0)-(b.event_time?1:0) || (a.event_time||''
 
 function renderCalendar(opt={}){
   const today = jrToday();
-  const byDate = {};
-  for(const e of JOURNAL_EVENTS){ (byDate[e.event_date] = byDate[e.event_date] || []).push(e); }
+  const byDate = {}, multi = JOURNAL_EVENTS.filter(jrMulti)
+    .sort((a,b)=>a.event_date.localeCompare(b.event_date) || jrEnd(b).localeCompare(jrEnd(a)) || a.id-b.id);
+  for(const e of JOURNAL_EVENTS) if(!jrMulti(e)) (byDate[e.event_date] = byDate[e.event_date] || []).push(e);
   const firstOfMonth = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1);
   const gridStart = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1 - firstOfMonth.getDay());   // weeks start on Sunday
   // 5 or 6 weeks, whichever the month needs, so the rows are as tall as they can be
@@ -1914,13 +1982,22 @@ function renderCalendar(opt={}){
   let html='';
   for(let i=0;i<weeks*7;i++){
     const d = new Date(gridStart); d.setDate(gridStart.getDate()+i);
-    const iso = jrISO(d), inMonth = d.getMonth()===JR_CAL_MONTH;
-    const evs = (byDate[iso] || []).slice().sort(jrByTime);
-    const label = `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}${evs.length?`, ${evs.length} event${evs.length>1?'s':''}`:''}`;
-    html += `<button type="button" class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${iso===JR_SEL?' sel':''}${evs.length?' has-events':''}"
+    const iso = jrISO(d), inMonth = d.getMonth()===JR_CAL_MONTH, col = i%7;
+    const singles = (byDate[iso] || []).slice().sort(jrByTime);
+    const covering = multi.filter(e=>jrCovers(e,iso));
+    // a multi-day event is drawn once per week row, as a bar starting on its first day in that row
+    const bars = covering.filter(e=>e.event_date===iso || col===0 || i===0).map(e=>{
+      const left=jrDays(iso, jrEnd(e))+1, span=Math.min(left, 7-col);
+      return {e, span, l:e.event_date<iso, r:left>span};
+    });
+    const n = singles.length + covering.length;
+    const label = `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}${n?`, ${n} event${n>1?'s':''}`:''}`;
+    html += `<button type="button" class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${iso===JR_SEL?' sel':''}${n?' has-events':''}"
       onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
-      <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${evs.length?`<span class="jr-more" hidden></span><span class="jr-count">${evs.length}</span>`:''}</span>
-      ${evs.length?`<span class="jr-preview">${evs.map(e=>`<span class="jr-ev${e.done?' done':''}" data-id="${e.id}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
+      <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${n?`<span class="jr-more" hidden></span><span class="jr-count">${n}</span>`:''}</span>
+      ${bars.length||singles.length?`<span class="jr-preview">${
+        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}" data-id="${e.id}" data-span="${span}">${esc(e.title)}</span>`).join('')
+      }${singles.map(e=>`<span class="jr-ev${e.done?' done':''}" data-id="${e.id}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
     </button>`;
   }
   const grid=$('#jr-cal-grid');
@@ -1978,8 +2055,11 @@ function jrFitCells(){
       const firstFree=(from, n)=>{ let at=from; while(at<from+64 && [...Array(n).keys()].some(k=>(busy[at+k]||0)>c)) at++; return at; };
       for(const e of evs){
         e.classList.remove('cut');
-        if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
-        let lines=Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
+        // a multi-day bar is locked to its days: exactly from this square to its last one in the row, one line
+        const span=+e.dataset.span||0;
+        if(span){ const last=cells[r+c+span-1]||cell; e.style.width=(last.offsetLeft+colW-pad-(cell.offsetLeft+pad))+'px'; }
+        else if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
+        let lines=span?1:Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
         let at=firstFree(lane, lines);
         // no room for all its wrapped lines: one line to the edge, ending "…" (the day panel has it in full)
         if(at+lines>lanes && lines>1){ e.classList.replace('wrap','cut'); lines=1; at=firstFree(lane, 1); }
@@ -2017,7 +2097,7 @@ function jrFitCards(){
 function renderDay(enter, dir){
   const box=$('#jr-day'); if(!box) return;
   const iso=JR_SEL||jrToday(), d=new Date(iso+'T00:00:00');
-  const evs=JOURNAL_EVENTS.filter(e=>e.event_date===iso).sort(jrByTime);
+  const evs=JOURNAL_EVENTS.filter(e=>jrCovers(e,iso)).sort((a,b)=>jrMulti(b)-jrMulti(a) || jrByTime(a,b));
   const done=evs.filter(e=>e.done).length;
   const relHtml=jrDayLabel(iso), rel=relHtml.includes('class="rel"')?` <span class="rel">· ${relHtml.replace(/<[^>]+>/g,'')}</span>`:'';
   box.innerHTML=`<div class="jr-day-headrow">
@@ -2031,7 +2111,10 @@ function renderDay(enter, dir){
     ${evs.length?`<div class="jr-day-list">${evs.map(e=>`
       <article class="jr-dcard k-shine${e.done?' done':''}" data-id="${e.id}">
         <div class="jr-dc-top">
-          <div class="jr-dc-time${e.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="Change time">${e.event_time?e.event_time.slice(0,5):'All day'}</div>
+          <div class="jr-dc-when">
+            <div class="jr-dc-time${e.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="Change time">${jrTimeRange(e)||'All day'}</div>
+            <button type="button" class="jr-dc-loc${e.location?'':' empty'}" onclick="editEventWhen(${e.id},'#ae-loc')" title="${e.location?'Change place':'Add a place'}">${JR_PIN}<span>${e.location?esc(e.location):'Add place'}</span></button>
+          </div>
           <div class="jr-dc-acts">
             <button class="ok${e.done?' on':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}" aria-label="${e.done?'Mark not done':'Mark done'}">✓</button>
             <button class="del" onclick="deleteEventRow(${e.id})" title="Delete" aria-label="Delete">✕</button>
@@ -2039,6 +2122,7 @@ function renderDay(enter, dir){
         </div>
         <div class="jr-dc-body">
           <div class="jr-dc-title" onclick="editEventTitle(${e.id})" title="Rename">${esc(e.title)}</div>
+          ${jrMulti(e)?`<div class="jr-dc-span" onclick="editEventWhen(${e.id},'#ae-end-date')" title="Change dates">${jrDateRange(e)} · day ${jrDays(e.event_date,iso)+1} of ${jrDays(e.event_date,jrEnd(e))+1}</div>`:''}
           <div class="jr-dc-tags"><span class="chip-lbl" onclick="editEventCategory(${e.id})">${e.category?esc(e.category):'+ category'}</span></div>
           <div class="jr-dc-notes" onclick="editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ add notes'}</div>
           ${e.created_by?`<div class="jr-dc-by">Added by ${esc(e.created_by)}</div>`:''}
@@ -2243,7 +2327,8 @@ jrBead(document.getElementById('jr-monthnav'));
       fontSize:cs.fontSize, lineHeight:cs.lineHeight, padding:cs.padding, letterSpacing:cs.letterSpacing});
     document.body.appendChild(ghost);
     chip.classList.add('dragging'); document.body.classList.add('jr-dragging');
-    drag={ev, chip, ghost, gx:x-r.left, gy:y-r.top, from:ev.event_date, over:null};
+    // a multi-day bar moves by however many days it's dragged, from the day it was picked up on
+    drag={ev, chip, ghost, gx:x-r.left, gy:y-r.top, from:chip.dataset.span?(isoOf(dayAt(x,y))||ev.event_date):ev.event_date, over:null};
     JR_EVDRAG=drag;
     if(navigator.vibrate) try{ navigator.vibrate(10); }catch(_){}
     move(x,y);
@@ -2267,17 +2352,19 @@ jrBead(document.getElementById('jr-monthnav'));
       d.ghost.remove(); return;
     }
     d.ghost.remove();
-    const ev=d.ev, before=ev.event_date;
-    ev.event_date=to;                                              // move it now; the backend confirms behind it
+    const ev=d.ev, before=ev.event_date, beforeEnd=ev.end_date, shift=jrDays(d.from, to);
+    const patch={event_date:jrAddDays(ev.event_date, shift)};
+    if(jrMulti(ev)) patch.end_date=jrAddDays(ev.end_date, shift);
+    Object.assign(ev, patch);                                      // move it now; the backend confirms behind it
     calSelect(to);
     requestAnimationFrame(()=>document.querySelector(`#jr-cal-grid .jr-ev[data-id="${ev.id}"]`)?.classList.add('landed'));
-    const d2=new Date(to+'T00:00:00');
+    const d2=new Date(ev.event_date+'T00:00:00');
     try{
-      const upd=await api('/api/journal/events/'+ev.id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_date:to})});
+      const upd=await api('/api/journal/events/'+ev.id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)});
       const i=JOURNAL_EVENTS.findIndex(x=>x.id===ev.id); if(i>=0) JOURNAL_EVENTS[i]=upd;
-      toast(`Moved to ${DAY_NAMES[d2.getDay()].slice(0,3)} ${d2.getDate()} ${MONTH_NAMES[d2.getMonth()].slice(0,3)}`);
+      toast(jrMulti(upd)?`Moved to ${jrDateRange(upd)}`:`Moved to ${DAY_NAMES[d2.getDay()].slice(0,3)} ${d2.getDate()} ${MONTH_NAMES[d2.getMonth()].slice(0,3)}`);
     }catch(e){
-      ev.event_date=before; jrRender();
+      ev.event_date=before; ev.end_date=beforeEnd; jrRender();
       if(!(e instanceof JrOffline)) toast('Could not move: '+e.message);
     }
   }

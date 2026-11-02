@@ -33,8 +33,10 @@
       if (!title) return fail(400, "title is required");
       if (!DATE_RE.test(event_date)) return fail(400, "event_date must be YYYY-MM-DD");
       if (event_time && !TIME_RE.test(event_time)) return fail(400, "event_time must be HH:MM");
-      const ev = { id: db.next++, event_date, event_time: secs(event_time), title, notes: str(body.notes) || null,
+      const ev = { id: db.next++, event_date, event_time: secs(event_time), end_date: null, end_time: null,
+        location: str(body.location) || null, title, notes: str(body.notes) || null,
         category: str(body.category) || null, done: false, created_at: now(), updated_at: now() };
+      const why = setSpan(ev, body); if (why) return fail(400, why);
       db.events.push(ev); save(db); return reply(ev, 201);
     }
     const m = path.match(/^\/api\/journal\/events\/(\d+)(\/done)?$/);
@@ -48,7 +50,21 @@
     if ("event_time" in body) { const t = str(body.event_time); if (t && !TIME_RE.test(t)) return fail(400, "event_time must be HH:MM"); ev.event_time = secs(t) || null; }
     if ("notes" in body) ev.notes = str(body.notes) || null;
     if ("category" in body) ev.category = str(body.category) || null;
+    if ("location" in body) ev.location = str(body.location) || null;
+    if ("event_time" in body && !ev.event_time) ev.end_time = null;   // all day now: no end time either
+    const was = { ...ev }, why = setSpan(ev, body);
+    if (why) { Object.assign(ev, was); return fail(400, why); }
     ev.updated_at = now(); save(db); return reply(ev);
+  }
+
+  // end_date / end_time from the body (when given), made consistent the same way the backends do
+  function setSpan(ev, body) {
+    if ("end_date" in body) { const d = str(body.end_date); if (d && !DATE_RE.test(d)) return "end_date must be YYYY-MM-DD"; ev.end_date = d || null; }
+    if ("end_time" in body) { const t = str(body.end_time); if (t && !TIME_RE.test(t)) return "end_time must be HH:MM"; ev.end_time = secs(t) || null; }
+    if (ev.end_date && ev.end_date <= ev.event_date) { if (ev.end_date < ev.event_date) return "the end date is before the start"; ev.end_date = null; }
+    if (ev.end_time && !ev.event_time) return "give a start time too";
+    if (!ev.end_date && ev.end_time && ev.end_time <= ev.event_time) return "the end time is before the start";
+    return null;
   }
 
   window.fetch = async function (input, init) {
