@@ -1352,6 +1352,30 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     html.ios-phone main { padding-bottom:max(.5rem, calc(var(--sab) * .5)); }
     html.ios-phone .jr-rail { padding-bottom:max(.6rem, calc(var(--sab) * .5)); }
   }
+  /* ================= desktop: the day panel uses the room it has =================
+     Taller on a big screen (always the same height, so picking a day still never moves the month), and with few
+     events on the day their text grows to fill it: big and clear. Many events keep the compact size and scroll. */
+  @media (min-width:900px) and (min-height:700px) {
+    .jr-bottom { --day-h:clamp(12rem, 27vh, 19rem); padding:.7rem .9rem .8rem; }
+    .jr-day-big { font-size:2.3rem; }
+    .jr-day-wd { font-size:1.3rem; } .jr-day-my { font-size:1rem; } .jr-day-sum { font-size:.95rem; } .jr-day-sum b { font-size:1.1rem; }
+    .jr-day-headrow { margin-bottom:.6rem; }
+    .jr-day-list { gap:.5rem .7rem; }
+    .jr-dcard { padding:.4rem .4rem .4rem .8rem; column-gap:.7rem; border-radius:12px; }
+    .jr-dc-title { font-size:1.15rem; } .jr-dc-time { font-size:.95rem; } .jr-dc-sub { font-size:.88rem; margin-top:.05rem; }
+    .jr-dc-ppl .jr-av { width:1.5rem; height:1.5rem; } .jr-dc-ppl .jr-who { font-size:.85rem; }
+    .jr-day-list[data-n="1"], .jr-day-list[data-n="2"] { grid-template-columns:repeat(auto-fill,minmax(min(100%,30rem),1fr)); }
+    .jr-day-list[data-n="1"] { grid-template-columns:1fr; }
+    .jr-day-list[data-n="1"] .jr-dcard, .jr-day-list[data-n="2"] .jr-dcard { padding:.7rem .6rem .7rem 1rem; row-gap:.2rem; }
+    .jr-day-list[data-n="1"] .jr-dc-title, .jr-day-list[data-n="2"] .jr-dc-title { font-size:1.55rem; line-height:1.2; }
+    .jr-day-list[data-n="1"] .jr-dc-time, .jr-day-list[data-n="2"] .jr-dc-time { font-size:1.15rem; }
+    .jr-day-list[data-n="1"] .jr-dc-sub, .jr-day-list[data-n="2"] .jr-dc-sub { font-size:1.05rem; line-height:1.45; }
+    .jr-day-list[data-n="1"] .jr-dc-ppl .jr-who, .jr-day-list[data-n="2"] .jr-dc-ppl .jr-who { font-size:1rem; }
+    .jr-day-list[data-n="1"] .jr-dc-ppl .jr-av, .jr-day-list[data-n="2"] .jr-dc-ppl .jr-av { width:1.9rem; height:1.9rem; font-size:.7rem; }
+    .jr-day-list[data-n="3"] .jr-dc-title, .jr-day-list[data-n="4"] .jr-dc-title { font-size:1.3rem; }
+    .jr-day-list[data-n="3"] .jr-dc-sub, .jr-day-list[data-n="4"] .jr-dc-sub { font-size:.95rem; }
+  }
+
   /* ================= the team: avatars and the attendee picker ================= */
   .jr-av { position:relative; flex:none; display:inline-grid; place-items:center; width:1.55rem; height:1.55rem; border-radius:50%; overflow:hidden;
     background:hsl(var(--h,210) 55% 82%); color:hsl(var(--h,210) 45% 24%); font-size:.6rem; font-weight:700; line-height:1;
@@ -2788,7 +2812,7 @@ function renderDay(enter, dir){
       <button type="button" class="jr-swap" onclick="jrSwapPanels()" title="${esc(tx('swapPanels'))}" aria-label="${esc(tx('swapPanels'))}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></svg></button>
     </div>
-    ${evs.length?`<div class="jr-day-list">${evs.map(e=>{
+    ${evs.length?`<div class="jr-day-list" data-n="${Math.min(evs.length,5)}">${evs.map(e=>{
       // a multi-day event shows this day's own details (or the event's where the day has none)
       const x=jrMulti(e)?jrDay(e,iso):e;
       const sub=[jrMulti(e)?`<b>${esc(tx('dayOf',{i:jrDays(e.event_date,iso)+1, n:jrDays(e.event_date,jrEnd(e))+1}))}</b>`:'',
