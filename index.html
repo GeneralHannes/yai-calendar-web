@@ -229,14 +229,23 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
   .chip-lbl { background:var(--fill-2); border-radius:999px; padding:.1rem .5rem; }
 
   /* ---- photo-free modal dialogs (add event / day detail / askInput / askConfirm) ---- */
-  .modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:25;
+  /* dialogs cover what's visible of the screen (--vvt/--vvh: above the on-screen keyboard while it's open, set by
+     the script under "keyboard"), on a solid card: forms read cleanly, with nothing showing through */
+  .modal-ov { position:fixed; left:0; right:0; top:var(--vvt,0px); height:var(--vvh,100dvh); background:rgba(0,0,0,.5); z-index:25;
               display:flex; align-items:center; justify-content:center; padding:1rem;
               animation:overlayIn .22s ease both; }
-  .modal-card { background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+  .modal-card { background:linear-gradient(to bottom,color-mix(in srgb,var(--k-bg2) 98%,transparent),color-mix(in srgb,var(--k-bg2) 95%,transparent));
                 border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift);
                 border-radius:20px; max-width:min(26rem,calc(100vw - 2rem)); width:100%;
-                max-height:calc(100dvh - 2rem); overflow:auto; padding:clamp(.85rem,3vw,1.2rem);
-                animation:popIn .4s var(--ease-out) both; }
+                max-height:calc(var(--vvh,100dvh) - 2rem); overflow:auto; overscroll-behavior:contain; touch-action:pan-y;
+                padding:clamp(.85rem,3vw,1.2rem); animation:popIn .4s var(--ease-out) both; }
+  /* phones: a sheet from the bottom edge, full width, that scrolls inside when the keyboard leaves it short of room */
+  @media (max-width:560px) {
+    .modal-ov { align-items:flex-end; padding:0; }
+    .modal-card { max-width:100%; border-radius:20px 20px 0 0; border-bottom:0;
+      max-height:calc(var(--vvh,100dvh) - env(safe-area-inset-top) - .75rem);
+      padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom)); }
+  }
   .modal-card h2 { font-family:Marcellus,"Iowan Old Style",Georgia,serif; font-weight:400; margin:0 0 .7rem; }
   @keyframes fadeIn { from{ opacity:0; } to{ opacity:1; } }
   @keyframes popIn  { from{ opacity:0; transform:scale(.94) translateY(8px); } to{ opacity:1; transform:none; } }
@@ -741,9 +750,10 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .keep-bar.jr-bar-bare { padding:env(safe-area-inset-top) 0 0; min-height:0; border-bottom:0; }
   /* sideways drags belong to the swipe; up/down and pinch stay with the browser */
   .jr-top, .jr-bottom { touch-action:pan-y pinch-zoom; }
-  /* bottom: the selected day, as small as it can be: one slim line for the date, then one line per event (title first),
-     side by side when there's room. It's only as tall as its events need (up to a cap, then its list scrolls). */
-  .jr-bottom { container-type:inline-size; flex:0 0 auto; max-height:min(36vh,18rem); min-height:0; overflow:hidden;
+  /* bottom: the selected day, small: one slim line for the date, then one line per event (title first), side by side
+     when there's room. Always the same height (room for two events with their details; more scroll inside it), so
+     picking a day never resizes the month above it. */
+  .jr-bottom { container-type:inline-size; --day-h:8.6rem; flex:0 0 var(--day-h); height:var(--day-h); min-height:0; overflow:hidden;
     display:flex; flex-direction:column; border-radius:16px; padding:.45rem .55rem .5rem;
     background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
     border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift); }
@@ -829,14 +839,14 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-day-empty span { display:none; }
   }
 
-  @media (max-height:640px) { .jr-top { min-height:12rem; } .jr-bottom { max-height:34vh; } }
+  @media (max-height:640px) { .jr-top { min-height:12rem; } .jr-bottom { --day-h:7.4rem; } }
   /* a phone on its side: too short to stack, so the day sits beside the month */
   @media (max-height:520px) and (orientation:landscape) {
     /* month on the left at full height; the day and the month bar stacked on the right */
     #jr-calendar { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); grid-template-rows:minmax(0,1fr) auto; gap:.5rem .75rem; }
     .jr-split { display:contents; }
     .jr-top { grid-column:1; grid-row:1 / 3; min-height:0; }
-    .jr-bottom { grid-column:2; grid-row:1; min-height:0; max-height:none; }
+    .jr-bottom { grid-column:2; grid-row:1; min-height:0; height:auto; }
     .jr-monthnav { grid-column:2; grid-row:2; justify-self:center; }
     .jr-day-big { font-size:1.5rem; }
     .jr-month { font-size:1.35rem; }
@@ -980,8 +990,15 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   #jr-cal-grid .jr-ev.span { max-width:none; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis;
     display:block; -webkit-line-clamp:unset; color:var(--k-on-act);
     background:color-mix(in srgb,var(--k-act) 78%,var(--k-bg2)); border-left-color:color-mix(in srgb,var(--k-act) 60%,#000); }
-  #jr-cal-grid .jr-ev.span.cont-l { border-top-left-radius:0; border-bottom-left-radius:0; border-left-color:transparent; }
-  #jr-cal-grid .jr-ev.span.cont-r { border-top-right-radius:0; border-bottom-right-radius:0; }
+  /* split over two rows, it still reads as one: the piece that carries on ends in an arrow point, the piece it carries
+     on into starts with the matching notch on the same line, and touching either lights up both (.linked) */
+  #jr-cal-grid .jr-ev.span.cont-r { border-top-right-radius:0; border-bottom-right-radius:0; padding-right:10px;
+    clip-path:polygon(0 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 0 100%); }
+  #jr-cal-grid .jr-ev.span.cont-l { border-top-left-radius:0; border-bottom-left-radius:0; border-left-color:transparent; padding-left:10px;
+    clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%, 6px 50%); }
+  #jr-cal-grid .jr-ev.span.cont-l.cont-r { clip-path:polygon(0 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 0 100%, 6px 50%); }
+  #jr-cal-grid .jr-ev.span.linked { background:color-mix(in srgb,var(--k-act) 94%,#000); }
+  #jr-cal-grid .jr-ev.span.done.linked { background:color-mix(in srgb,var(--muted) 38%,var(--k-bg2)); }
   #jr-cal-grid .jr-ev.span.done { color:var(--muted); background:color-mix(in srgb,var(--muted) 22%,var(--k-bg2)); }
   .jr-ev.done { background:color-mix(in srgb,var(--muted) 14%,var(--k-bg2)); }
   .jr-ev-gap { display:block; flex:none; pointer-events:none; }      /* a row kept free for a title running in from the left */
@@ -2066,7 +2083,7 @@ function jrFitCells(){
   const grid=document.getElementById('jr-cal-grid'); if(!grid) return;
   const cells=[...grid.querySelectorAll('.jr-cal-day')];
   grid.querySelectorAll('.jr-ev-gap').forEach(g=>g.remove());
-  const gridW=grid.clientWidth;
+  const gridW=grid.clientWidth, laneOf={};          // laneOf[event id] = the line its bar had in the row above
   for(let r=0; r<cells.length; r+=7){
     const busy=[];                                   // busy[lane] = first column where that lane is free again
     for(let c=0; c<7 && r+c<cells.length; c++){
@@ -2088,7 +2105,9 @@ function jrFitCells(){
         if(span){ const last=cells[r+c+span-1]||cell; e.style.width=(last.offsetLeft+colW-pad-(cell.offsetLeft+pad))+'px'; }
         else if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
         let lines=span?1:Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
-        let at=firstFree(lane, lines);
+        // a bar carrying on from the row above goes on the same line it had there (if that line is near the top)
+        const want=span && e.classList.contains('cont-l') ? laneOf[e.dataset.id] : undefined;
+        let at=want!=null && want<=2 ? firstFree(Math.max(lane,want), 1) : firstFree(lane, lines);
         // no room for all its wrapped lines: as many lines as there are, the last ending "…"; or, with room for
         // only one, a single line — title first, the time dropped (the day panel has both in full)
         if(at+lines>lanes && lines>1){
@@ -2102,6 +2121,7 @@ function jrFitCells(){
         // the first day it no longer reaches into (2px of breathing room before the next title)
         const free=Math.floor((cell.offsetLeft+e.offsetLeft+e.offsetWidth+2)/colW)+1;
         for(let k=0; k<lines; k++) busy[at+k]=free;
+        if(span) laneOf[e.dataset.id]=at;
         lane=at+lines; shown++;
       }
       evs.forEach((e,i)=>e.hidden=i>=shown);
@@ -2109,6 +2129,27 @@ function jrFitCells(){
     }
   }
 }
+// The on-screen keyboard: dialogs fit what's still visible (--vvt/--vvh), and the field being typed in is scrolled
+// into view inside its dialog (iOS doesn't, as the page itself is pinned).
+(function(){
+  const vv=window.visualViewport, root=document.documentElement; if(!vv) return;
+  const set=()=>{ root.style.setProperty('--vvh', vv.height+'px'); root.style.setProperty('--vvt', vv.offsetTop+'px'); };
+  vv.addEventListener('resize', set); vv.addEventListener('scroll', set); set();
+  document.addEventListener('focusin', e=>{
+    const f=e.target; if(!f.closest?.('.modal-card') || !/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) return;
+    setTimeout(()=>f.scrollIntoView({block:'nearest', behavior:'smooth'}), 300);   // after the keyboard has come up
+  });
+})();
+// a multi-day event split over two rows lights up as one: hovering or pressing either piece marks both
+(function(){
+  const grid=document.getElementById('jr-cal-grid'); let cur=null;
+  const mark=(id,on)=>grid.querySelectorAll(`.jr-ev.span[data-id="${id}"]`).forEach(b=>b.classList.toggle('linked',on));
+  const set=id=>{ if(cur===id) return; if(cur) mark(cur,false); cur=id; if(id) mark(id,true); };
+  const at=e=>e.target.closest?.('.jr-ev.span')?.dataset.id||null;
+  grid.addEventListener('pointerover',e=>set(at(e)));
+  grid.addEventListener('pointerdown',e=>set(at(e)));
+  grid.addEventListener('pointerleave',()=>set(null));
+})();
 (function(){
   let raf=0; const fit=()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; jrFitCells(); }); };
   if(window.ResizeObserver) new ResizeObserver(fit).observe(document.getElementById('jr-cal-grid'));
