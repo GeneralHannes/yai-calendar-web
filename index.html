@@ -2469,7 +2469,10 @@ async function jrOfferReminders(){
 </script>
 <script>/* offline app shell (static/sw.js): registers only on a trusted certificate; a new version shows a tap-to-reload pill */
 if("serviceWorker" in navigator&&window.isSecureContext&&!/[?&]nosw\b/.test(location.search)){
-  addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});
+  addEventListener("load",function(){navigator.serviceWorker.register("sw.js").then(function(r){r.update().catch(function(){});}).catch(function(){});});
+  /* an installed app is often brought back rather than opened anew (Android especially), and then the browser
+     doesn't look for a new version for a day: look each time it comes back to the front */
+  document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible") navigator.serviceWorker.getRegistration().then(function(r){r&&r.update().catch(function(){});}); });
   /* a new version that lands in the first seconds after opening, before anything was touched, just loads: a home-screen app
    would otherwise open the previous copy every time after an update */
   ["pointerdown","keydown"].forEach(function(t){addEventListener(t,function(){window.__kTouched=1;},{once:true,capture:true});});
