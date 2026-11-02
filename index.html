@@ -801,6 +801,10 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-dc-acts button:active { transform:scale(.9); }
   .jr-dc-acts .ok.on { color:var(--k-on-act); background:var(--good); border-color:transparent; }
   .jr-dc-acts .del:hover { color:var(--warn); }
+  .jr-dc-acts .edit { display:grid; place-items:center; padding:0; }
+  .jr-dc-acts .edit svg { width:.95rem; height:.95rem; }
+  .jr-dc-acts .edit:hover { color:var(--accent); }
+  .item-edit-actions .jr-ae-del { margin-right:auto; color:var(--warn); }
   .jr-day-empty { color:var(--muted); padding:.4rem 0 .2rem; }
   .jr-day-empty span { display:block; font-size:.85rem; opacity:.8; margin-top:.2rem; }
   .jr-bottom.enter .jr-day-headrow, .jr-bottom.enter .jr-day-empty { animation:kRise var(--k-t) var(--k-smooth) both; }
@@ -1562,30 +1566,6 @@ function askConfirm(msg){
     setTimeout(()=>{ try{ ov.querySelector('#ac-yes').focus(); }catch(_){} }, 30);
   });
 }
-function askInput(msg, def){
-  def = (def==null) ? '' : String(def);
-  return new Promise(resolve=>{
-    const ov=document.createElement('div');
-    ov.style.cssText='position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;'
-      +'background:rgba(0,0,0,.5);padding:1.5rem;animation:fadeIn .15s ease both';
-    ov.innerHTML='<div style="width:100%;max-width:20rem;background:var(--bg);border:1px solid var(--line);'
-      +'border-radius:12px;padding:1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.35)">'
-      +'<div style="font-size:.95rem;line-height:1.4;margin-bottom:.7rem;white-space:pre-wrap">'+esc(msg)+'</div>'
-      +'<input id="ai-inp" style="width:100%;font-size:1.05rem;text-align:center">'
-      +'<div style="display:flex;gap:.5rem;margin-top:.8rem"><button class="mini" id="ai-no" style="flex:1">Cancel</button>'
-      +'<button class="act" id="ai-yes" style="flex:1">OK</button></div></div>';
-    document.body.appendChild(ov);
-    const inp=ov.querySelector('#ai-inp'); inp.value=def;
-    const done=v=>{ document.removeEventListener('keydown',onKey); dismiss(ov); resolve(v); };
-    const onKey=e=>{ if(e.key==='Escape') done(null); };
-    ov.querySelector('#ai-no').onclick=()=>done(null);
-    ov.querySelector('#ai-yes').onclick=()=>done(inp.value);
-    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); done(inp.value); } });
-    ov.onclick=e=>{ if(e.target===ov) done(null); };
-    document.addEventListener('keydown', onKey);
-    setTimeout(()=>{ try{ inp.focus(); inp.select(); }catch(_){} }, 30);
-  });
-}
 
 // =================== Yai Calendar ===================
 let JOURNAL_EVENTS = [];
@@ -1758,34 +1738,11 @@ function jrFold(el){
     {duration:340,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'}).finished.catch(()=>{});
 }
 function jrEvent(id){ return JOURNAL_EVENTS.find(e=>e.id===id); }
-async function jrPatch(id, patch){
-  try{
-    const updated = await api('/api/journal/events/'+id, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)});
-    const i = JOURNAL_EVENTS.findIndex(e=>e.id===id);
-    if(i>=0) JOURNAL_EVENTS[i]=updated;
-    jrRender();
-  }catch(e){ toast('Error: '+e.message); }
-}
 function editEventTime(id){ openAddEvent(null, id, '#ae-time'); }
-async function editEventTitle(id){
-  const e=jrEvent(id); if(!e) return;
-  const v=await askInput('Event title:', e.title);
-  if(v===null) return;
-  if(!v.trim()){ toast('Title cannot be blank'); return; }
-  await jrPatch(id, {title: v.trim()});
-}
-async function editEventNotes(id){
-  const e=jrEvent(id); if(!e) return;
-  const v=await askInput('Notes:', e.notes||'');
-  if(v===null) return;
-  await jrPatch(id, {notes: v.trim()});
-}
-async function editEventCategory(id){
-  const e=jrEvent(id); if(!e) return;
-  const v=await askInput('Category:', e.category||'');
-  if(v===null) return;
-  await jrPatch(id, {category: v.trim()});
-}
+// every part of an event edits in the one form, opened at the part that was tapped
+function editEventTitle(id){ openAddEvent(null, id, '#ae-title'); }
+function editEventNotes(id){ openAddEvent(null, id, '#ae-notes'); }
+function editEventCategory(id){ openAddEvent(null, id, '#ae-cat'); }
 async function toggleEventDone(id){
   const e=jrEvent(id); if(!e || jrJustSwiped()) return;
   try{
@@ -1832,6 +1789,7 @@ async function openAddEvent(prefillDate, id, focus){
     <label class="field"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" autocomplete="off" value="${v(ev?.category)}"></label>
     <label class="field" style="margin-bottom:.85rem"><span>Notes <span class="muted">(optional)</span></span><input id="ae-notes" autocomplete="off" value="${v(ev?.notes)}"></label>
     <div class="item-edit-actions">
+      ${ev?'<button class="mini jr-ae-del" id="ae-del">Delete</button>':''}
       <button class="mini" id="ae-cancel">Cancel</button>
       <button class="act" id="ae-save">${ev?'Save':'Add event'}</button>
     </div>`;
@@ -1842,6 +1800,9 @@ async function openAddEvent(prefillDate, id, focus){
   const syncEnd=()=>{ const a=q('#ae-date').value, b=q('#ae-end-date'); b.min=a; if(b.value && a && b.value<a) b.value=''; };
   q('#ae-date').addEventListener('change', syncEnd); syncEnd();
   q('#ae-cancel').onclick=()=>dismiss(ov);
+  if(ev) q('#ae-del').onclick=()=>{ dismiss(ov); deleteEventRow(ev.id); };   // asks to confirm first
+  // Enter in any field saves, like pressing the button
+  card.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); q('#ae-save').click(); } });
   q('#ae-save').onclick=async()=>{
     const title=q('#ae-title').value.trim(), event_date=q('#ae-date').value;
     let end_date=q('#ae-end-date').value||null;
@@ -2117,6 +2078,7 @@ function renderDay(enter, dir){
             <button type="button" class="jr-dc-loc${e.location?'':' empty'}" onclick="editEventWhen(${e.id},'#ae-loc')" title="${e.location?'Change place':'Add a place'}">${JR_PIN}<span>${e.location?esc(e.location):'Add place'}</span></button>
           </div>
           <div class="jr-dc-acts">
+            <button class="edit" onclick="openAddEvent(null,${e.id})" title="Edit" aria-label="Edit ${esc(e.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></button>
             <button class="ok${e.done?' on':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}" aria-label="${e.done?'Mark not done':'Mark done'}">✓</button>
             <button class="del" onclick="deleteEventRow(${e.id})" title="Delete" aria-label="Delete">✕</button>
           </div>
