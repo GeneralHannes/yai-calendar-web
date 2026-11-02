@@ -1413,6 +1413,8 @@ function jrSetSession(token, user){
   TOKEN=token||''; JR_USER=user||null;
   try{ token?localStorage.setItem('sk_token',token):localStorage.removeItem('sk_token');
        user?localStorage.setItem('yai_user',JSON.stringify(user)):localStorage.removeItem('yai_user'); }catch(_){}
+  // sign in once per device: sessions don't expire, and this asks the browser never to clear the app's storage
+  if(token) try{ navigator.storage?.persist?.(); }catch(_){}
   jrRenderMe();
 }
 function jrRenderMe(){
