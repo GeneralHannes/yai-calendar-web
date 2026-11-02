@@ -33,7 +33,7 @@
       if (!title) return fail(400, "title is required");
       if (!DATE_RE.test(event_date)) return fail(400, "event_date must be YYYY-MM-DD");
       if (event_time && !TIME_RE.test(event_time)) return fail(400, "event_time must be HH:MM");
-      const ev = { id: db.next++, event_date, event_time: secs(event_time), end_date: null, end_time: null,
+      const ev = { id: db.next++, event_date, event_time: secs(event_time), end_date: null, end_time: null, day_info: null,
         location: str(body.location) || null, title, notes: str(body.notes) || null,
         category: str(body.category) || null, done: false, created_at: now(), updated_at: now() };
       const why = setSpan(ev, body); if (why) return fail(400, why);
@@ -64,6 +64,27 @@
     if (ev.end_date && ev.end_date <= ev.event_date) { if (ev.end_date < ev.event_date) return "the end date is before the start"; ev.end_date = null; }
     if (ev.end_time && !ev.event_time) return "give a start time too";
     if (!ev.end_date && ev.end_time && ev.end_time <= ev.event_time) return "the end time is before the start";
+    // a multi-day event's own details for single days: as sent (checked), or what it had, kept where they still fit
+    const sent = "day_info" in body, out = {};
+    const d = sent ? body.day_info : ev.day_info;
+    if (ev.end_date && d && typeof d === "object" && !Array.isArray(d)) {
+      for (const [day, v] of Object.entries(d)) {
+        if (!DATE_RE.test(day) || day < ev.event_date || day > ev.end_date || !v || typeof v !== "object") continue;
+        const t = secs(str(v.event_time)) || null, t2 = secs(str(v.end_time)) || null;
+        let why = null;
+        if ((v.event_time && !TIME_RE.test(str(v.event_time))) || (v.end_time && !TIME_RE.test(str(v.end_time)))) why = "event_time must be HH:MM";
+        else if (t2 && !(t || ev.event_time)) why = "give a start time too";
+        else if (t2 && t2 <= (t || ev.event_time)) why = "the end time is before the start";
+        if (why) { if (sent) return why; continue; }
+        const one = {};
+        if (t) one.event_time = t;
+        if (t2) one.end_time = t2;
+        if (str(v.location)) one.location = str(v.location);
+        if (str(v.notes)) one.notes = str(v.notes);
+        if (Object.keys(one).length) out[day] = one;
+      }
+    }
+    ev.day_info = Object.keys(out).length ? out : null;
     return null;
   }
 

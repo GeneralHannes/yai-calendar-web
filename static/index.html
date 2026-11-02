@@ -686,7 +686,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-split { flex:1; min-height:0; display:flex; flex-direction:column; gap:.75rem; }
 
   /* top: the month */
-  .jr-top { flex:1 1 60%; min-height:15rem; display:flex; flex-direction:column; }
+  .jr-top { flex:1 1 0; min-height:15rem; display:flex; flex-direction:column; }   /* the month is the page: everything the day panel doesn't need */
   .jr-cal-head { display:flex; align-items:center; gap:.6rem; margin:0 0 .55rem; flex:none; }
   .jr-month { margin:0; flex:1; min-width:0; font:400 clamp(1.45rem,3.2vw,2.1rem)/1.1 var(--k-display); color:var(--ink);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -740,52 +740,38 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .keep-bar.jr-bar-bare { padding:env(safe-area-inset-top) 0 0; min-height:0; border-bottom:0; }
   /* sideways drags belong to the swipe; up/down and pinch stay with the browser */
   .jr-top, .jr-bottom { touch-action:pan-y pinch-zoom; }
-  /* bottom: the selected day */
-  .jr-bottom { container-type:inline-size; flex:1 1 40%; min-height:9rem; overflow:hidden; display:flex; flex-direction:column;
-    border-radius:18px; padding:clamp(.7rem,2vw,1.1rem);
+  /* bottom: the selected day, as small as it can be: one slim line for the date, then one line per event (title first),
+     side by side when there's room. It's only as tall as its events need (up to a cap, then its list scrolls). */
+  .jr-bottom { container-type:inline-size; flex:0 0 auto; max-height:min(36vh,18rem); min-height:0; overflow:hidden;
+    display:flex; flex-direction:column; border-radius:16px; padding:.45rem .55rem .5rem;
     background:var(--glass); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
     border:1px solid var(--glass-line); box-shadow:var(--glass-edge),var(--glass-lift); }
-  .jr-day-headrow { flex:none; display:flex; align-items:center; gap:.85rem; margin-bottom:.7rem; }
-  .jr-day-big { font:400 clamp(2.4rem,5vw,3.3rem)/1 var(--k-display); color:var(--gold); min-width:2.2ch; text-align:center; }
-  .jr-day-meta { flex:1; min-width:0; }
-  .jr-day-wd { font-size:1.12rem; font-weight:700; }
+  .jr-day-headrow { flex:none; display:flex; align-items:center; gap:.5rem; margin-bottom:.35rem; min-height:1.9rem; }
+  .jr-day-big { font:400 1.65rem/1 var(--k-display); color:var(--gold); min-width:1.5ch; text-align:center; }
+  .jr-day-meta { flex:1; min-width:0; display:flex; align-items:baseline; column-gap:.5rem; overflow:hidden; white-space:nowrap; }
+  .jr-day-wd { font-size:.98rem; font-weight:700; }
   .jr-day-wd .rel { color:var(--accent); font-weight:600; }
-  .jr-day-my { color:var(--muted); font-size:.9rem; }
-  .jr-day-sum { flex:none; font-size:.8rem; color:var(--muted); text-align:right; }
-  .jr-day-sum b { display:block; font-size:1.3rem; color:var(--ink); line-height:1.1; }
-  /* the day's events side by side as upright cards that share the panel: no scrolling, every one in view.
-     Too many for one row and they wrap into a second, and the rows split the height. */
-  .jr-day-list { flex:1; min-height:0; display:grid; gap:.55rem; --card:8.5rem;
-    grid-template-columns:repeat(var(--cols,1),minmax(0,18rem)); grid-auto-rows:minmax(0,1fr); }
-  .jr-dcard { min-width:0; min-height:0; overflow:hidden;
-    display:flex; flex-direction:column; gap:.3rem;
-    padding:.7rem .75rem .6rem; border-radius:14px; background:color-mix(in srgb,var(--k-bg3) 55%,transparent);
-    border:1px solid var(--glass-line); border-top:4px solid var(--accent); }
-  .jr-dcard.done { border-top-color:var(--muted); opacity:.7; }
-  .jr-dc-time { flex:none; font-variant-numeric:tabular-nums; font-weight:700; font-size:1.15rem; line-height:1.1; cursor:pointer; }
-  .jr-dc-time.allday { font-size:.74rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; padding:.2rem 0 .1rem; }
-  .jr-dc-body { flex:1; min-height:0; display:flex; flex-direction:column; gap:.3rem; overflow:hidden; }
-  .jr-dc-title { flex:none; font-size:1.02rem; font-weight:700; line-height:1.25; cursor:pointer; overflow-wrap:anywhere;
-    display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
+  .jr-day-my { color:var(--muted); font-size:.82rem; overflow:hidden; text-overflow:ellipsis; }
+  .jr-day-sum { flex:none; font-size:.76rem; color:var(--muted); white-space:nowrap; }
+  .jr-day-sum b { font-size:.9rem; color:var(--ink); margin-right:.2em; }
+  .jr-day-list { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; scrollbar-width:thin;
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,22rem),1fr)); gap:.3rem .45rem; align-content:start; }
+  /* one event: time · title · ✎ ✓ ✕ on a line, and (only if it has any) a small second line of details */
+  .jr-dcard { min-width:0; display:flex; flex-wrap:wrap; align-items:center; column-gap:.45rem; row-gap:0;
+    padding:.22rem .25rem .22rem .55rem; border-radius:10px; background:color-mix(in srgb,var(--k-bg3) 55%,transparent);
+    border:1px solid var(--glass-line); border-left:4px solid var(--accent); }
+  .jr-dcard.done { border-left-color:var(--muted); opacity:.7; }
+  .jr-dc-time { flex:none; font-variant-numeric:tabular-nums; font-weight:700; font-size:.8rem; white-space:nowrap; cursor:pointer;
+    color:color-mix(in srgb,var(--accent) 75%,var(--ink)); }
+  .jr-dc-time.allday { font-size:.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .jr-dc-title { flex:1 1 5rem; min-width:0; font-size:.98rem; font-weight:700; line-height:1.3; cursor:pointer;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .jr-dcard.done .jr-dc-title { text-decoration:line-through; color:var(--muted); }
-  .jr-dc-tags { flex:none; display:flex; gap:.35rem; flex-wrap:wrap; }
-  .jr-dc-tags .chip-lbl { font-size:.74rem; cursor:pointer; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  /* notes take whatever height is left and fade out where they don't fit; a tap opens them in full */
-  .jr-dc-notes { flex:1; min-height:0; font-size:.86rem; line-height:1.35; color:var(--muted); cursor:pointer;
-    white-space:pre-wrap; overflow-wrap:anywhere; overflow:hidden;
-    -webkit-mask-image:linear-gradient(#000 calc(100% - 1.2rem),transparent); mask-image:linear-gradient(#000 calc(100% - 1.2rem),transparent); }
-  .jr-dc-title:hover, .jr-dc-time:hover, .jr-dc-notes:hover, .jr-dc-tags .chip-lbl:hover { color:var(--accent); }
-  .jr-dc-top { flex:none; display:flex; align-items:flex-start; justify-content:space-between; gap:.3rem; }
-  .jr-dc-top .jr-dc-time { min-width:0; }
-  /* time and place side by side ("9:30–11:00  ⌖ Office"), wrapping under each other when the card is narrow */
-  .jr-dc-when { display:flex; flex-wrap:wrap; align-items:baseline; column-gap:.55rem; row-gap:.15rem; min-width:0; }
-  .jr-dc-loc { all:unset; display:inline-flex; align-items:center; gap:.2rem; min-width:0; max-width:100%; cursor:pointer;
-    font-size:.8rem; font-weight:600; color:var(--muted); }
-  .jr-dc-loc svg { width:.9em; height:.9em; flex:none; }
-  .jr-dc-loc span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .jr-dc-loc.empty { opacity:.55; font-weight:500; }
-  .jr-dc-loc:hover, .jr-dc-span:hover { color:var(--accent); }
-  .jr-dc-loc:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  .jr-dc-sub { order:5; flex:1 0 100%; min-width:0; margin-top:-.1rem; font-size:.74rem; line-height:1.3; color:var(--muted); cursor:pointer;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .jr-dc-sub b { color:var(--accent); }
+  .jr-dc-sub svg { width:.9em; height:.9em; vertical-align:-.12em; margin-right:.1em; }
+  .jr-dc-title:hover, .jr-dc-time:hover, .jr-dc-sub:hover { color:var(--accent); }
   .jr-ag-where { display:flex; flex-wrap:wrap; gap:.15rem .6rem; font-size:.75rem; color:var(--muted); }
   .jr-ag-where b { color:var(--accent); cursor:pointer; }
   .jr-ag-where span { display:inline-flex; align-items:center; gap:.2rem; cursor:pointer; }
@@ -797,6 +783,16 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-ae-row3 { grid-template-columns:1fr 1fr 1.35fr; }
   @media (max-width:420px) { .jr-ae-row3 { grid-template-columns:1fr 1fr; } .jr-ae-row3 .jr-ae-loc { grid-column:1 / -1; } }
   .jr-ae-row .field input { min-width:0; width:100%; }
+  /* a multi-day event's day tabs: Whole event, then one per day (a dot: that day has its own details) */
+  .jr-ae-tabs { display:flex; gap:.3rem; overflow-x:auto; margin:-.1rem 0 .7rem; padding:.1rem 0 .25rem; scrollbar-width:none; touch-action:pan-x; }
+  .jr-ae-tabs[hidden], #ae-daybox[hidden], #ae-all[hidden] { display:none; }
+  .jr-ae-tab { flex:none; position:relative; border:1px solid var(--glass-line); border-radius:999px; padding:.32rem .72rem; cursor:pointer;
+    font:600 .8rem var(--k-font); color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 45%,transparent); }
+  .jr-ae-tab.on { color:var(--k-on-act); background:var(--accent); border-color:transparent; }
+  .jr-ae-tab.has::after { content:""; position:absolute; top:3px; right:4px; width:6px; height:6px; border-radius:50%; background:var(--gold); }
+  .jr-ae-hint { margin:0 0 .65rem; font-size:.82rem; line-height:1.4; color:var(--muted); }
+  .jr-ae-hint b { color:var(--ink); }
+  #ad-reset { margin-top:.1rem; }
   .jr-dc-acts { flex:none; display:flex; gap:.25rem; margin:-.2rem -.25rem 0 0; }
   .jr-dc-acts button { width:2rem; height:2rem; border-radius:999px; border:1px solid var(--glass-line); cursor:pointer;
     background:color-mix(in srgb,var(--k-bg3) 50%,transparent); color:var(--muted); font-size:1rem;
@@ -813,44 +809,35 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-bottom.enter .jr-day-headrow, .jr-bottom.enter .jr-day-empty { animation:kRise var(--k-t) var(--k-smooth) both; }
   /* cards deal in one after another, left to right, each rising into place; the accent edge draws across */
   @keyframes jrCardIn { from { opacity:0; transform:translateY(22px) scale(.92); } 60% { opacity:1; } }
-  @keyframes jrEdgeIn { from { border-top-color:transparent; } }
+  @keyframes jrEdgeIn { from { border-left-color:transparent; } }
   .jr-bottom.enter .jr-dcard { animation:jrCardIn .5s var(--k-bouncy) both, jrEdgeIn .6s ease-out both; }
   .jr-bottom.enter .jr-dcard:nth-child(2) { animation-delay:60ms; } .jr-bottom.enter .jr-dcard:nth-child(3) { animation-delay:120ms; }
   .jr-bottom.enter .jr-dcard:nth-child(4) { animation-delay:180ms; } .jr-bottom.enter .jr-dcard:nth-child(5) { animation-delay:240ms; }
   .jr-bottom.enter .jr-dcard:nth-child(n+6) { animation-delay:300ms; }
   .jr-bottom.enter .jr-dcard > * { animation:kFadeIn .4s ease both; animation-delay:inherit; }
   .jr-dcard:active { transform:scale(.97); transition-duration:var(--k-t-press); }
-  /* the cards follow the panel's own width (narrow on a phone, or beside the month in landscape) */
+  .jr-dc-acts { flex:none; gap:.15rem; margin:0; }
+  .jr-dc-acts button { width:1.75rem; height:1.75rem; font-size:.8rem; }
+  .jr-day-empty { padding:.1rem .1rem .15rem; font-size:.9rem; }
+  .jr-day-empty span { display:inline; margin:0 0 0 .4rem; font-size:.8rem; }
+  /* a narrow panel (a phone): the month/year goes, the swap button and the counter stay */
   @container (max-width:460px) {
-    .jr-day-list { gap:.4rem; --card:5.4rem; }
-    .jr-dcard { padding:.55rem .5rem .45rem; gap:.25rem; border-radius:12px; }
-    .jr-dc-time { font-size:1rem; }
-    .jr-dc-time.allday { font-size:.64rem; letter-spacing:.03em; }
-    .jr-dc-title { font-size:.9rem; }
-    .jr-dc-notes { font-size:.78rem; }
-    .jr-dc-tags .chip-lbl { font-size:.66rem; }
-    .jr-dc-acts { gap:.15rem; margin:-.25rem -.2rem 0 0; }
-    .jr-dc-acts button { width:1.6rem; height:1.6rem; font-size:.75rem; }
-    .jr-dc-title { -webkit-line-clamp:2; }
-    .jr-day-sum { display:none; }
-    .jr-day-headrow { gap:.6rem; margin-bottom:.5rem; }
-    .jr-day-big { font-size:2.2rem; }
-    .jr-day-wd { font-size:1rem; }
-    .jr-day-my { font-size:.82rem; }
+    .jr-day-my { display:none; }
+    .jr-day-big { font-size:1.5rem; }
+    .jr-dc-title { font-size:.94rem; }
+    .jr-day-empty span { display:none; }
   }
 
-  @media (max-height:640px) { .jr-top { min-height:12rem; } .jr-bottom { min-height:7rem; } }
-  @media (min-width:761px) { .jr-top { flex-basis:66%; } .jr-bottom { flex-basis:34%; } }
-  @media (max-width:760px) and (orientation:portrait) { .jr-top { flex-basis:55%; } .jr-bottom { flex-basis:45%; } }
+  @media (max-height:640px) { .jr-top { min-height:12rem; } .jr-bottom { max-height:34vh; } }
   /* a phone on its side: too short to stack, so the day sits beside the month */
   @media (max-height:520px) and (orientation:landscape) {
     /* month on the left at full height; the day and the month bar stacked on the right */
     #jr-calendar { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); grid-template-rows:minmax(0,1fr) auto; gap:.5rem .75rem; }
     .jr-split { display:contents; }
     .jr-top { grid-column:1; grid-row:1 / 3; min-height:0; }
-    .jr-bottom { grid-column:2; grid-row:1; min-height:0; }
+    .jr-bottom { grid-column:2; grid-row:1; min-height:0; max-height:none; }
     .jr-monthnav { grid-column:2; grid-row:2; justify-self:center; }
-    .jr-day-big { font-size:2.2rem; }
+    .jr-day-big { font-size:1.5rem; }
     .jr-month { font-size:1.35rem; }
     .jr-cal-head { margin-bottom:.3rem; }
     .jr-cal-dow { margin-bottom:.2rem; font-size:.66rem; }
@@ -893,8 +880,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   /* ---- motion: the day panel ---- */
   @keyframes jrNumIn { from { opacity:0; transform:translateY(14px) scale(.85); } }
   .jr-bottom.enter .jr-day-big { animation:jrNumIn .5s var(--k-bouncy) both; }
-  .jr-dcard { transition:transform .25s var(--k-smooth), background-color .2s ease, opacity .3s ease, border-top-color .3s ease; }
-  @media (hover:hover) and (pointer:fine) { .jr-dcard:hover { transform:translateY(-3px); background:color-mix(in srgb,var(--k-bg3) 75%,transparent); } }
+  .jr-dcard { transition:transform .25s var(--k-smooth), background-color .2s ease, opacity .3s ease, border-left-color .3s ease; }
+  @media (hover:hover) and (pointer:fine) { .jr-dcard:hover { transform:translateX(2px); background:color-mix(in srgb,var(--k-bg3) 75%,transparent); } }
   @keyframes jrTick { 0% { transform:scale(.6); } 60% { transform:scale(1.18); } 100% { transform:none; } }
   .jr-dc-acts .ok.tick { animation:jrTick .4s var(--k-smooth); }
   @keyframes jrFlash { 0% { box-shadow:0 0 0 0 color-mix(in srgb,var(--k-act) 0%,transparent); }
@@ -947,7 +934,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   body.jr-frozen .jr-dc-acts, body.jr-frozen .jr-dc-tags .chip-lbl, body.jr-frozen .jr-cell.jr-check,
   body.jr-frozen .jr-cell.jr-del { opacity:.4; pointer-events:none; }
   body.jr-frozen .jr-dc-title, body.jr-frozen .jr-dc-time, body.jr-frozen .jr-dc-notes { pointer-events:none; }
-  body.jr-frozen .jr-dcard { border-top-style:dashed; }
+  body.jr-frozen .jr-dcard { border-left-style:dashed; }
 
   /* ================= seamless month: one panel, shared hairlines, titles that run on =================
      The days are joined into one grid instead of separate boxes. A title longer than its day runs on to
@@ -1629,6 +1616,14 @@ function jrDateRange(e){
 }
 const jrDays=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);
 function jrAddDays(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return jrISO(d); }
+// A multi-day event's details on one day: that day's own, else the event's (a field left out is the event's)
+function jrDay(e, iso){
+  const o=e.day_info?.[iso]||{}, t=o.event_time||e.event_time||null; let t2=o.end_time||e.end_time||null;
+  if(t2 && (!t || t2<=t)) t2=null;                                  // an end that no longer follows its start is dropped
+  return {event_time:t, end_time:t2, location:o.location||e.location||null, notes:o.notes||e.notes||null};
+}
+// the same details moved n days (the whole event dragged, or its dates shifted in the form)
+function jrShiftDays(di, n){ const o={}; for(const k in di||{}) o[jrAddDays(k,n)]=di[k]; return o; }
 const JR_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
 
 // The month and the day are drawn straight away; the events fill in when they arrive, so a slow or
@@ -1782,25 +1777,44 @@ async function deleteEventRow(id){
 
 // Add an event, or (with an id) change one: the same form, with from–to dates, from–to times and a place.
 // "To" is optional in both: no end date is a one-day event, no end time is a moment.
-async function openAddEvent(prefillDate, id, focus){
+// A multi-day event also gets a tab for each of its days: a day's own times, place and notes (empty = the event's).
+// Opened from a day of the calendar it starts on that day's tab, unless the title, dates or category were tapped.
+async function openAddEvent(prefillDate, id, focus, day){
   if(JR_FROZEN){ toast('Server offline — changes are paused'); return; }
   const ev=id?jrEvent(id):null; if(id && !ev) return;
+  const PERDAY={'#ae-time':'#ad-time','#ae-end-time':'#ad-end-time','#ae-loc':'#ad-loc','#ae-notes':'#ad-notes'};
+  if(day===undefined) day = ev && jrMulti(ev) && JR_VIEW==='calendar' && JR_SEL && jrCovers(ev,JR_SEL) && (!focus || PERDAY[focus]) ? JR_SEL : null;
+  const days=JSON.parse(JSON.stringify(ev?.day_info||{}));
+  let cur=day||'all';
   const ov=document.createElement('div'); ov.className='modal-ov';
   const card=document.createElement('div'); card.className='modal-card jr-ae'; card.style.cssText='max-width:26rem;width:100%';
   const v=(x)=>esc(x||''), t5=t=>t?t.slice(0,5):'';
   card.innerHTML=`<h2>${ev?'Edit event':'＋ Add event'}</h2>
-    <label class="field"><span>Title</span><input id="ae-title" autocomplete="off" value="${v(ev?.title)}"></label>
-    <div class="jr-ae-row">
-      <label class="field"><span>Date</span><input id="ae-date" type="date" value="${ev?.event_date||prefillDate||jrToday()}"></label>
-      <label class="field"><span>To <span class="muted">(optional)</span></span><input id="ae-end-date" type="date" value="${ev&&jrMulti(ev)?ev.end_date:''}"></label>
+    <div class="jr-ae-tabs" id="ae-tabs" hidden></div>
+    <div id="ae-all">
+      <label class="field"><span>Title</span><input id="ae-title" autocomplete="off" value="${v(ev?.title)}"></label>
+      <div class="jr-ae-row">
+        <label class="field"><span>Date</span><input id="ae-date" type="date" value="${ev?.event_date||prefillDate||jrToday()}"></label>
+        <label class="field"><span>To <span class="muted">(optional)</span></span><input id="ae-end-date" type="date" value="${ev&&jrMulti(ev)?ev.end_date:''}"></label>
+      </div>
+      <div class="jr-ae-row jr-ae-row3">
+        <label class="field"><span>From <span class="muted">(time)</span></span><input id="ae-time" type="time" value="${t5(ev?.event_time)}"></label>
+        <label class="field"><span>To</span><input id="ae-end-time" type="time" value="${t5(ev?.end_time)}"></label>
+        <label class="field jr-ae-loc"><span>Location <span class="muted">(optional)</span></span><input id="ae-loc" autocomplete="off" placeholder="Where" value="${v(ev?.location)}"></label>
+      </div>
+      <label class="field"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" autocomplete="off" value="${v(ev?.category)}"></label>
+      <label class="field"><span>Notes <span class="muted">(optional)</span></span><input id="ae-notes" autocomplete="off" value="${v(ev?.notes)}"></label>
     </div>
-    <div class="jr-ae-row jr-ae-row3">
-      <label class="field"><span>From <span class="muted">(time)</span></span><input id="ae-time" type="time" value="${t5(ev?.event_time)}"></label>
-      <label class="field"><span>To</span><input id="ae-end-time" type="time" value="${t5(ev?.end_time)}"></label>
-      <label class="field jr-ae-loc"><span>Location <span class="muted">(optional)</span></span><input id="ae-loc" autocomplete="off" placeholder="Where" value="${v(ev?.location)}"></label>
+    <div id="ae-daybox" hidden>
+      <p class="jr-ae-hint" id="ae-hint"></p>
+      <div class="jr-ae-row">
+        <label class="field"><span>From <span class="muted">(time)</span></span><input id="ad-time" type="time"></label>
+        <label class="field"><span>To</span><input id="ad-end-time" type="time"></label>
+      </div>
+      <label class="field"><span>Location</span><input id="ad-loc" autocomplete="off" placeholder="Where"></label>
+      <label class="field"><span>Notes</span><input id="ad-notes" autocomplete="off"></label>
+      <button type="button" class="mini" id="ad-reset">Use the whole event’s details for this day</button>
     </div>
-    <label class="field"><span>Category <span class="muted">(optional)</span></span><input id="ae-cat" autocomplete="off" value="${v(ev?.category)}"></label>
-    <label class="field" style="margin-bottom:.85rem"><span>Notes <span class="muted">(optional)</span></span><input id="ae-notes" autocomplete="off" value="${v(ev?.notes)}"></label>
     <div class="item-edit-actions">
       ${ev?'<button class="mini jr-ae-del" id="ae-del">Delete</button>':''}
       <button class="mini" id="ae-cancel">Cancel</button>
@@ -1809,14 +1823,48 @@ async function openAddEvent(prefillDate, id, focus){
   ov.appendChild(card); document.body.appendChild(ov);
   ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
   const q=s=>card.querySelector(s);
+  const lbl=iso=>{ const d=new Date(iso+'T00:00:00'); return DAY_NAMES[d.getDay()].slice(0,3)+' '+d.getDate(); };
+  const longLbl=iso=>{ const d=new Date(iso+'T00:00:00'); return `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`; };
+  // the days of the event as the dates stand now (a span of one day or under has no day tabs)
+  const spanList=()=>{ const a=q('#ae-date').value, b=q('#ae-end-date').value;
+    if(!a||!b||b<=a||jrDays(a,b)>60) return []; return Array.from({length:jrDays(a,b)+1},(_,i)=>jrAddDays(a,i)); };
+  // the open day tab's fields go into `days` (an empty day is no entry)
+  function stash(){
+    if(cur==='all') return;
+    const one={}, t=q('#ad-time').value, t2=q('#ad-end-time').value, l=q('#ad-loc').value.trim(), n=q('#ad-notes').value.trim();
+    if(t) one.event_time=t; if(t2) one.end_time=t2; if(l) one.location=l; if(n) one.notes=n;
+    if(Object.keys(one).length) days[cur]=one; else delete days[cur];
+  }
+  function showPanel(){
+    const dm=cur!=='all', list=spanList();
+    q('#ae-all').hidden=dm; q('#ae-daybox').hidden=!dm;
+    q('h2').textContent=dm?longLbl(cur):(ev?'Edit event':'＋ Add event');
+    if(!dm) return;
+    const o=days[cur]||{};
+    q('#ad-time').value=t5(o.event_time); q('#ad-end-time').value=t5(o.end_time); q('#ad-loc').value=o.location||''; q('#ad-notes').value=o.notes||'';
+    const base=[jrTimeRange({event_time:q('#ae-time').value||null,end_time:q('#ae-end-time').value||null}), q('#ae-loc').value.trim()].filter(Boolean).join(' · ');
+    q('#ae-hint').innerHTML=`Day ${Math.max(1,list.indexOf(cur)+1)} of ${list.length}, only for this day. Leave a field empty to use the whole event’s${base?` (<b>${esc(base)}</b>)`:''}.`;
+  }
+  function drawTabs(){
+    const list=spanList(), tabs=q('#ae-tabs');
+    tabs.hidden=list.length<2;
+    if(list.length<2 || (cur!=='all' && !list.includes(cur))){ if(cur!=='all'){ cur='all'; showPanel(); } }
+    tabs.innerHTML=`<button type="button" class="jr-ae-tab${cur==='all'?' on':''}" data-d="all">Whole event</button>`
+      +list.map(iso=>`<button type="button" class="jr-ae-tab${cur===iso?' on':''}${days[iso]?' has':''}" data-d="${iso}">${lbl(iso)}</button>`).join('');
+  }
+  q('#ae-tabs').onclick=e=>{ const b=e.target.closest('.jr-ae-tab'); if(!b) return; stash(); cur=b.dataset.d; showPanel(); drawTabs(); };
+  q('#ad-reset').onclick=()=>{ delete days[cur]; showPanel(); drawTabs(); };
   // the end date can't be before the start: its picker starts there, and a start moved past it takes it along
   const syncEnd=()=>{ const a=q('#ae-date').value, b=q('#ae-end-date'); b.min=a; if(b.value && a && b.value<a) b.value=''; };
-  q('#ae-date').addEventListener('change', syncEnd); syncEnd();
+  q('#ae-date').addEventListener('change', ()=>{ stash(); syncEnd(); drawTabs(); });
+  q('#ae-end-date').addEventListener('change', ()=>{ stash(); drawTabs(); });
+  syncEnd(); if(cur!=='all' && !spanList().includes(cur)) cur='all'; showPanel(); drawTabs();
   q('#ae-cancel').onclick=()=>dismiss(ov);
   if(ev) q('#ae-del').onclick=()=>{ dismiss(ov); deleteEventRow(ev.id); };   // asks to confirm first
   // Enter in any field saves, like pressing the button
   card.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); q('#ae-save').click(); } });
   q('#ae-save').onclick=async()=>{
+    stash();
     const title=q('#ae-title').value.trim(), event_date=q('#ae-date').value;
     let end_date=q('#ae-end-date').value||null;
     const event_time=q('#ae-time').value||null, end_time=q('#ae-end-time').value||null;
@@ -1826,17 +1874,21 @@ async function openAddEvent(prefillDate, id, focus){
     if(end_date===event_date) end_date=null;
     if(end_time && !event_time){ toast('Give a start time too'); return; }
     if(end_time && !end_date && end_time<=event_time){ toast('The end time is before the start'); return; }
-    const body={event_date, end_date, event_time, end_time, title,
+    // the days' own details: gone when it's one day; moved along when the whole span was moved
+    let di=end_date?days:{};
+    if(end_date && ev && jrMulti(ev) && event_date!==ev.event_date && jrDays(event_date,end_date)===jrDays(ev.event_date,ev.end_date))
+      di=jrShiftDays(days, jrDays(ev.event_date,event_date));
+    const body={event_date, end_date, event_time, end_time, title, day_info:Object.keys(di).length?di:null,
       location:q('#ae-loc').value.trim()||null, category:q('#ae-cat').value.trim()||null, notes:q('#ae-notes').value.trim()||null};
     try{
       const saved=await api('/api/journal/events'+(ev?'/'+ev.id:''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       const i=JOURNAL_EVENTS.findIndex(x=>x.id===saved.id); if(i>=0) JOURNAL_EVENTS[i]=saved; else JOURNAL_EVENTS.push(saved);
       dismiss(ov); toast(ev?'Saved':'Event added');
-      if(JR_VIEW==='calendar'){ calSelect(saved.event_date); if(!K_REDUCED.matches) document.querySelector(`.jr-dcard[data-id="${saved.id}"]`)?.classList.add('flash'); }
+      if(JR_VIEW==='calendar'){ calSelect(cur!=='all'?cur:saved.event_date); if(!K_REDUCED.matches) document.querySelector(`.jr-dcard[data-id="${saved.id}"]`)?.classList.add('flash'); }
       else renderAgenda();
     }catch(e){ toast('Error: '+e.message); }
   };
-  setTimeout(()=>{ try{ q(focus||'#ae-title').focus(); }catch(_){} }, 30);
+  setTimeout(()=>{ try{ q(cur!=='all'?(PERDAY[focus]||'#ad-time'):(focus||'#ae-title')).focus(); }catch(_){} }, 30);
 }
 // tapping an event's time, dates or place opens the form at that field
 const editEventWhen=(id, field)=>openAddEvent(null, id, field);
@@ -2060,19 +2112,7 @@ function jrFitCells(){
   let raf=0; const fit=()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; jrFitCells(); }); };
   if(window.ResizeObserver) new ResizeObserver(fit).observe(document.getElementById('jr-cal-grid'));
   if(document.fonts) document.fonts.ready.then(fit);
-  if(window.ResizeObserver) new ResizeObserver(()=>jrFitCards()).observe(document.getElementById('jr-day'));
 })();
-// The day's cards go in one row if they fit at their narrowest (--card), else as few rows as it takes, all in view.
-function jrFitCards(){
-  const list=document.querySelector('#jr-day .jr-day-list'); if(!list) return;
-  const n=list.children.length, cs=getComputedStyle(list);
-  const min=parseFloat(cs.getPropertyValue('--card'))*parseFloat(getComputedStyle(document.documentElement).fontSize)||136;
-  const gap=parseFloat(cs.columnGap)||8, perRow=Math.max(1,Math.floor((list.clientWidth+gap)/(min+gap)));
-  const cols=Math.min(n,perRow);
-  // spread them evenly over the rows they need (5 cards at 3 a row → 3 + 2, not a lone card)
-  list.style.setProperty('--cols', String(Math.ceil(n/Math.ceil(n/cols))));
-}
-
 // The bottom panel: the selected day only, in full. Every field edits in place through the same
 // editEvent*/toggleEventDone/deleteEventRow the Agenda uses, so there is one edit path.
 function renderDay(enter, dir){
@@ -2083,35 +2123,29 @@ function renderDay(enter, dir){
   const relHtml=jrDayLabel(iso), rel=relHtml.includes('class="rel"')?` <span class="rel">· ${relHtml.replace(/<[^>]+>/g,'')}</span>`:'';
   box.innerHTML=`<div class="jr-day-headrow">
       <div class="jr-day-big">${d.getDate()}</div>
-      <div class="jr-day-meta"><div class="jr-day-wd">${DAY_NAMES[d.getDay()]}${rel}</div>
-        <div class="jr-day-my">${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}</div></div>
+      <div class="jr-day-meta"><span class="jr-day-wd">${DAY_NAMES[d.getDay()]}${rel}</span>
+        <span class="jr-day-my">${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}</span></div>
       <div class="jr-day-sum">${evs.length?`<b>${evs.length}</b>event${evs.length>1?'s':''}${done?` · ${done} done`:''}`:''}</div>
       <button type="button" class="jr-swap" onclick="jrSwapPanels()" title="Swap the month and this day" aria-label="Swap the month and this day">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></svg></button>
     </div>
-    ${evs.length?`<div class="jr-day-list">${evs.map(e=>`
-      <article class="jr-dcard k-shine${e.done?' done':''}" data-id="${e.id}">
-        <div class="jr-dc-top">
-          <div class="jr-dc-when">
-            <div class="jr-dc-time${e.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="Change time">${jrTimeRange(e)||'All day'}</div>
-            <button type="button" class="jr-dc-loc${e.location?'':' empty'}" onclick="editEventWhen(${e.id},'#ae-loc')" title="${e.location?'Change place':'Add a place'}">${JR_PIN}<span>${e.location?esc(e.location):'Add place'}</span></button>
-          </div>
-          <div class="jr-dc-acts">
-            <button class="edit" onclick="openAddEvent(null,${e.id})" title="Edit" aria-label="Edit ${esc(e.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></button>
-            <button class="ok${e.done?' on':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}" aria-label="${e.done?'Mark not done':'Mark done'}">✓</button>
-            <button class="del" onclick="deleteEventRow(${e.id})" title="Delete" aria-label="Delete">✕</button>
-          </div>
-        </div>
-        <div class="jr-dc-body">
-          <div class="jr-dc-title" onclick="editEventTitle(${e.id})" title="Rename">${esc(e.title)}</div>
-          ${jrMulti(e)?`<div class="jr-dc-span" onclick="editEventWhen(${e.id},'#ae-end-date')" title="Change dates">${jrDateRange(e)} · day ${jrDays(e.event_date,iso)+1} of ${jrDays(e.event_date,jrEnd(e))+1}</div>`:''}
-          <div class="jr-dc-tags"><span class="chip-lbl" onclick="editEventCategory(${e.id})">${e.category?esc(e.category):'+ category'}</span></div>
-          <div class="jr-dc-notes" onclick="editEventNotes(${e.id})">${e.notes?esc(e.notes):'+ add notes'}</div>
-          ${e.created_by?`<div class="jr-dc-by">Added by ${esc(e.created_by)}</div>`:''}
-        </div>
-      </article>`).join('')}</div>`
-    :`<div class="jr-day-empty">Nothing planned for this day.<span>Use “Add event” to put something on it.</span></div>`}`;
-  jrFitCards();
+    ${evs.length?`<div class="jr-day-list">${evs.map(e=>{
+      // a multi-day event shows this day's own details (or the event's where the day has none)
+      const x=jrMulti(e)?jrDay(e,iso):e;
+      const sub=[jrMulti(e)?`<b>day ${jrDays(e.event_date,iso)+1} of ${jrDays(e.event_date,jrEnd(e))+1}</b>`:'',
+        x.location?`${JR_PIN}${esc(x.location)}`:'', e.category?esc(e.category):'',
+        x.notes?esc(x.notes.replace(/\s+/g,' ')):'', e.created_by?`by ${esc(e.created_by)}`:''].filter(Boolean).join(' · ');
+      return `<article class="jr-dcard k-shine${e.done?' done':''}" data-id="${e.id}">
+        <span class="jr-dc-time${x.event_time?'':' allday'}" onclick="editEventTime(${e.id})" title="Change time">${jrTimeRange(x,true)||'All day'}</span>
+        <span class="jr-dc-title" onclick="editEventTitle(${e.id})" title="${esc(e.title)}">${esc(e.title)}</span>
+        <span class="jr-dc-acts">
+          <button class="edit" onclick="openAddEvent(null,${e.id})" title="Edit" aria-label="Edit ${esc(e.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></button>
+          <button class="ok${e.done?' on':''}" onclick="toggleEventDone(${e.id})" title="${e.done?'Mark not done':'Mark done'}" aria-label="${e.done?'Mark not done':'Mark done'}">✓</button>
+          <button class="del" onclick="deleteEventRow(${e.id})" title="Delete" aria-label="Delete">✕</button>
+        </span>
+        ${sub?`<span class="jr-dc-sub" onclick="editEventWhen(${e.id},'#ae-loc')" title="Edit details">${sub}</span>`:''}
+      </article>`;}).join('')}</div>`
+    :`<div class="jr-day-empty">Nothing planned.<span>Double-tap a day or press + to add one.</span></div>`}`;
   if(enter && !K_REDUCED.matches){ box.classList.remove('enter'); void box.offsetWidth; box.classList.add('enter'); box.scrollTop=0;
     // a later day comes in from the right, an earlier one from the left
     const row=box.querySelector('.jr-day-list,.jr-day-empty');
@@ -2334,9 +2368,9 @@ jrBead(document.getElementById('jr-monthnav'));
       d.ghost.remove(); return;
     }
     d.ghost.remove();
-    const ev=d.ev, before=ev.event_date, beforeEnd=ev.end_date, shift=jrDays(d.from, to);
+    const ev=d.ev, before=ev.event_date, beforeEnd=ev.end_date, beforeDays=ev.day_info, shift=jrDays(d.from, to);
     const patch={event_date:jrAddDays(ev.event_date, shift)};
-    if(jrMulti(ev)) patch.end_date=jrAddDays(ev.end_date, shift);
+    if(jrMulti(ev)){ patch.end_date=jrAddDays(ev.end_date, shift); if(ev.day_info) patch.day_info=jrShiftDays(ev.day_info, shift); }
     Object.assign(ev, patch);                                      // move it now; the backend confirms behind it
     calSelect(to);
     requestAnimationFrame(()=>document.querySelector(`#jr-cal-grid .jr-ev[data-id="${ev.id}"]`)?.classList.add('landed'));
@@ -2346,7 +2380,7 @@ jrBead(document.getElementById('jr-monthnav'));
       const i=JOURNAL_EVENTS.findIndex(x=>x.id===ev.id); if(i>=0) JOURNAL_EVENTS[i]=upd;
       toast(jrMulti(upd)?`Moved to ${jrDateRange(upd)}`:`Moved to ${DAY_NAMES[d2.getDay()].slice(0,3)} ${d2.getDate()} ${MONTH_NAMES[d2.getMonth()].slice(0,3)}`);
     }catch(e){
-      ev.event_date=before; ev.end_date=beforeEnd; jrRender();
+      ev.event_date=before; ev.end_date=beforeEnd; ev.day_info=beforeDays; jrRender();
       if(!(e instanceof JrOffline)) toast('Could not move: '+e.message);
     }
   }
