@@ -41,6 +41,7 @@
     if (path === "/api/login" && method === "POST") return rpc(origin, "yai_login", { p_username: body.username ?? "", p_password: body.password ?? "" });
     if (path === "/api/logout") return rpc(origin, "yai_logout", { p_token: token });
     if (path === "/api/me") return rpc(origin, "yai_me", { p_token: token });
+    if (path === "/api/people") return rpc(origin, "yai_people", { p_token: token });
     if (path === "/api/journal/events" && method === "GET") return rpc(origin, "yai_events", { p_token: token });
     if (path === "/api/journal/events" && method === "POST") return rpc(origin, "yai_add", { p_token: token, p_event: body });
     if (path === "/api/journal/import" && method === "POST")

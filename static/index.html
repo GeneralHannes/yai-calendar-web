@@ -1352,6 +1352,43 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     html.ios-phone main { padding-bottom:max(.5rem, calc(var(--sab) * .5)); }
     html.ios-phone .jr-rail { padding-bottom:max(.6rem, calc(var(--sab) * .5)); }
   }
+  /* ================= the team: avatars and the attendee picker ================= */
+  .jr-av { position:relative; flex:none; display:inline-grid; place-items:center; width:1.55rem; height:1.55rem; border-radius:50%; overflow:hidden;
+    background:hsl(var(--h,210) 55% 82%); color:hsl(var(--h,210) 45% 24%); font-size:.6rem; font-weight:700; line-height:1;
+    box-shadow:0 0 0 1.5px var(--k-bg); vertical-align:middle; }
+  .jr-av b { font-weight:700; }
+  .jr-av img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .jr-av.more { background:var(--k-bg3); color:var(--muted); }
+  .jr-avs { display:inline-flex; align-items:center; }
+  .jr-avs .jr-av + .jr-av { margin-left:-.45rem; }
+  .jr-up-ppl { grid-column:2; margin-top:.2rem; }
+  .jr-up-ppl .jr-av { width:1.3rem; height:1.3rem; font-size:.52rem; }
+  .jr-dc-ppl { order:6; flex:1 0 100%; display:flex; flex-wrap:wrap; gap:.25rem .4rem; margin-top:.15rem; cursor:pointer; }
+  .jr-who { display:inline-flex; align-items:center; gap:.3rem; padding:.1rem .5rem .1rem .12rem; border-radius:999px; font-size:.74rem; font-weight:600;
+    color:var(--ink); background:color-mix(in srgb,var(--k-bg3) 70%,transparent); max-width:100%; }
+  .jr-who .jr-av { width:1.2rem; height:1.2rem; font-size:.5rem; }
+  .jr-pop-ppl { display:flex; flex-wrap:wrap; gap:.3rem; margin:.4rem 0 .1rem; }
+  .jr-pick { display:block; }
+  .jr-pick > span:first-child { display:block; }
+  .jr-pick-btn { all:unset; box-sizing:border-box; display:flex; align-items:center; width:100%; min-height:2.6rem; cursor:pointer; margin-top:.2rem;
+    padding:.35rem .75rem; border-radius:11px; background:var(--k-bg3); border:1px solid var(--glass-line); font-size:1rem; }
+  .jr-pick-btn:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  .jr-pick-sel { display:flex; align-items:center; gap:.55rem; min-width:0; }
+  .jr-pick-sel em { font-style:normal; color:var(--muted); font-size:.9rem; }
+  .jr-pick-box { margin-top:.4rem; border-radius:12px; border:1px solid var(--glass-line); background:color-mix(in srgb,var(--k-bg3) 45%,transparent); overflow:hidden; }
+  .jr-pick-box[hidden] { display:none; }
+  .jr-pick-box input { width:100%; border-radius:0; border:0; border-bottom:1px solid var(--glass-line); font-size:.95rem; }
+  .jr-pick-list { max-height:11.5rem; overflow:auto; overscroll-behavior:contain; }
+  .jr-pick-row { all:unset; box-sizing:border-box; display:flex; align-items:center; gap:.6rem; width:100%; padding:.4rem .7rem; cursor:pointer; }
+  .jr-pick-row:hover, .jr-pick-row:focus-visible { background:color-mix(in srgb,var(--accent) 10%,transparent); }
+  .jr-pick-row .jr-av { width:1.9rem; height:1.9rem; font-size:.7rem; }
+  .jr-pick-name { flex:1; min-width:0; font-size:.92rem; font-weight:600; line-height:1.25; }
+  .jr-pick-name small { display:block; font-size:.74rem; font-weight:400; color:var(--muted); }
+  .jr-pick-row i { font-style:normal; width:1.3rem; height:1.3rem; display:grid; place-items:center; border-radius:50%; font-size:.8rem;
+    border:1.5px solid var(--glass-line); color:transparent; }
+  .jr-pick-row.on i { background:var(--accent); border-color:var(--accent); color:var(--k-on-act); }
+  .jr-pick-none { padding:.8rem; text-align:center; color:var(--muted); font-size:.85rem; }
+
   /* ================= languages (script: tx, jrSetLang) =================
      The language switch, and what Chinese and Khmer need to look right: fonts that have their letters, no
      letter-spacing (it pulls Khmer signs away from their letters), and more line height where a line holds tall
@@ -1594,7 +1631,7 @@ en:{
   whyPushAndroid:'This phone couldn’t reach its push service. It needs Google Play services and internet (some Wi-Fi networks block it): try again on mobile data.',
   whyState:'Close the app completely, open it again, and try once more.', whyOther:v=>`Could not turn on reminders (${v.what}).`,
   newVersion:'New version — tap to reload',
-  addedBy:'Added by {name}', byName:'by {name}', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
+  addedBy:'Added by {name}', byName:'by {name}', lblPeople:'Attending', addPeople:'＋ Add people', findPeople:'Search the team', noPeopleFound:'No one found', nPicked:'{n} selected', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
   nothingPlanned:'Nothing planned.', tapAdd:'Tap “Add event” to put something on it.', noEvents:'No events yet.',
   dayEmpty:'Double-tap a day or press + to add one.',
   evWord:n=>n>1?'events':'event', nEvents:n=>`${n} event${n>1?'s':''}`, nDone:'{n} done',
@@ -1644,7 +1681,7 @@ zh:{
   whyPushAndroid:'此手机无法连接推送服务。需要 Google Play 服务和网络（有些 Wi-Fi 会屏蔽）：请改用移动数据重试。',
   whyState:'请完全关闭应用，重新打开后再试一次。', whyOther:v=>`无法开启提醒（${v.what}）。`,
   newVersion:'有新版本，点按刷新',
-  addedBy:'添加者：{name}', byName:'添加者：{name}', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
+  addedBy:'添加者：{name}', byName:'添加者：{name}', lblPeople:'参加人员', addPeople:'＋ 添加人员', findPeople:'搜索团队', noPeopleFound:'没有找到', nPicked:'已选 {n} 人', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
   nothingPlanned:'暂时没有安排。', tapAdd:'点按“添加活动”来添加。', noEvents:'还没有活动。',
   dayEmpty:'双击某一天，或点按 + 来添加。',
   evWord:()=>'个活动', nEvents:n=>`${n} 个活动`, nDone:'已完成 {n}',
@@ -1694,7 +1731,7 @@ km:{
   whyPushAndroid:'ទូរស័ព្ទនេះមិនអាចភ្ជាប់ទៅសេវាជូនដំណឹងបានទេ។ វាត្រូវការ Google Play services និងអ៊ីនធឺណិត (បណ្តាញ Wi-Fi មួយចំនួនរារាំង)៖ សូមសាកល្បងម្តងទៀតជាមួយទិន្នន័យទូរស័ព្ទ។',
   whyState:'សូមបិទកម្មវិធីទាំងស្រុង បើកម្តងទៀត រួចព្យាយាមម្តងទៀត។', whyOther:v=>`មិនអាចបើកការរំលឹកបានទេ (${v.what})។`,
   newVersion:'មានកំណែថ្មី ចុចដើម្បីផ្ទុកឡើងវិញ',
-  addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
+  addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', lblPeople:'អ្នកចូលរួម', addPeople:'＋ បន្ថែមអ្នកចូលរួម', findPeople:'ស្វែងរកក្នុងក្រុម', noPeopleFound:'រកមិនឃើញ', nPicked:'បានជ្រើស {n}', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
   nothingPlanned:'មិនមានអ្វីគ្រោងទុកទេ។', tapAdd:'ចុច «បន្ថែមព្រឹត្តិការណ៍» ដើម្បីបន្ថែម។', noEvents:'មិនទាន់មានព្រឹត្តិការណ៍ទេ។',
   dayEmpty:'ចុចពីរដងលើថ្ងៃ ឬចុច + ដើម្បីបន្ថែម។',
   evWord:()=>'ព្រឹត្តិការណ៍', nEvents:n=>`${n} ព្រឹត្តិការណ៍`, nDone:'រួចរាល់ {n}',
@@ -2025,12 +2062,32 @@ const JR_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 
 // The month and the day are drawn straight away; the events fill in when they arrive, so a slow or
 // failed load never leaves an empty screen.
+// ---- the team (the organisation chart): who should attend an event ----
+// Kept in the database (it's staff names and photos, so never in the page's files); a copy stays on this device
+// so the avatars still show with no signal. Empty on a backend with no team: the picker then isn't offered.
+let JR_PEOPLE=[]; try{ JR_PEOPLE=JSON.parse(localStorage.getItem('yai_people'))||[]; }catch(_){}
+const jrPerson=c=>JR_PEOPLE.find(p=>p.code===c);
+async function jrLoadPeople(){
+  try{ const l=await api('/api/people'); if(Array.isArray(l)){ JR_PEOPLE=l; try{ localStorage.setItem('yai_people', JSON.stringify(l)); }catch(_){} } }catch(_){}
+}
+const jrInitials=n=>String(n).trim().split(/\s+/).slice(0,2).map(w=>Array.from(w)[0]||'').join('').toUpperCase();
+// a round photo over its initials: if the photo is missing or fails, the initials show (a colour from the code)
+function jrAvatar(p){
+  let h=0; for(const ch of p.code) h=(h*31+ch.charCodeAt(0))%997; h=(h*137)%360;
+  return `<span class="jr-av" style="--h:${h}" title="${esc(p.name)}${p.role?' · '+esc(p.role):''}"><b>${esc(jrInitials(p.name))}</b>${p.photo?`<img src="${esc(p.photo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}</span>`;
+}
+const jrAttendees=e=>(e.people||[]).map(jrPerson).filter(Boolean);
+// avatars side by side, overlapping, with "+n" past the first few
+function jrAvStack(e, max=4){
+  const l=jrAttendees(e); if(!l.length) return '';
+  return `<span class="jr-avs">${l.slice(0,max).map(jrAvatar).join('')}${l.length>max?`<span class="jr-av more">+${l.length-max}</span>`:''}</span>`;
+}
 async function loadJournal(){
   if(!JR_SEL) JR_SEL=jrToday();
   const first=!document.querySelector('#jr-cal-grid').children.length && !document.querySelector('#jr-agenda-list .jr-day-group');
   if(first) setJournalView(JR_VIEW, true);
   let live=false;
-  try{ JOURNAL_EVENTS = await jrFetchEvents(); live=!JR_FROZEN; }
+  try{ JOURNAL_EVENTS = await jrFetchEvents(); live=!JR_FROZEN; if(live) await jrLoadPeople(); }
   catch(e){ if(e.message!=='please sign in') toast(tx('loadErr')+jrErr(e.message)); JOURNAL_EVENTS=jrSnapshot()?.events || []; }
   if(!first) setJournalView(JR_VIEW, true);
   else if(JR_VIEW==='calendar') renderCalendar({enter:true});   // the day's cards deal in as they arrive
@@ -2082,6 +2139,7 @@ function jrRenderUpNext(){
       <span class="jr-up-time">${jrTimeRange(e,true)||(jrMulti(e)?tx('multiDay'):tx('allDay'))}</span>
       <span class="jr-up-title">${esc(e.title)}</span>
       ${more?`<span class="jr-up-more">${more}</span>`:''}
+      ${e.people?.length?`<span class="jr-up-ppl">${jrAvStack(e,5)}</span>`:''}
     </button>`;
   }
   box.innerHTML=html;
@@ -2206,6 +2264,14 @@ async function openAddEvent(prefillDate, id, focus, day){
       </div>
       <label class="field">${jrLbl('lblCat','optional')}<input id="ae-cat" autocomplete="off" value="${v(ev?.category)}"></label>
       <label class="field">${jrLbl('lblNotes','optional')}<input id="ae-notes" autocomplete="off" value="${v(ev?.notes)}"></label>
+      ${JR_PEOPLE.length?`<div class="field jr-pick" id="ae-people">
+        <span>${esc(tx('lblPeople'))} <span class="muted">${esc(tx('optional'))}</span></span>
+        <button type="button" class="jr-pick-btn" id="ae-people-btn" aria-expanded="false"><span class="jr-pick-sel" id="ae-people-sel"></span></button>
+        <div class="jr-pick-box" id="ae-people-box" hidden>
+          <input id="ae-people-q" type="search" autocomplete="off" placeholder="${esc(tx('findPeople'))}">
+          <div class="jr-pick-list" id="ae-people-list"></div>
+        </div>
+      </div>`:''}
     </div>
     <div id="ae-daybox" hidden>
       <p class="jr-ae-hint" id="ae-hint"></p>
@@ -2268,6 +2334,25 @@ async function openAddEvent(prefillDate, id, focus, day){
   q('#ae-ball').onclick=()=>{ const c=q('#ae-colors'); c.hidden=!c.hidden; q('#ae-ball').setAttribute('aria-expanded', String(!c.hidden)); };
   q('#ae-colors').onclick=e=>{ const b=e.target.closest('[data-c]'); if(!b) return; color=b.dataset.c||null; drawBall(); q('#ae-colors').hidden=true; q('#ae-ball').setAttribute('aria-expanded','false'); };
   drawBall();
+  // who should attend: avatars of those picked on the button; it opens a searchable list of the team
+  let people=(ev?.people||[]).filter(c=>jrPerson(c));
+  const drawPeople=()=>{
+    const sel=q('#ae-people-sel'); if(!sel) return;
+    sel.innerHTML=people.length?`<span class="jr-avs">${people.slice(0,6).map(c=>jrAvatar(jrPerson(c))).join('')}${people.length>6?`<span class="jr-av more">+${people.length-6}</span>`:''}</span><em>${esc(tx('nPicked',{n:people.length}))}</em>`
+      : `<em>${esc(tx('addPeople'))}</em>`;
+    const f=q('#ae-people-q').value.trim().toLowerCase();
+    const list=JR_PEOPLE.filter(p=>!f || (p.name+' '+(p.role||'')+' '+p.code).toLowerCase().includes(f));
+    q('#ae-people-list').innerHTML=list.length?list.map(p=>`<button type="button" class="jr-pick-row${people.includes(p.code)?' on':''}" data-c="${esc(p.code)}" role="checkbox" aria-checked="${people.includes(p.code)}">
+        ${jrAvatar(p)}<span class="jr-pick-name">${esc(p.name)}<small>${esc(p.role||'')}</small></span><i aria-hidden="true">✓</i></button>`).join('')
+      : `<div class="jr-pick-none">${esc(tx('noPeopleFound'))}</div>`;
+  };
+  if(q('#ae-people')){
+    q('#ae-people-btn').onclick=()=>{ const b=q('#ae-people-box'); b.hidden=!b.hidden; q('#ae-people-btn').setAttribute('aria-expanded',String(!b.hidden)); if(!b.hidden) q('#ae-people-q').focus(); };
+    q('#ae-people-q').oninput=drawPeople;
+    q('#ae-people-list').onclick=e=>{ const r=e.target.closest('[data-c]'); if(!r) return; const c=r.dataset.c;
+      people=people.includes(c)?people.filter(x=>x!==c):[...people,c]; drawPeople(); };
+    drawPeople();
+  }
   // "Map" by a Location field: see the place as typed (to check it, or find the right one and paste its link back)
   card.querySelectorAll('.jr-ae-map').forEach(b=>b.onclick=e=>{ e.preventDefault();
     const loc=q(b.dataset.for).value.trim() || (b.dataset.for==='#ad-loc' ? q('#ae-loc').value.trim() : '');
@@ -2280,7 +2365,7 @@ async function openAddEvent(prefillDate, id, focus, day){
   q('#ae-cancel').onclick=()=>dismiss(ov);
   if(ev) q('#ae-del').onclick=()=>{ dismiss(ov); deleteEventRow(ev.id); };   // asks to confirm first
   // Enter in any field saves, like pressing the button
-  card.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); q('#ae-save').click(); } });
+  card.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); if(e.target.id!=='ae-people-q') q('#ae-save').click(); } });
   q('#ae-save').onclick=async()=>{
     stash();
     const title=q('#ae-title').value.trim(), event_date=q('#ae-date').value;
@@ -2296,7 +2381,7 @@ async function openAddEvent(prefillDate, id, focus, day){
     let di=end_date?days:{};
     if(end_date && ev && jrMulti(ev) && event_date!==ev.event_date && jrDays(event_date,end_date)===jrDays(ev.event_date,ev.end_date))
       di=jrShiftDays(days, jrDays(ev.event_date,event_date));
-    const body={event_date, end_date, event_time, end_time, title, color, day_info:Object.keys(di).length?di:null,
+    const body={event_date, end_date, event_time, end_time, title, color, people, day_info:Object.keys(di).length?di:null,
       location:q('#ae-loc').value.trim()||null, category:q('#ae-cat').value.trim()||null, notes:q('#ae-notes').value.trim()||null};
     try{
       const saved=await api('/api/journal/events'+(ev?'/'+ev.id:''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -2306,7 +2391,7 @@ async function openAddEvent(prefillDate, id, focus, day){
       else renderAgenda();
     }catch(e){ toast(tx('errPrefix')+jrErr(e.message)); }
   };
-  setTimeout(()=>{ try{ q(cur!=='all'?(PERDAY[focus]||'#ad-time'):(focus||'#ae-title')).focus(); }catch(_){} }, 30);
+  setTimeout(()=>{ try{ if(focus==='#ae-people' && q('#ae-people-btn')){ q('#ae-people-btn').click(); return; } q(cur!=='all'?(PERDAY[focus]||'#ad-time'):(focus||'#ae-title')).focus(); }catch(_){} }, 30);
 }
 // tapping an event's time, dates or place opens the form at that field
 const editEventWhen=(id, field)=>openAddEvent(null, id, field);
@@ -2569,6 +2654,7 @@ function jrEventPop(id, iso){
     ${x.location?`<div class="jr-pop-row">${jrMapLink(x.location)}</div>`:''}
     ${e.category?`<div class="jr-pop-row"><span class="chip-lbl">${esc(e.category)}</span></div>`:''}
     ${x.notes?`<div class="jr-pop-notes">${esc(x.notes)}</div>`:''}
+    ${jrAttendees(e).length?`<div class="jr-pop-ppl">${jrAttendees(e).map(p=>`<span class="jr-who">${jrAvatar(p)}${esc(p.name)}</span>`).join('')}</div>`:''}
     ${e.created_by?`<div class="jr-pop-by">${esc(tx('addedBy',{name:e.created_by}))}</div>`:''}
     <div class="jr-pop-acts">
       <button class="mini" data-a="edit">${esc(tx('edit'))}</button>
@@ -2717,6 +2803,7 @@ function renderDay(enter, dir){
           <button class="del" onclick="deleteEventRow(${e.id})" title="${esc(tx('del'))}" aria-label="${esc(tx('del'))}">✕</button>
         </span>
         ${sub?`<span class="jr-dc-sub" onclick="editEventWhen(${e.id},'#ae-loc')" title="${esc(tx('tipEditDetails'))}">${sub}</span>`:''}
+        ${jrAttendees(e).length?`<span class="jr-dc-ppl" onclick="editEventWhen(${e.id},'#ae-people')" title="${esc(tx('tipEditDetails'))}">${jrAttendees(e).map(p=>`<span class="jr-who">${jrAvatar(p)}${esc(p.name.split(' ')[0])}</span>`).join('')}</span>`:''}
       </article>`;}).join('')}</div>`
     :`<div class="jr-day-empty">${esc(tx('nothingPlanned'))}<span>${esc(tx('dayEmpty'))}</span></div>`}`;
   if(enter && !K_REDUCED.matches){ box.classList.remove('enter'); void box.offsetWidth; box.classList.add('enter'); box.scrollTop=0;
