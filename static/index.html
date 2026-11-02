@@ -1030,6 +1030,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     box-shadow:none; }
   .jr-cal-day.sel.other-month { background:color-mix(in srgb,var(--k-act) 10%,transparent); }
   .jr-glide { border-radius:0; box-shadow:none; background:color-mix(in srgb,var(--k-act) 14%,transparent); }   /* the tint glides to the new day */
+  @media (max-width:760px) { .jr-glide { display:none; } }   /* phones: the tint just appears on the new day, no slide */
   /* joined squares can't pop or scale; they light up instead */
   @keyframes jrCellFade { from { opacity:0; } }
   .jr-cal-grid.wave .jr-cal-day { animation-name:jrCellFade; }
