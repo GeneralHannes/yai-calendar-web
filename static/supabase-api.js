@@ -45,6 +45,8 @@
     const us = path.match(/^\/api\/users\/(\d+)(\/role)?$/);
     if (us && us[2] && method === "POST") return rpc(origin, "yai_set_role", { p_token: token, p_id: +us[1], p_role: body.role ?? "" });
     if (us && !us[2] && method === "DELETE") return rpc(origin, "yai_remove_user", { p_token: token, p_id: +us[1] });
+    const pp = path.match(/^\/api\/people\/([^/]+)\/nickname$/);
+    if (pp && method === "POST") return rpc(origin, "yai_set_nickname", { p_token: token, p_code: decodeURIComponent(pp[1]), p_nickname: body.nickname ?? "" });
     if (path === "/api/people") return rpc(origin, "yai_people", { p_token: token });
     if (path === "/api/journal/events" && method === "GET") return rpc(origin, "yai_events", { p_token: token });
     if (path === "/api/journal/events" && method === "POST") return rpc(origin, "yai_add", { p_token: token, p_event: body });

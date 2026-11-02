@@ -1376,6 +1376,20 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-day-list[data-n="3"] .jr-dc-sub, .jr-day-list[data-n="4"] .jr-dc-sub { font-size:.95rem; }
   }
 
+  /* ================= the People tab ================= */
+  #jr-people { flex:1; min-height:0; overflow:auto; width:100%; max-width:760px; margin:0 auto; padding-bottom:1rem; touch-action:pan-y; overscroll-behavior:contain; }
+  #jr-people .jr-ae-hint { margin:.1rem 0 .6rem; }
+  #jr-people-q { width:100%; margin-bottom:.6rem; }
+  #jr-people-list { display:grid; gap:.4rem; }
+  .jr-pp { display:flex; align-items:center; gap:.7rem; padding:.5rem .7rem; border-radius:12px; background:var(--glass); border:1px solid var(--glass-line); }
+  .jr-pp .jr-av { width:2.6rem; height:2.6rem; font-size:.85rem; }
+  .jr-pp-who { flex:1 1 40%; min-width:0; display:flex; flex-direction:column; line-height:1.3; }
+  .jr-pp-who b { font-size:.95rem; overflow-wrap:anywhere; }
+  .jr-pp-who small { color:var(--muted); font-size:.78rem; }
+  .jr-pp-nick { flex:1 1 40%; min-width:0; width:auto; padding:.45rem .65rem; font-size:.95rem; font-weight:600; }
+  .jr-vt-btn[hidden] { display:none !important; }
+  @media (max-width:640px) { #jr-people { padding-bottom:5rem; } .jr-pp { flex-wrap:wrap; } .jr-pp-who { flex:1 1 calc(100% - 4rem); } .jr-pp-nick { flex:1 1 100%; } }
+
   /* ================= roles ================= */
   .jr-role { font-style:normal; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:.08rem .45rem; border-radius:999px;
     color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 70%,transparent); border:1px solid var(--glass-line); }
@@ -1529,8 +1543,9 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
   <!-- the small side section: only the two views and Add event -->
   <nav class="jr-rail" aria-label="Journal" data-i18n-aria="journalAria">
     <div class="jr-viewtoggle k-shine" id="jr-viewtoggle">
-      <button class="jr-vt-btn" id="jr-view-calendar-btn" onclick="setJournalView('calendar')" title="Calendar" data-i18n-title="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
-      <button class="jr-vt-btn" id="jr-view-agenda-btn" onclick="setJournalView('agenda')" title="Agenda" data-i18n-title="agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".9" fill="currentColor"/><circle cx="4" cy="12" r=".9" fill="currentColor"/><circle cx="4" cy="18" r=".9" fill="currentColor"/></svg><span>Agenda</span></button>
+      <button class="jr-vt-btn" id="jr-view-calendar-btn" onclick="setJournalView('calendar')" title="Calendar" data-i18n-title="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span data-i18n="calendar">Calendar</span></button>
+      <button class="jr-vt-btn" id="jr-view-agenda-btn" onclick="setJournalView('agenda')" title="Agenda" data-i18n-title="agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".9" fill="currentColor"/><circle cx="4" cy="12" r=".9" fill="currentColor"/><circle cx="4" cy="18" r=".9" fill="currentColor"/></svg><span data-i18n="agenda">Agenda</span></button>
+      <button class="jr-vt-btn" id="jr-view-people-btn" onclick="setJournalView('people')" title="People" data-i18n-title="peopleTab" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M18 14.4c1.8.8 3 2.6 3 5.6"/></svg><span data-i18n="peopleTab">People</span></button>
     </div>
     <!-- desktop: what's coming up, in date order (hidden on phones) -->
     <section class="jr-upnext" id="jr-upnext" aria-label="Upcoming events" data-i18n-aria="upcomingAria"></section>
@@ -1543,6 +1558,13 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
       <div class="row jr-agenda-head"><h2 class="view-title" data-i18n="agenda">Agenda</h2><span data-lang-slot="agenda"></span><div class="jr-me" id="jr-me"></div>
         <label class="muted jr-showpast"><input type="checkbox" id="jr-show-past" onchange="renderAgenda()"> <span data-i18n="showPast">show past</span></label></div>
       <div id="jr-agenda-list"><span class="empty" data-i18n="loading">Loading&hellip;</span></div>
+    </div>
+
+    <div id="jr-people" style="display:none">
+      <div class="row jr-agenda-head"><h2 class="view-title" data-i18n="peopleTab">People</h2></div>
+      <p class="jr-ae-hint" data-i18n="peopleHint"></p>
+      <input id="jr-people-q" type="search" autocomplete="off" data-i18n-ph="findPeople" oninput="jrRenderPeople()">
+      <div id="jr-people-list"></div>
     </div>
 
     <div id="jr-calendar">
@@ -1693,7 +1715,7 @@ en:{
   whyPushAndroid:'This phone couldn’t reach its push service. It needs Google Play services and internet (some Wi-Fi networks block it): try again on mobile data.',
   whyState:'Close the app completely, open it again, and try once more.', whyOther:v=>`Could not turn on reminders (${v.what}).`,
   newVersion:'New version — tap to reload',
-  addedBy:'Added by {name}', byName:'by {name}', lblPeople:'Attending', addPeople:'＋ Add people', findPeople:'Search the team', noPeopleFound:'No one found', nPicked:'{n} selected', lblPeopleDay:'Attending this day', sameAsEvent:'Same as the whole event', close:'Close', roleAdmin:'Admin', roleEditor:'Editor', roleViewer:'Viewer', roleViewerNote:'View only', accounts:'Accounts', accountsHint:'Admins manage accounts and can do everything. Editors add, change and delete events. Viewers can only look.', removeAcct:'Remove', removeAcctAsk:'Remove the account “{name}”? They will be signed out and can no longer sign in.', acctRemoved:'Account removed', roleSaved:'Role changed', you:'you', viewOnly:'This account can only view events.', adminOnly:'Only an admin can do that.', lastAdmin:'There must be at least one admin.', ownAcct:'You can’t remove your own account.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
+  addedBy:'Added by {name}', byName:'by {name}', lblPeople:'Attending', addPeople:'＋ Add people', findPeople:'Search the team', noPeopleFound:'No one found', nPicked:'{n} selected', lblPeopleDay:'Attending this day', sameAsEvent:'Same as the whole event', close:'Close', errNick:'Nicknames can be at most 30 characters.', roleAdmin:'Admin', roleEditor:'Editor', roleViewer:'Viewer', roleViewerNote:'View only', accounts:'Accounts', accountsHint:'Admins manage accounts and can do everything. Editors add, change and delete events. Viewers can only look.', removeAcct:'Remove', removeAcctAsk:'Remove the account “{name}”? They will be signed out and can no longer sign in.', acctRemoved:'Account removed', roleSaved:'Role changed', you:'you', viewOnly:'This account can only view events.', adminOnly:'Only an admin can do that.', lastAdmin:'There must be at least one admin.', ownAcct:'You can’t remove your own account.', peopleTab:'People', peopleHint:'Give people short names to use in the calendar. Everyone sees the nickname instead of the full name.', nickPh:'Nickname', nickSaved:'Nickname saved', nickCleared:'Nickname removed', noTeam:'No team has been added yet.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
   nothingPlanned:'Nothing planned.', tapAdd:'Tap “Add event” to put something on it.', noEvents:'No events yet.',
   dayEmpty:'Double-tap a day or press + to add one.',
   evWord:n=>n>1?'events':'event', nEvents:n=>`${n} event${n>1?'s':''}`, nDone:'{n} done',
@@ -1743,7 +1765,7 @@ zh:{
   whyPushAndroid:'此手机无法连接推送服务。需要 Google Play 服务和网络（有些 Wi-Fi 会屏蔽）：请改用移动数据重试。',
   whyState:'请完全关闭应用，重新打开后再试一次。', whyOther:v=>`无法开启提醒（${v.what}）。`,
   newVersion:'有新版本，点按刷新',
-  addedBy:'添加者：{name}', byName:'添加者：{name}', lblPeople:'参加人员', addPeople:'＋ 添加人员', findPeople:'搜索团队', noPeopleFound:'没有找到', nPicked:'已选 {n} 人', lblPeopleDay:'当天参加人员', sameAsEvent:'与整个活动相同', close:'关闭', roleAdmin:'管理员', roleEditor:'编辑者', roleViewer:'查看者', roleViewerNote:'仅查看', accounts:'账号', accountsHint:'管理员可管理账号并执行所有操作。编辑者可添加、修改和删除活动。查看者只能查看。', removeAcct:'移除', removeAcctAsk:'移除账号“{name}”？该用户将被退出登录，并且无法再登录。', acctRemoved:'账号已移除', roleSaved:'角色已更改', you:'你', viewOnly:'此账号只能查看活动。', adminOnly:'只有管理员可以这样做。', lastAdmin:'至少需要一位管理员。', ownAcct:'你不能移除自己的账号。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
+  addedBy:'添加者：{name}', byName:'添加者：{name}', lblPeople:'参加人员', addPeople:'＋ 添加人员', findPeople:'搜索团队', noPeopleFound:'没有找到', nPicked:'已选 {n} 人', lblPeopleDay:'当天参加人员', sameAsEvent:'与整个活动相同', close:'关闭', errNick:'昵称最多 30 个字符。', roleAdmin:'管理员', roleEditor:'编辑者', roleViewer:'查看者', roleViewerNote:'仅查看', accounts:'账号', accountsHint:'管理员可管理账号并执行所有操作。编辑者可添加、修改和删除活动。查看者只能查看。', removeAcct:'移除', removeAcctAsk:'移除账号“{name}”？该用户将被退出登录，并且无法再登录。', acctRemoved:'账号已移除', roleSaved:'角色已更改', you:'你', viewOnly:'此账号只能查看活动。', adminOnly:'只有管理员可以这样做。', lastAdmin:'至少需要一位管理员。', ownAcct:'你不能移除自己的账号。', peopleTab:'人员', peopleHint:'给成员起一个简短的昵称，日历中会显示昵称而不是全名，所有人可见。', nickPh:'昵称', nickSaved:'昵称已保存', nickCleared:'昵称已移除', noTeam:'还没有添加团队成员。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
   nothingPlanned:'暂时没有安排。', tapAdd:'点按“添加活动”来添加。', noEvents:'还没有活动。',
   dayEmpty:'双击某一天，或点按 + 来添加。',
   evWord:()=>'个活动', nEvents:n=>`${n} 个活动`, nDone:'已完成 {n}',
@@ -1793,7 +1815,7 @@ km:{
   whyPushAndroid:'ទូរស័ព្ទនេះមិនអាចភ្ជាប់ទៅសេវាជូនដំណឹងបានទេ។ វាត្រូវការ Google Play services និងអ៊ីនធឺណិត (បណ្តាញ Wi-Fi មួយចំនួនរារាំង)៖ សូមសាកល្បងម្តងទៀតជាមួយទិន្នន័យទូរស័ព្ទ។',
   whyState:'សូមបិទកម្មវិធីទាំងស្រុង បើកម្តងទៀត រួចព្យាយាមម្តងទៀត។', whyOther:v=>`មិនអាចបើកការរំលឹកបានទេ (${v.what})។`,
   newVersion:'មានកំណែថ្មី ចុចដើម្បីផ្ទុកឡើងវិញ',
-  addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', lblPeople:'អ្នកចូលរួម', addPeople:'＋ បន្ថែមអ្នកចូលរួម', findPeople:'ស្វែងរកក្នុងក្រុម', noPeopleFound:'រកមិនឃើញ', nPicked:'បានជ្រើស {n}', lblPeopleDay:'អ្នកចូលរួមថ្ងៃនេះ', sameAsEvent:'ដូចព្រឹត្តិការណ៍ទាំងមូល', close:'បិទ', roleAdmin:'អ្នកគ្រប់គ្រង', roleEditor:'អ្នកកែសម្រួល', roleViewer:'អ្នកមើល', roleViewerNote:'មើលតែប៉ុណ្ណោះ', accounts:'គណនី', accountsHint:'អ្នកគ្រប់គ្រងអាចគ្រប់គ្រងគណនី និងធ្វើបានទាំងអស់។ អ្នកកែសម្រួលអាចបន្ថែម កែ និងលុបព្រឹត្តិការណ៍។ អ្នកមើលអាចមើលបានតែប៉ុណ្ណោះ។', removeAcct:'ដកចេញ', removeAcctAsk:'ដកគណនី “{name}” ចេញ? ពួកគេនឹងត្រូវចាកចេញ ហើយមិនអាចចូលបានទៀតទេ។', acctRemoved:'បានដកគណនីចេញ', roleSaved:'បានប្តូរតួនាទី', you:'អ្នក', viewOnly:'គណនីនេះអាចមើលព្រឹត្តិការណ៍បានតែប៉ុណ្ណោះ។', adminOnly:'មានតែអ្នកគ្រប់គ្រងទេដែលអាចធ្វើបាន។', lastAdmin:'ត្រូវមានអ្នកគ្រប់គ្រងយ៉ាងតិចម្នាក់។', ownAcct:'អ្នកមិនអាចដកគណនីខ្លួនឯងបានទេ។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
+  addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', lblPeople:'អ្នកចូលរួម', addPeople:'＋ បន្ថែមអ្នកចូលរួម', findPeople:'ស្វែងរកក្នុងក្រុម', noPeopleFound:'រកមិនឃើញ', nPicked:'បានជ្រើស {n}', lblPeopleDay:'អ្នកចូលរួមថ្ងៃនេះ', sameAsEvent:'ដូចព្រឹត្តិការណ៍ទាំងមូល', close:'បិទ', errNick:'ឈ្មោះហៅអតិបរមា ៣០ តួអក្សរ។', roleAdmin:'អ្នកគ្រប់គ្រង', roleEditor:'អ្នកកែសម្រួល', roleViewer:'អ្នកមើល', roleViewerNote:'មើលតែប៉ុណ្ណោះ', accounts:'គណនី', accountsHint:'អ្នកគ្រប់គ្រងអាចគ្រប់គ្រងគណនី និងធ្វើបានទាំងអស់។ អ្នកកែសម្រួលអាចបន្ថែម កែ និងលុបព្រឹត្តិការណ៍។ អ្នកមើលអាចមើលបានតែប៉ុណ្ណោះ។', removeAcct:'ដកចេញ', removeAcctAsk:'ដកគណនី “{name}” ចេញ? ពួកគេនឹងត្រូវចាកចេញ ហើយមិនអាចចូលបានទៀតទេ។', acctRemoved:'បានដកគណនីចេញ', roleSaved:'បានប្តូរតួនាទី', you:'អ្នក', viewOnly:'គណនីនេះអាចមើលព្រឹត្តិការណ៍បានតែប៉ុណ្ណោះ។', adminOnly:'មានតែអ្នកគ្រប់គ្រងទេដែលអាចធ្វើបាន។', lastAdmin:'ត្រូវមានអ្នកគ្រប់គ្រងយ៉ាងតិចម្នាក់។', ownAcct:'អ្នកមិនអាចដកគណនីខ្លួនឯងបានទេ។', peopleTab:'បុគ្គលិក', peopleHint:'ដាក់ឈ្មោះហៅខ្លីឲ្យបុគ្គលិក ដើម្បីប្រើក្នុងប្រតិទិន។ អ្នកទាំងអស់នឹងឃើញឈ្មោះហៅជំនួសឈ្មោះពេញ។', nickPh:'ឈ្មោះហៅ', nickSaved:'បានរក្សាទុកឈ្មោះហៅ', nickCleared:'បានលុបឈ្មោះហៅ', noTeam:'មិនទាន់មានបុគ្គលិកទេ។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
   nothingPlanned:'មិនមានអ្វីគ្រោងទុកទេ។', tapAdd:'ចុច «បន្ថែមព្រឹត្តិការណ៍» ដើម្បីបន្ថែម។', noEvents:'មិនទាន់មានព្រឹត្តិការណ៍ទេ។',
   dayEmpty:'ចុចពីរដងលើថ្ងៃ ឬចុច + ដើម្បីបន្ថែម។',
   evWord:()=>'ព្រឹត្តិការណ៍', nEvents:n=>`${n} ព្រឹត្តិការណ៍`, nDone:'រួចរាល់ {n}',
@@ -1816,7 +1838,7 @@ const JR_ERRS=[[/wrong username or password/i,'errLogin'],[/wrong team code/i,'e
   [/^username:/i,'errUsername'],[/^password:/i,'errPassword'],[/too many wrong/i,'tooMany'],[/please sign in/i,'errSignIn'],
   [/title (is required|cannot be blank)/i,'titleReq'],[/(event|end)_date must be/i,'errDate'],[/(event|end)_time must be/i,'errTime'],
   [/end date is before/i,'endBeforeStart'],[/end time is before/i,'endTimeBefore'],[/give a start time/i,'needStart'],[/no event #/i,'errNoEvent'],
-  [/can only view/i,'viewOnly'],[/only an admin/i,'adminOnly'],[/at least one admin/i,'lastAdmin'],[/own account/i,'ownAcct']];
+  [/^nickname:/i,'errNick'],[/can only view/i,'viewOnly'],[/only an admin/i,'adminOnly'],[/at least one admin/i,'lastAdmin'],[/own account/i,'ownAcct']];
 function jrErr(m){ const s=String(m||''); if(JR_LANG==='en') return s; for(const [re,k] of JR_ERRS) if(re.test(s)) return tx(k); return s; }
 
 // The words in the page's own markup (data-i18n = text, -title, -aria, -ph = placeholder), the weekday row, the
@@ -1948,6 +1970,7 @@ const jrRole=()=>JR_USER?.role||'editor';
 const jrCanEdit=()=>jrRole()!=='viewer';
 function jrRenderMe(){
   document.body.classList.toggle('jr-viewer', !!JR_USER && !jrCanEdit());
+  if(typeof jrSyncPeopleTab==='function') jrSyncPeopleTab();
   const el=document.getElementById('jr-me'); if(!el) return;
   el.innerHTML=JR_USER?`<span>${esc(JR_USER.name)}${!jrCanEdit()?` <em class="jr-role">${esc(tx('roleViewerNote'))}</em>`:''}</span>`
     +(jrRole()==='admin'?`<button type="button" class="mini" onclick="jrAccounts()">${esc(tx('accounts'))}</button>`:'')
@@ -2170,14 +2193,17 @@ const JR_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 // so the avatars still show with no signal. Empty on a backend with no team: the picker then isn't offered.
 let JR_PEOPLE=[]; try{ JR_PEOPLE=JSON.parse(localStorage.getItem('yai_people'))||[]; }catch(_){}
 const jrPerson=c=>JR_PEOPLE.find(p=>p.code===c);
+// a nickname (set by editors) stands in for the full name; the short form is the nickname, else the first name
+const jrPName=p=>p.nickname||p.name, jrPShort=p=>p.nickname||String(p.name).split(' ')[0];
 async function jrLoadPeople(){
   try{ const l=await api('/api/people'); if(Array.isArray(l)){ JR_PEOPLE=l; try{ localStorage.setItem('yai_people', JSON.stringify(l)); }catch(_){} } }catch(_){}
+  jrSyncPeopleTab();
 }
 const jrInitials=n=>String(n).trim().split(/\s+/).slice(0,2).map(w=>Array.from(w)[0]||'').join('').toUpperCase();
 // a round photo over its initials: if the photo is missing or fails, the initials show (a colour from the code)
 function jrAvatar(p){
   let h=0; for(const ch of p.code) h=(h*31+ch.charCodeAt(0))%997; h=(h*137)%360;
-  return `<span class="jr-av" style="--h:${h}" title="${esc(p.name)}${p.role?' · '+esc(p.role):''}"><b>${esc(jrInitials(p.name))}</b>${p.photo?`<img src="${esc(p.photo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}</span>`;
+  return `<span class="jr-av" style="--h:${h}" title="${esc(jrPName(p))}${p.nickname?' ('+esc(p.name)+')':''}${p.role?' · '+esc(p.role):''}"><b>${esc(jrInitials(jrPName(p)))}</b>${p.photo?`<img src="${esc(p.photo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}</span>`;
 }
 const jrAttendees=(e,iso)=>((iso&&jrMulti(e)?jrDay(e,iso).people:e.people)||[]).map(jrPerson).filter(Boolean);   // a multi-day event's day can have its own list
 // avatars side by side, overlapping, with "+n" past the first few
@@ -2194,26 +2220,57 @@ async function loadJournal(){
   catch(e){ if(e.message!=='please sign in') toast(tx('loadErr')+jrErr(e.message)); JOURNAL_EVENTS=jrSnapshot()?.events || []; }
   if(!first) setJournalView(JR_VIEW, true);
   else if(JR_VIEW==='calendar') renderCalendar({enter:true});   // the day's cards deal in as they arrive
-  else renderAgenda();
+  else jrRender();
   if(live) jrOfferLocalEvents();   // only once the backend has really answered (past the PIN)
 }
 function setJournalView(v, skipSave){
+  if(v==='people' && !jrPeopleTab()) v='calendar';   // only editors, and only where there's a team
   const from=JR_VIEW; JR_VIEW=v;
   if(!skipSave) try{ localStorage.setItem('sk_journal_view', v); }catch(_){}
   $('#jr-view-agenda-btn').classList.toggle('active', v==='agenda');
   $('#jr-view-calendar-btn').classList.toggle('active', v==='calendar');
+  $('#jr-view-people-btn').classList.toggle('active', v==='people');
+  $('#jr-people').style.display = v==='people' ? '' : 'none';
   $('#jr-agenda').style.display = v==='agenda' ? '' : 'none';
   $('#jr-calendar').style.display = v==='calendar' ? '' : 'none';
   // Odin's Keep's tab motion: the view comes in from the side of the button you came from
   // (Agenda sits below Calendar in the side menu, so it rises up; Calendar drops down)
   if(from!==v && !skipSave){
-    const el=$(v==='agenda'?'#jr-agenda':'#jr-calendar');
-    el.classList.remove('vin-u','vin-d'); void el.offsetWidth; el.classList.add(v==='agenda'?'vin-u':'vin-d');
+    const el=$(v==='people'?'#jr-people':v==='agenda'?'#jr-agenda':'#jr-calendar');
+    el.classList.remove('vin-u','vin-d'); void el.offsetWidth; el.classList.add(v==='calendar'?'vin-d':'vin-u');
   }
   document.body.classList.toggle('jr-cal-view', v==='calendar');
-  if(v==='agenda') renderAgenda(); else renderCalendar({wave:true, enter:true});
+  if(v==='people') jrRenderPeople(); else if(v==='agenda') renderAgenda(); else renderCalendar({wave:true, enter:true});
 }
-function jrRender(){ if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar(); }
+function jrRender(){ if(JR_VIEW==='people') jrRenderPeople(); else if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar(); }
+
+// ---- the People tab (editors and admins): give each person a nickname ----
+const jrPeopleTab=()=>jrCanEdit() && JR_PEOPLE.length>0;
+function jrSyncPeopleTab(){
+  const b=document.getElementById('jr-view-people-btn'); if(b) b.hidden=!jrPeopleTab();
+  if(JR_VIEW==='people' && !jrPeopleTab()) setJournalView('calendar', true);
+}
+function jrRenderPeople(){
+  const box=document.getElementById('jr-people-list'); if(!box) return;
+  const f=(document.getElementById('jr-people-q')?.value||'').trim().toLowerCase();
+  const list=JR_PEOPLE.filter(p=>!f || (p.name+' '+(p.nickname||'')+' '+(p.role||'')).toLowerCase().includes(f));
+  if(!JR_PEOPLE.length){ box.innerHTML=`<div class="empty">${esc(tx('noTeam'))}</div>`; return; }
+  box.innerHTML=list.length?list.map(p=>`<div class="jr-pp" data-c="${esc(p.code)}">${jrAvatar(p)}
+      <span class="jr-pp-who"><b>${esc(p.name)}</b><small>${esc(p.role||'')}</small></span>
+      <input class="jr-pp-nick" maxlength="30" autocomplete="off" placeholder="${esc(tx('nickPh'))}" aria-label="${esc(tx('nickPh'))}: ${esc(p.name)}" value="${esc(p.nickname||'')}"></div>`).join('')
+    : `<div class="empty">${esc(tx('noPeopleFound'))}</div>`;
+}
+document.addEventListener('change',async e=>{
+  const inp=e.target.closest?.('.jr-pp-nick'); if(!inp) return;
+  const row=inp.closest('.jr-pp'), p=jrPerson(row.dataset.c), nick=inp.value.trim().replace(/\s+/g,' ');
+  if(!p || nick===(p.nickname||'')) return;
+  try{ await api('/api/people/'+encodeURIComponent(p.code)+'/nickname',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nickname:nick})});
+    p.nickname=nick||null; inp.value=nick; row.querySelector('.jr-av').outerHTML=jrAvatar(p);
+    try{ localStorage.setItem('yai_people', JSON.stringify(JR_PEOPLE)); }catch(_){}
+    JR_UPNEXT_SIG=''; toast(nick?tx('nickSaved'):tx('nickCleared')); }
+  catch(err){ inp.value=p.nickname||''; toast(tx('errPrefix')+jrErr(err.message)); }
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.classList?.contains('jr-pp-nick')) e.target.blur(); });
 
 // Desktop side menu: everything from today on, in date order, under month and day headings — the Agenda in
 // brief. Clicking one opens that day in the calendar. (Phones hide it: there the menu is a bar.)
@@ -2275,7 +2332,7 @@ function renderAgenda(){
               <div onclick="editEventTitle(${e.id})">${esc(e.title)}</div>
               ${jrMulti(e)||e.location?`<div class="jr-ag-where">${jrMulti(e)?`<b onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-end-date')">${jrDateRange(e)}</b>`:''}${e.location?jrMapLink(e.location):''}</div>`:''}
               <div class="muted jr-notes-txt" style="font-size:.75rem" onclick="event.stopPropagation();editEventNotes(${e.id})">${e.notes?esc(e.notes):esc(tx('addNote'))}</div>
-              ${jrAttendees(e).length?`<div class="jr-dc-ppl jr-ag-ppl" onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-people')">${jrAttendees(e).map(p=>`<span class="jr-who">${jrAvatar(p)}${esc(p.name.split(' ')[0])}</span>`).join('')}</div>`:''}
+              ${jrAttendees(e).length?`<div class="jr-dc-ppl jr-ag-ppl" onclick="event.stopPropagation();editEventWhen(${e.id},'#ae-people')">${jrAttendees(e).map(p=>`<span class="jr-who">${jrAvatar(p)}${esc(jrPShort(p))}</span>`).join('')}</div>`:''}
               ${e.created_by?`<div class="jr-by">${esc(tx('byName',{name:e.created_by}))}</div>`:''}
               <div class="jr-cat-m" onclick="event.stopPropagation();editEventCategory(${e.id})">${e.category?`<span class="chip-lbl">${esc(e.category)}</span>`:`<span class="muted">${esc(tx('addTag'))}</span>`}</div>
             </div>
@@ -2454,9 +2511,9 @@ async function openAddEvent(prefillDate, id, focus, day){
     sel.innerHTML=now.length?`<span class="jr-avs">${now.slice(0,6).map(c=>jrAvatar(jrPerson(c))).join('')}${now.length>6?`<span class="jr-av more">+${now.length-6}</span>`:''}</span><em>${esc(tx('nPicked',{n:now.length}))}</em>`
       : `<em>${esc(tx('addPeople'))}</em>`;
     const f=q('#ae-people-q').value.trim().toLowerCase();
-    const list=JR_PEOPLE.filter(p=>!f || (p.name+' '+(p.role||'')+' '+p.code).toLowerCase().includes(f));
+    const list=JR_PEOPLE.filter(p=>!f || (p.name+' '+(p.nickname||'')+' '+(p.role||'')+' '+p.code).toLowerCase().includes(f));
     q('#ae-people-list').innerHTML=list.length?list.map(p=>`<button type="button" class="jr-pick-row${now.includes(p.code)?' on':''}" data-c="${esc(p.code)}" role="checkbox" aria-checked="${now.includes(p.code)}">
-        ${jrAvatar(p)}<span class="jr-pick-name">${esc(p.name)}<small>${esc(p.role||'')}</small></span><i aria-hidden="true">✓</i></button>`).join('')
+        ${jrAvatar(p)}<span class="jr-pick-name">${esc(jrPName(p))}<small>${esc([p.nickname?p.name:'',p.role||''].filter(Boolean).join(' · '))}</small></span><i aria-hidden="true">✓</i></button>`).join('')
       : `<div class="jr-pick-none">${esc(tx('noPeopleFound'))}</div>`;
   };
   if(q('#ae-people')){
@@ -2771,7 +2828,7 @@ function jrEventPop(id, iso){
     ${x.location?`<div class="jr-pop-row">${jrMapLink(x.location)}</div>`:''}
     ${e.category?`<div class="jr-pop-row"><span class="chip-lbl">${esc(e.category)}</span></div>`:''}
     ${x.notes?`<div class="jr-pop-notes">${esc(x.notes)}</div>`:''}
-    ${jrAttendees(e,iso).length?`<div class="jr-pop-ppl">${jrAttendees(e,iso).map(p=>`<span class="jr-who">${jrAvatar(p)}${esc(p.name)}</span>`).join('')}</div>`:''}
+    ${jrAttendees(e,iso).length?`<div class="jr-pop-ppl">${jrAttendees(e,iso).map(p=>`<span class="jr-who">${jrAvatar(p)}${esc(jrPName(p))}</span>`).join('')}</div>`:''}
     ${e.created_by?`<div class="jr-pop-by">${esc(tx('addedBy',{name:e.created_by}))}</div>`:''}
     <div class="jr-pop-acts">
       <button class="mini" data-a="edit">${esc(tx('edit'))}</button>
@@ -2960,7 +3017,7 @@ function renderDay(enter, dir){
           <button class="del" onclick="deleteEventRow(${e.id})" title="${esc(tx('del'))}" aria-label="${esc(tx('del'))}">✕</button>
         </span>
         ${sub?`<span class="jr-dc-sub" onclick="editEventWhen(${e.id},'#ae-loc')" title="${esc(tx('tipEditDetails'))}">${sub}</span>`:''}
-        ${jrAttendees(e,iso).length?`<span class="jr-dc-ppl" onclick="editEventWhen(${e.id},'#ae-people')" title="${esc(tx('tipEditDetails'))}">${jrAttendees(e,iso).map(p=>`<span class="jr-who">${jrAvatar(p)}${esc(p.name.split(' ')[0])}</span>`).join('')}</span>`:''}
+        ${jrAttendees(e,iso).length?`<span class="jr-dc-ppl" onclick="editEventWhen(${e.id},'#ae-people')" title="${esc(tx('tipEditDetails'))}">${jrAttendees(e,iso).map(p=>`<span class="jr-who">${jrAvatar(p)}${esc(jrPShort(p))}</span>`).join('')}</span>`:''}
       </article>`;}).join('')}</div>`
     :`<div class="jr-day-empty">${esc(tx('nothingPlanned'))}<span>${esc(tx('dayEmpty'))}</span></div>`}`;
   if(enter && !K_REDUCED.matches){ box.classList.remove('enter'); void box.offsetWidth; box.classList.add('enter'); box.scrollTop=0;
