@@ -1511,11 +1511,11 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-cell .jr-ag-ppl { flex:none; width:auto; order:0; margin:.2rem 0 .1rem; }
   /* each agenda row in its event's colour: the same light fill and dark shade as its bar in the calendar (jrTint sets
      --k-act and --accent on the row) */
-  .jr-row .jr-cell { background:color-mix(in srgb,var(--k-act) 62%,var(--k-bg2)); color:var(--accent); }
-  .jr-row .jr-cell:hover, .jr-row .jr-cell:active { background:color-mix(in srgb,var(--k-act) 85%,var(--k-bg2)); }
+  .jr-row .jr-cell { background:color-mix(in srgb,var(--k-act) 26%,var(--k-bg2)); color:color-mix(in srgb,var(--accent) 88%,var(--ink)); }
+  .jr-row .jr-cell:hover, .jr-row .jr-cell:active { background:color-mix(in srgb,var(--k-act) 40%,var(--k-bg2)); }
   .jr-row .jr-cell.jr-time { box-shadow:inset 4px 0 0 var(--accent); padding-left:.7rem; }
   .jr-row .jr-cell .muted, .jr-row .jr-cell .jr-by, .jr-row .jr-cell .jr-ag-where, .jr-row .jr-cell .jr-notes-txt { color:color-mix(in srgb,var(--accent) 78%,transparent); }
-  .jr-row .jr-cell .chip-lbl { color:var(--accent); background:color-mix(in srgb,var(--k-act) 100%,#fff 0%); border:1px solid color-mix(in srgb,var(--accent) 25%,transparent); }
+  .jr-row .jr-cell .chip-lbl { color:var(--accent); background:color-mix(in srgb,var(--k-act) 70%,var(--k-bg2)); border:1px solid color-mix(in srgb,var(--accent) 25%,transparent); }
   .jr-row .jr-cell.jr-check.done { color:var(--accent); }
   .jr-row .jr-cell.jr-del:hover { color:var(--warn); }
   .jr-row.done .jr-cell { opacity:.62; }
