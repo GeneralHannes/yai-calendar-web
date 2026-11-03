@@ -12,7 +12,7 @@ if(/iPhone|iPod/.test(navigator.userAgent))document.documentElement.classList.ad
    is drawn without it — see "Android" in the styles */
 if(/Android/.test(navigator.userAgent))document.documentElement.classList.add("android");</script>
 <script>/* light (Catppuccin Latte) unless this device chose another theme (Daylight is also defined: data-theme="daylight") */
-try{var t=localStorage.getItem("sk_theme");document.documentElement.setAttribute("data-theme",t||"latte")}catch(e){document.documentElement.setAttribute("data-theme","latte")}</script>
+try{var t=localStorage.getItem("sk_theme");document.documentElement.setAttribute("data-theme",t||"latte");var g=localStorage.getItem("yai_glass");if(g==="soft"||g==="solid")document.documentElement.classList.add("gl-"+g)}catch(e){document.documentElement.setAttribute("data-theme","latte")}</script>
 <meta name="theme-color" content="#e6e9ef">
 <script>window.JOURNAL_STATIC=true</script>
 <script src="static/local-api.js"></script>
@@ -1606,8 +1606,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
      slowly drifting colour field behind everything so there is something for the glass to bend. Light themes get the full
      brightness (--gl-a:1); dark themes a quieter one. All motion here is skipped for reduced-motion, and Android (which
      drops backdrop-filter, see below) keeps the rims but not the blur. */
-  :root { --gl-a:.4; --gl-shadow:0 0 0; }
-  :root[data-theme="latte"], :root[data-theme="daylight"] { --gl-a:1; --gl-shadow:70 60 120; }
+  :root { --gl-k:1; --gl-a:calc(.4 * var(--gl-k)); --gl-shadow:0 0 0; }
+  :root[data-theme="latte"], :root[data-theme="daylight"] { --gl-a:calc(1 * var(--gl-k)); --gl-shadow:70 60 120; }
   :root {
     --gl-fill:linear-gradient(150deg, rgb(255 255 255 / calc(var(--gl-a) * .46)) 0%, rgb(255 255 255 / calc(var(--gl-a) * .12)) 48%, rgb(255 255 255 / calc(var(--gl-a) * .26)) 100%);
     --gl-rim:inset 0 1.5px 0 rgb(255 255 255 / calc(var(--gl-a) * .95)), inset 0 -1px 0 rgb(255 255 255 / calc(var(--gl-a) * .38)),
@@ -1660,6 +1660,56 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-dcard:hover { transform:translateY(-1px); box-shadow:inset 0 1px 0 rgb(255 255 255 / calc(var(--gl-a) * .8)), 0 12px 22px -12px rgb(var(--gl-shadow) / .5); }
     .jr-up-ev:hover { transform:translateX(2px); }
   }
+
+  /* chip buttons (photo-scan languages, Settings choices) and the photo-scan thumbnails / raw text */
+  .jr-chipbtn { all:unset; cursor:pointer; box-sizing:border-box; padding:.38rem .85rem; border-radius:999px; font-size:.9rem; font-weight:600; white-space:nowrap; border:1px solid var(--glass-line); color:var(--muted);
+    background:color-mix(in srgb,var(--k-bg3) 45%,transparent); transition:background-color .2s, color .2s, border-color .2s, transform .25s var(--k-bouncy); }
+  .jr-chipbtn:hover { color:var(--ink); }
+  .jr-chipbtn.on { color:var(--k-on-act); background:var(--accent); border-color:var(--accent); }
+  .jr-chipbtn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .jr-sc-thumbs { display:flex; gap:.4rem; overflow:auto; margin:.2rem 0 .7rem; }
+  .jr-sc-thumbs img { height:5.5rem; width:auto; max-width:8rem; object-fit:cover; border-radius:10px; border:1px solid var(--glass-line); flex:none; }
+  .jr-sc-langs { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; margin:.2rem 0 .5rem; }
+  .jr-sc-langs > span { flex:1 0 100%; font-size:.78rem; color:var(--muted); }
+  .jr-sc-raw { white-space:pre-wrap; font:.78rem/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; max-height:9rem; overflow:auto; margin:.4rem 0 0; color:var(--muted); }
+  /* ================= Settings ================= */
+  .jr-gear { all:unset; box-sizing:border-box; cursor:pointer; width:2.4rem; height:2.4rem; display:grid; place-items:center; flex:none; border-radius:50%; color:var(--muted);
+    border:1px solid var(--glass-line); background:color-mix(in srgb,var(--k-bg3) 40%,transparent); transition:color .2s, transform .35s var(--k-bouncy), background-color .2s; }
+  .jr-gear:hover, .jr-gear:focus-visible { color:var(--accent); transform:rotate(60deg); outline:none; background:color-mix(in srgb,var(--accent) 10%,transparent); }
+  .jr-gear svg { width:1.2rem; height:1.2rem; }
+  .jr-cal-head .jr-gear { margin-left:auto; }
+  .jr-me .jr-gear { width:auto; height:auto; padding:.3rem .75rem; border-radius:999px; gap:.35rem; display:inline-flex; align-items:center; font-size:.8rem; font-weight:600; }
+  .jr-me .jr-gear:hover { transform:none; }
+  .jr-set h3 { margin:1.1rem 0 .3rem; font-size:.72rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+  .jr-set .jr-set-sec:first-of-type h3 { margin-top:.2rem; }
+  .jr-set-row { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .8rem; padding:.55rem 0; border-bottom:1px solid var(--glass-line); }
+  .jr-set-row:last-child { border-bottom:0; }
+  .jr-set-l { flex:1 1 9rem; min-width:0; display:flex; flex-direction:column; gap:.1rem; }
+  .jr-set-l small { color:var(--muted); font-size:.76rem; line-height:1.35; }
+  .jr-set-c { display:flex; flex-wrap:wrap; gap:.35rem; align-items:center; }
+  .jr-chips { display:flex; flex-wrap:wrap; gap:.35rem; }
+  .jr-themes { display:grid; grid-template-columns:repeat(auto-fill,minmax(5.4rem,1fr)); gap:.4rem; width:100%; }
+  .jr-set-row:has(.jr-themes) .jr-set-c { flex:1 0 100%; }
+  .jr-theme { all:unset; cursor:pointer; box-sizing:border-box; display:flex; align-items:center; gap:.4rem; padding:.35rem .5rem; border-radius:12px; font-size:.78rem; font-weight:600; border:1px solid var(--glass-line);
+    background:color-mix(in srgb,var(--k-bg3) 40%,transparent); color:var(--ink); transition:transform .25s var(--k-bouncy), border-color .2s; }
+  .jr-theme i { width:1.2rem; height:1.2rem; border-radius:50%; flex:none; box-shadow:0 0 0 1px rgb(0 0 0 / .18) inset; }
+  .jr-theme:hover { transform:translateY(-1px); }
+  .jr-theme.on { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent); }
+  .jr-theme:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  .jr-set-acct { display:flex; align-items:center; gap:.7rem; margin:.2rem 0 .6rem; }
+  .jr-set-acct > div { display:flex; flex-direction:column; line-height:1.3; }
+  .jr-set-acct small { color:var(--muted); }
+  .jr-set-av { width:2.8rem; height:2.8rem; font-size:.95rem; }
+  .jr-set-btns { display:flex; flex-wrap:wrap; gap:.4rem; margin:.2rem 0; }
+  .jr-set-btns a.mini { text-decoration:none; display:inline-flex; align-items:center; }
+  .jr-set-about { display:flex; flex-direction:column; gap:.5rem; font-size:.9rem; }
+  .jr-set-rem small { color:var(--muted); line-height:1.4; }
+  /* Glass strength (Settings): Soft is half as bright with a lighter blur; Solid has no blur, no drifting colour, and opaque panels */
+  html.gl-soft { --gl-k:.55; --gl-blur:blur(14px) saturate(150%); }
+  html.gl-solid { --gl-k:.5; --gl-blur:none; }
+  html.gl-solid body::after { display:none; }
+  html.gl-solid :is(.jr-rail .jr-viewtoggle, .jr-monthnav, .jr-bottom, .jr-pop, #toast, .jr-lang, .jr-pick-box, .jr-table, .jr-pp, .modal-card) { background:var(--k-bg2); }
+  html.gl-solid .modal-ov { -webkit-backdrop-filter:none; backdrop-filter:none; }
 
   /* ================= Android (script in <head> adds html.android) =================
      Chrome on Android paints live background blur wrongly: a blurred panel leaves a stale strip over whatever
@@ -1727,7 +1777,7 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
     </div>
 
     <div id="jr-people" style="display:none">
-      <div class="row jr-agenda-head"><h2 class="view-title" data-i18n="peopleTab">People</h2><button type="button" class="act jr-pp-add" id="jr-pp-add" onclick="jrPersonForm()" hidden>＋ <span data-i18n="addPerson">Add person</span></button></div>
+      <div class="row jr-agenda-head"><h2 class="view-title" data-i18n="peopleTab">People</h2><button type="button" class="act jr-pp-add" id="jr-pp-add" onclick="jrPersonForm()" hidden>＋ <span data-i18n="addPerson">Add person</span></button><button type="button" class="jr-gear" onclick="jrSettings()" title="Settings" aria-label="Settings" data-i18n-title="settings" data-i18n-aria="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
       <p class="jr-ae-hint" data-i18n="peopleHint"></p>
       <input id="jr-people-q" type="search" autocomplete="off" data-i18n-ph="findPeople" oninput="jrRenderPeople()">
       <div id="jr-people-list"></div>
@@ -1739,6 +1789,7 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
       <section class="jr-top" aria-label="Month" data-i18n-aria="monthAria">
         <div class="jr-cal-head">
           <h2 class="jr-month"><span id="jr-cal-month"></span> <span class="jr-year" id="jr-cal-year"></span></h2>
+          <button type="button" class="jr-gear" onclick="jrSettings()" title="Settings" aria-label="Settings" data-i18n-title="settings" data-i18n-aria="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
         </div>
         <div class="jr-cal-dow" id="jr-cal-dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
         <div class="jr-cal-grid" id="jr-cal-grid"></div>
@@ -1764,10 +1815,12 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
 // once, so code that reopens the same dialog never finds the leaving copy.
 const K_REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
 // Motion follows the device's "Reduce motion" setting (a Mac, iPhone or Android setting that many people have on without
-// knowing: then the app plays almost no animation). This device can choose "always on" (Security → Animations): the JS
+// knowing: then the app plays almost no animation). This device can choose "always on" (Settings → Appearance → Animations): the JS
 // checks of K_REDUCED answer false, and the stylesheet's reduced-motion blocks are switched off / its no-preference blocks
 // switched on by rewriting their media conditions.
 const K_REDUCED_OS = matchMedia('(prefers-reduced-motion: reduce)');
+const jrPref=(k,d)=>{ try{ return localStorage.getItem(k)||d; }catch(_){ return d; } };
+let JR_WEEK_START=jrPref('yai_week','0')==='1'?1:0, JR_TIME12=jrPref('yai_time','24')==='12';
 let JR_MOTION_FULL=false; try{ JR_MOTION_FULL=localStorage.getItem('yai_motion')==='full'; }catch(_){}
 Object.defineProperty(K_REDUCED,'matches',{get:()=>!JR_MOTION_FULL && K_REDUCED_OS.matches});
 const JR_MEDIA0=new WeakMap();
@@ -1914,7 +1967,7 @@ en:{
   setupKey:'Setup key', openAuth:'Open in authenticator app', recoveryTitle:'Save your recovery codes', recoveryHint:'Each one works once if you lose your phone. They are shown only now.',
   copyCodes:'Copy', copied:'Copied', savedThem:'I saved them', twoStepNowOn:'Two-step sign-in is on', twoStepNowOff:'Two-step sign-in is off', askPwOff:'Enter your password to turn off two-step sign-in.',
   setPw:'Set password', setPwAsk:'A temporary password for {name}. They must change it when they next sign in.', reset2:'Reset 2-step', reset2Ask:'Turn off two-step sign-in for {name}? They will then sign in with just their password.',
-  pwSet:'Password set. {name} must change it at the next sign-in.', done2:'Two-step sign-in reset', recent:'Recent activity', tagTwoStep:'2-step', tagMustChange:'must change password', tagLocked:'locked', scanBtn:'Add from a photo', scanTitle:'Events from a photo', scanReading:'Reading the photo…', scanNone:'No events were found in that photo.', scanFound:'{n} found. Check them, then add.', scanAdd:'Add {n}', scanDup:'Already in the calendar', scanNoDate:'Pick a date', scanAdded:'{n} added to the calendar', scanNotSetUp:'Reading photos isn’t set up yet.', scanLimit:'Today’s photo limit is used up. Try again tomorrow.', scanFail:'Couldn’t read that photo. Try a clearer one.', scanTip:'Take a clear, straight photo of the invitation, flyer or schedule.', scanCheck:'check this', scanSaving:'Adding…', scanBadPhoto:'That photo can’t be used.', scanLangs:'Language in the photo', scanFirst:'The first time, the reading data is downloaded (about 10–20 MB). After that it works without internet.', scanRead:'Read the photo', scanLoadingReader:'Loading the reader…', scanReadingPct:'Reading the photo… {p}%', scanRaw:'Text read from the photo', scanFree:'Everything is read on this device: the photo is not sent anywhere.', errTeamAcct:'This account signs in with the team password, so it has no password of its own to change.', tagTeam:'team password', addPerson:'Add person', editPerson:'Edit person', personName:'Full name', personRole:'Role or position', personPhoto:'Photo link (optional)', personPhotoHint:'A link starting with https://. Without one, the person shows with their initials.', personAdded:'Person added', personSaved:'Person saved', personRemoved:'Person removed', removePersonAsk:'Remove “{name}” from the team list? They disappear from the attendee picker.', errPName:'The name needs 1–80 characters.', errPRole:'The role can be at most 60 characters.', errPPhoto:'The photo must be a link starting with https://, or left empty.', noTeamAdmin:'No one has been added yet. Add the first person.', animTitle:'Animations', animOn:'On: animations play even though this device asks for reduced motion.', animOff:'Limited, because this device asks for reduced motion (a setting on your computer or phone). Turn them on for this app to get the full fluid animations.', animTurnOn:'Turn on', animTurnOff:'Use device setting', animTip:'Animations are limited because this device has Reduce Motion turned on. You can turn them on for this app under Security → Animations.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
+  pwSet:'Password set. {name} must change it at the next sign-in.', done2:'Two-step sign-in reset', recent:'Recent activity', tagTwoStep:'2-step', tagMustChange:'must change password', tagLocked:'locked', scanBtn:'Add from a photo', scanTitle:'Events from a photo', scanReading:'Reading the photo…', scanNone:'No events were found in that photo.', scanFound:'{n} found. Check them, then add.', scanAdd:'Add {n}', scanDup:'Already in the calendar', scanNoDate:'Pick a date', scanAdded:'{n} added to the calendar', scanNotSetUp:'Reading photos isn’t set up yet.', scanLimit:'Today’s photo limit is used up. Try again tomorrow.', scanFail:'Couldn’t read that photo. Try a clearer one.', scanTip:'Take a clear, straight photo of the invitation, flyer or schedule.', scanCheck:'check this', scanSaving:'Adding…', scanBadPhoto:'That photo can’t be used.', scanLangs:'Language in the photo', scanFirst:'The first time, the reading data is downloaded (about 10–20 MB). After that it works without internet.', scanRead:'Read the photo', scanLoadingReader:'Loading the reader…', scanReadingPct:'Reading the photo… {p}%', scanRaw:'Text read from the photo', scanFree:'Everything is read on this device: the photo is not sent anywhere.', errTeamAcct:'This account signs in with the team password, so it has no password of its own to change.', tagTeam:'team password', addPerson:'Add person', editPerson:'Edit person', personName:'Full name', personRole:'Role or position', personPhoto:'Photo link (optional)', personPhotoHint:'A link starting with https://. Without one, the person shows with their initials.', personAdded:'Person added', personSaved:'Person saved', personRemoved:'Person removed', removePersonAsk:'Remove “{name}” from the team list? They disappear from the attendee picker.', errPName:'The name needs 1–80 characters.', errPRole:'The role can be at most 60 characters.', errPPhoto:'The photo must be a link starting with https://, or left empty.', noTeamAdmin:'No one has been added yet. Add the first person.', animTitle:'Animations', animOn:'On: animations play even though this device asks for reduced motion.', animOff:'Limited, because this device asks for reduced motion (a setting on your computer or phone). Turn them on for this app to get the full fluid animations.', animTurnOn:'Turn on', animTurnOff:'Use device setting', animTip:'Animations are limited because this device has Reduce Motion turned on. You can turn them on for this app under Settings → Appearance → Animations.', settings:'Settings', setAccount:'Account', setAppearance:'Appearance', themeTitle:'Theme', glassTitle:'Glass effects', glassFull:'Full', glassSoft:'Soft', glassSolid:'Solid', glassHint:'Soft and Solid are lighter on an older phone.', langTitle:'Language', setCalendar:'Calendar', weekStart:'Week starts on', timeFormat:'Time format', dayPanel:'Day panel', dpBelow:'Below the month', dpAbove:'Above the month', setNotify:'Reminders', remNA:'Reminders aren’t available in this browser.', remOnDev:'Reminders are on for this device', remOffDev:'Reminders are off for this device', remHow:'A week and a day before each event, at the start of the working day.', remTest:'Send a test', remOffToast:'Reminders turned off for this device', setData:'Your data', exportIcs:'Export calendar (.ics)', exportJson:'Backup (JSON)', exportHint:'.ics opens in Apple, Google and Outlook calendars. The backup lists every event.', setAbout:'About', version:'Version', checkUpdates:'Check for updates', clearCache:'Clear app cache and reload', clearAsk:'Clear the app’s saved files and reload? You stay signed in and your events are not touched.', updating:'Updating…', installAndroid:'Install the Android app', installIos:'To install on iPhone: tap Share, then Add to Home Screen.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
   nothingPlanned:'Nothing planned.', tapAdd:'Tap “Add event” to put something on it.', noEvents:'No events yet.',
   dayEmpty:'Double-tap a day or press + to add one.',
   evWord:n=>n>1?'events':'event', nEvents:n=>`${n} event${n>1?'s':''}`, nDone:'{n} done',
@@ -1973,7 +2026,7 @@ zh:{
   setupKey:'设置密钥', openAuth:'在验证器应用中打开', recoveryTitle:'保存你的恢复码', recoveryHint:'如果手机丢失，每个恢复码可使用一次。它们只显示这一次。',
   copyCodes:'复制', copied:'已复制', savedThem:'我已保存', twoStepNowOn:'两步验证已开启', twoStepNowOff:'两步验证已关闭', askPwOff:'请输入密码以关闭两步验证。',
   setPw:'设置密码', setPwAsk:'为 {name} 设置临时密码。对方下次登录时必须更改。', reset2:'重置两步验证', reset2Ask:'关闭 {name} 的两步验证？之后对方只需密码即可登录。',
-  pwSet:'密码已设置。{name} 下次登录时必须更改。', done2:'两步验证已重置', recent:'最近活动', tagTwoStep:'两步验证', tagMustChange:'须更改密码', tagLocked:'已锁定', scanBtn:'从照片添加', scanTitle:'从照片添加活动', scanReading:'正在识别照片…', scanNone:'这张照片里没有找到活动。', scanFound:'找到 {n} 个。请检查后添加。', scanAdd:'添加 {n} 个', scanDup:'日历中已有', scanNoDate:'请选择日期', scanAdded:'已添加 {n} 个活动', scanNotSetUp:'尚未设置照片识别。', scanLimit:'今天的照片识别次数已用完，请明天再试。', scanFail:'无法识别这张照片，请换一张更清晰的。', scanTip:'请拍一张清晰、端正的邀请函、传单或日程表照片。', scanCheck:'请核对', scanSaving:'正在添加…', scanBadPhoto:'无法使用这张照片。', scanLangs:'照片中的语言', scanFirst:'首次使用需要下载识别数据（约 10–20 MB），之后无需网络即可使用。', scanRead:'识别照片', scanLoadingReader:'正在加载识别器…', scanReadingPct:'正在识别照片… {p}%', scanRaw:'从照片中读取的文字', scanFree:'所有识别都在本设备上完成：照片不会发送到任何地方。', errTeamAcct:'此账号使用团队密码登录，没有可更改的个人密码。', tagTeam:'团队密码', addPerson:'添加人员', editPerson:'编辑人员', personName:'姓名', personRole:'职位', personPhoto:'照片链接（可选）', personPhotoHint:'以 https:// 开头的链接。没有的话将显示姓名首字母。', personAdded:'已添加人员', personSaved:'已保存', personRemoved:'已移除', removePersonAsk:'将“{name}”从团队名单中移除？他们将从参加人员选择中消失。', errPName:'姓名需要 1–80 个字符。', errPRole:'职位最多 60 个字符。', errPPhoto:'照片必须是以 https:// 开头的链接，或留空。', noTeamAdmin:'还没有添加任何人。请添加第一位。', animTitle:'动画', animOn:'已开启：即使设备要求减少动态效果，也会播放动画。', animOff:'受限，因为此设备要求减少动态效果（电脑或手机上的设置）。为此应用开启后可获得完整的流畅动画。', animTurnOn:'开启', animTurnOff:'使用设备设置', animTip:'由于此设备开启了“减少动态效果”，动画受到限制。你可以在“安全”→“动画”中为此应用开启。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
+  pwSet:'密码已设置。{name} 下次登录时必须更改。', done2:'两步验证已重置', recent:'最近活动', tagTwoStep:'两步验证', tagMustChange:'须更改密码', tagLocked:'已锁定', scanBtn:'从照片添加', scanTitle:'从照片添加活动', scanReading:'正在识别照片…', scanNone:'这张照片里没有找到活动。', scanFound:'找到 {n} 个。请检查后添加。', scanAdd:'添加 {n} 个', scanDup:'日历中已有', scanNoDate:'请选择日期', scanAdded:'已添加 {n} 个活动', scanNotSetUp:'尚未设置照片识别。', scanLimit:'今天的照片识别次数已用完，请明天再试。', scanFail:'无法识别这张照片，请换一张更清晰的。', scanTip:'请拍一张清晰、端正的邀请函、传单或日程表照片。', scanCheck:'请核对', scanSaving:'正在添加…', scanBadPhoto:'无法使用这张照片。', scanLangs:'照片中的语言', scanFirst:'首次使用需要下载识别数据（约 10–20 MB），之后无需网络即可使用。', scanRead:'识别照片', scanLoadingReader:'正在加载识别器…', scanReadingPct:'正在识别照片… {p}%', scanRaw:'从照片中读取的文字', scanFree:'所有识别都在本设备上完成：照片不会发送到任何地方。', errTeamAcct:'此账号使用团队密码登录，没有可更改的个人密码。', tagTeam:'团队密码', addPerson:'添加人员', editPerson:'编辑人员', personName:'姓名', personRole:'职位', personPhoto:'照片链接（可选）', personPhotoHint:'以 https:// 开头的链接。没有的话将显示姓名首字母。', personAdded:'已添加人员', personSaved:'已保存', personRemoved:'已移除', removePersonAsk:'将“{name}”从团队名单中移除？他们将从参加人员选择中消失。', errPName:'姓名需要 1–80 个字符。', errPRole:'职位最多 60 个字符。', errPPhoto:'照片必须是以 https:// 开头的链接，或留空。', noTeamAdmin:'还没有添加任何人。请添加第一位。', animTitle:'动画', animOn:'已开启：即使设备要求减少动态效果，也会播放动画。', animOff:'受限，因为此设备要求减少动态效果（电脑或手机上的设置）。为此应用开启后可获得完整的流畅动画。', animTurnOn:'开启', animTurnOff:'使用设备设置', animTip:'由于此设备开启了“减少动态效果”，动画受到限制。你可以在“安全”→“动画”中为此应用开启。', settings:'设置', setAccount:'账号', setAppearance:'外观', themeTitle:'主题', glassTitle:'玻璃效果', glassFull:'完整', glassSoft:'柔和', glassSolid:'纯色', glassHint:'较旧的手机上，柔和和纯色更流畅。', langTitle:'语言', setCalendar:'日历', weekStart:'每周开始于', timeFormat:'时间格式', dayPanel:'当天面板', dpBelow:'在月历下方', dpAbove:'在月历上方', setNotify:'提醒', remNA:'此浏览器不支持提醒。', remOnDev:'此设备已开启提醒', remOffDev:'此设备未开启提醒', remHow:'在每个活动前一周和前一天、上班时间开始时提醒。', remTest:'发送测试', remOffToast:'此设备已关闭提醒', setData:'你的数据', exportIcs:'导出日历 (.ics)', exportJson:'备份 (JSON)', exportHint:'.ics 可在苹果、谷歌和 Outlook 日历中打开。备份包含所有活动。', setAbout:'关于', version:'版本', checkUpdates:'检查更新', clearCache:'清除应用缓存并重新加载', clearAsk:'清除应用保存的文件并重新加载？你仍保持登录，活动不受影响。', updating:'正在更新…', installAndroid:'安装安卓应用', installIos:'在 iPhone 上安装：点按“分享”，然后选择“添加到主屏幕”。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
   nothingPlanned:'暂时没有安排。', tapAdd:'点按“添加活动”来添加。', noEvents:'还没有活动。',
   dayEmpty:'双击某一天，或点按 + 来添加。',
   evWord:()=>'个活动', nEvents:n=>`${n} 个活动`, nDone:'已完成 {n}',
@@ -2032,7 +2085,7 @@ km:{
   setupKey:'សោដំឡើង', openAuth:'បើកក្នុងកម្មវិធីផ្ទៀងផ្ទាត់', recoveryTitle:'រក្សាទុកលេខកូដស្តារ', recoveryHint:'លេខកូដនីមួយៗប្រើបានម្តង ប្រសិនបើអ្នកបាត់ទូរសព្ទ។ វាបង្ហាញតែពេលនេះប៉ុណ្ណោះ។',
   copyCodes:'ចម្លង', copied:'បានចម្លង', savedThem:'ខ្ញុំបានរក្សាទុករួច', twoStepNowOn:'ការចូលពីរជំហានបានបើក', twoStepNowOff:'ការចូលពីរជំហានបានបិទ', askPwOff:'បញ្ចូលពាក្យសម្ងាត់របស់អ្នក ដើម្បីបិទការចូលពីរជំហាន។',
   setPw:'កំណត់ពាក្យសម្ងាត់', setPwAsk:'ពាក្យសម្ងាត់បណ្តោះអាសន្នសម្រាប់ {name}។ គាត់ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', reset2:'កំណត់ពីរជំហានឡើងវិញ', reset2Ask:'បិទការចូលពីរជំហានរបស់ {name}? បន្ទាប់មកគាត់នឹងចូលដោយប្រើតែពាក្យសម្ងាត់។',
-  pwSet:'បានកំណត់ពាក្យសម្ងាត់។ {name} ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', done2:'បានកំណត់ពីរជំហានឡើងវិញ', recent:'សកម្មភាពថ្មីៗ', tagTwoStep:'ពីរជំហាន', tagMustChange:'ត្រូវប្តូរពាក្យសម្ងាត់', tagLocked:'ជាប់សោ', scanBtn:'បន្ថែមពីរូបថត', scanTitle:'ព្រឹត្តិការណ៍ពីរូបថត', scanReading:'កំពុងអានរូបថត…', scanNone:'រកមិនឃើញព្រឹត្តិការណ៍ក្នុងរូបថតនោះទេ។', scanFound:'រកឃើញ {n}។ សូមពិនិត្យ រួចបន្ថែម។', scanAdd:'បន្ថែម {n}', scanDup:'មានក្នុងប្រតិទិនរួចហើយ', scanNoDate:'ជ្រើសរើសកាលបរិច្ឆេទ', scanAdded:'បានបន្ថែម {n} ទៅក្នុងប្រតិទិន', scanNotSetUp:'ការអានរូបថតមិនទាន់បានរៀបចំទេ។', scanLimit:'កម្រិតរូបថតថ្ងៃនេះត្រូវបានប្រើអស់ហើយ។ សូមសាកល្បងម្តងទៀតថ្ងៃស្អែក។', scanFail:'មិនអាចអានរូបថតនោះបានទេ។ សូមសាកល្បងរូបដែលច្បាស់ជាងនេះ។', scanTip:'ថតរូបឲ្យច្បាស់ និងត្រង់ នៃលិខិតអញ្ជើញ ខិត្តប័ណ្ណ ឬកាលវិភាគ។', scanCheck:'សូមពិនិត្យ', scanSaving:'កំពុងបន្ថែម…', scanBadPhoto:'មិនអាចប្រើរូបថតនោះបានទេ។', scanLangs:'ភាសានៅក្នុងរូបថត', scanFirst:'លើកដំបូង ទិន្នន័យអានត្រូវបានទាញយក (ប្រហែល 10–20 MB)។ បន្ទាប់មកវាដំណើរការដោយមិនបាច់មានអ៊ីនធឺណិត។', scanRead:'អានរូបថត', scanLoadingReader:'កំពុងផ្ទុកកម្មវិធីអាន…', scanReadingPct:'កំពុងអានរូបថត… {p}%', scanRaw:'អក្សរដែលអានពីរូបថត', scanFree:'ការអានទាំងអស់ធ្វើនៅលើឧបករណ៍នេះ៖ រូបថតមិនត្រូវបានផ្ញើទៅកន្លែងណាទេ។', errTeamAcct:'គណនីនេះចូលដោយប្រើពាក្យសម្ងាត់ក្រុម ដូច្នេះមិនមានពាក្យសម្ងាត់ផ្ទាល់ខ្លួនដើម្បីប្តូរទេ។', tagTeam:'ពាក្យសម្ងាត់ក្រុម', addPerson:'បន្ថែមបុគ្គលិក', editPerson:'កែបុគ្គលិក', personName:'ឈ្មោះពេញ', personRole:'តួនាទី', personPhoto:'តំណរូបថត (ស្រេចចិត្ត)', personPhotoHint:'តំណដែលចាប់ផ្តើមដោយ https://។ បើគ្មានទេ នឹងបង្ហាញអក្សរដំបូងនៃឈ្មោះ។', personAdded:'បានបន្ថែមបុគ្គលិក', personSaved:'បានរក្សាទុក', personRemoved:'បានដកចេញ', removePersonAsk:'ដក “{name}” ចេញពីបញ្ជីក្រុម? ពួកគេនឹងបាត់ពីការជ្រើសរើសអ្នកចូលរួម។', errPName:'ឈ្មោះត្រូវមាន 1–80 តួអក្សរ។', errPRole:'តួនាទីអតិបរមា 60 តួអក្សរ។', errPPhoto:'រូបថតត្រូវតែជាតំណដែលចាប់ផ្តើមដោយ https:// ឬទុកទទេ។', noTeamAdmin:'មិនទាន់មានអ្នកណាត្រូវបានបន្ថែមទេ។ សូមបន្ថែមអ្នកទីមួយ។', animTitle:'ចលនា', animOn:'បើក៖ ចលនានឹងដំណើរការ ទោះបីឧបករណ៍នេះស្នើឲ្យកាត់បន្ថយចលនាក៏ដោយ។', animOff:'មានកំណត់ ព្រោះឧបករណ៍នេះស្នើឲ្យកាត់បន្ថយចលនា (ការកំណត់លើកុំព្យូទ័រ ឬទូរសព្ទ)។ បើកវាសម្រាប់កម្មវិធីនេះ ដើម្បីទទួលបានចលនាទន់រលូនពេញលេញ។', animTurnOn:'បើក', animTurnOff:'ប្រើការកំណត់ឧបករណ៍', animTip:'ចលនាមានកំណត់ ព្រោះឧបករណ៍នេះបានបើក «កាត់បន្ថយចលនា»។ អ្នកអាចបើកវាសម្រាប់កម្មវិធីនេះនៅ សុវត្ថិភាព → ចលនា។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
+  pwSet:'បានកំណត់ពាក្យសម្ងាត់។ {name} ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', done2:'បានកំណត់ពីរជំហានឡើងវិញ', recent:'សកម្មភាពថ្មីៗ', tagTwoStep:'ពីរជំហាន', tagMustChange:'ត្រូវប្តូរពាក្យសម្ងាត់', tagLocked:'ជាប់សោ', scanBtn:'បន្ថែមពីរូបថត', scanTitle:'ព្រឹត្តិការណ៍ពីរូបថត', scanReading:'កំពុងអានរូបថត…', scanNone:'រកមិនឃើញព្រឹត្តិការណ៍ក្នុងរូបថតនោះទេ។', scanFound:'រកឃើញ {n}។ សូមពិនិត្យ រួចបន្ថែម។', scanAdd:'បន្ថែម {n}', scanDup:'មានក្នុងប្រតិទិនរួចហើយ', scanNoDate:'ជ្រើសរើសកាលបរិច្ឆេទ', scanAdded:'បានបន្ថែម {n} ទៅក្នុងប្រតិទិន', scanNotSetUp:'ការអានរូបថតមិនទាន់បានរៀបចំទេ។', scanLimit:'កម្រិតរូបថតថ្ងៃនេះត្រូវបានប្រើអស់ហើយ។ សូមសាកល្បងម្តងទៀតថ្ងៃស្អែក។', scanFail:'មិនអាចអានរូបថតនោះបានទេ។ សូមសាកល្បងរូបដែលច្បាស់ជាងនេះ។', scanTip:'ថតរូបឲ្យច្បាស់ និងត្រង់ នៃលិខិតអញ្ជើញ ខិត្តប័ណ្ណ ឬកាលវិភាគ។', scanCheck:'សូមពិនិត្យ', scanSaving:'កំពុងបន្ថែម…', scanBadPhoto:'មិនអាចប្រើរូបថតនោះបានទេ។', scanLangs:'ភាសានៅក្នុងរូបថត', scanFirst:'លើកដំបូង ទិន្នន័យអានត្រូវបានទាញយក (ប្រហែល 10–20 MB)។ បន្ទាប់មកវាដំណើរការដោយមិនបាច់មានអ៊ីនធឺណិត។', scanRead:'អានរូបថត', scanLoadingReader:'កំពុងផ្ទុកកម្មវិធីអាន…', scanReadingPct:'កំពុងអានរូបថត… {p}%', scanRaw:'អក្សរដែលអានពីរូបថត', scanFree:'ការអានទាំងអស់ធ្វើនៅលើឧបករណ៍នេះ៖ រូបថតមិនត្រូវបានផ្ញើទៅកន្លែងណាទេ។', errTeamAcct:'គណនីនេះចូលដោយប្រើពាក្យសម្ងាត់ក្រុម ដូច្នេះមិនមានពាក្យសម្ងាត់ផ្ទាល់ខ្លួនដើម្បីប្តូរទេ។', tagTeam:'ពាក្យសម្ងាត់ក្រុម', addPerson:'បន្ថែមបុគ្គលិក', editPerson:'កែបុគ្គលិក', personName:'ឈ្មោះពេញ', personRole:'តួនាទី', personPhoto:'តំណរូបថត (ស្រេចចិត្ត)', personPhotoHint:'តំណដែលចាប់ផ្តើមដោយ https://។ បើគ្មានទេ នឹងបង្ហាញអក្សរដំបូងនៃឈ្មោះ។', personAdded:'បានបន្ថែមបុគ្គលិក', personSaved:'បានរក្សាទុក', personRemoved:'បានដកចេញ', removePersonAsk:'ដក “{name}” ចេញពីបញ្ជីក្រុម? ពួកគេនឹងបាត់ពីការជ្រើសរើសអ្នកចូលរួម។', errPName:'ឈ្មោះត្រូវមាន 1–80 តួអក្សរ។', errPRole:'តួនាទីអតិបរមា 60 តួអក្សរ។', errPPhoto:'រូបថតត្រូវតែជាតំណដែលចាប់ផ្តើមដោយ https:// ឬទុកទទេ។', noTeamAdmin:'មិនទាន់មានអ្នកណាត្រូវបានបន្ថែមទេ។ សូមបន្ថែមអ្នកទីមួយ។', animTitle:'ចលនា', animOn:'បើក៖ ចលនានឹងដំណើរការ ទោះបីឧបករណ៍នេះស្នើឲ្យកាត់បន្ថយចលនាក៏ដោយ។', animOff:'មានកំណត់ ព្រោះឧបករណ៍នេះស្នើឲ្យកាត់បន្ថយចលនា (ការកំណត់លើកុំព្យូទ័រ ឬទូរសព្ទ)។ បើកវាសម្រាប់កម្មវិធីនេះ ដើម្បីទទួលបានចលនាទន់រលូនពេញលេញ។', animTurnOn:'បើក', animTurnOff:'ប្រើការកំណត់ឧបករណ៍', animTip:'ចលនាមានកំណត់ ព្រោះឧបករណ៍នេះបានបើក «កាត់បន្ថយចលនា»។ អ្នកអាចបើកវាសម្រាប់កម្មវិធីនេះនៅ សុវត្ថិភាព → ចលនា។', settings:'ការកំណត់', setAccount:'គណនី', setAppearance:'រូបរាង', themeTitle:'ស្បែក', glassTitle:'ឥទ្ធិពលកញ្ចក់', glassFull:'ពេញ', glassSoft:'ស្រាល', glassSolid:'ពណ៌ពេញ', glassHint:'ស្រាល និងពណ៌ពេញ ដំណើរការរលូនជាងលើទូរសព្ទចាស់។', langTitle:'ភាសា', setCalendar:'ប្រតិទិន', weekStart:'សប្តាហ៍ចាប់ផ្តើមនៅ', timeFormat:'ទម្រង់ម៉ោង', dayPanel:'ផ្ទាំងថ្ងៃ', dpBelow:'ក្រោមខែ', dpAbove:'លើខែ', setNotify:'ការរំលឹក', remNA:'កម្មវិធីរុករកនេះមិនគាំទ្រការរំលឹកទេ។', remOnDev:'ការរំលឹកបានបើកលើឧបករណ៍នេះ', remOffDev:'ការរំលឹកបានបិទលើឧបករណ៍នេះ', remHow:'មួយសប្តាហ៍ និងមួយថ្ងៃមុនព្រឹត្តិការណ៍នីមួយៗ នៅដើមម៉ោងធ្វើការ។', remTest:'ផ្ញើសាកល្បង', remOffToast:'បានបិទការរំលឹកលើឧបករណ៍នេះ', setData:'ទិន្នន័យរបស់អ្នក', exportIcs:'នាំចេញប្រតិទិន (.ics)', exportJson:'បម្រុងទុក (JSON)', exportHint:'.ics បើកបានក្នុងប្រតិទិន Apple, Google និង Outlook។ ការបម្រុងទុកមានព្រឹត្តិការណ៍ទាំងអស់។', setAbout:'អំពី', version:'កំណែ', checkUpdates:'ពិនិត្យមើលការធ្វើបច្ចុប្បន្នភាព', clearCache:'សម្អាតឃ្លាំងកម្មវិធី ហើយផ្ទុកឡើងវិញ', clearAsk:'សម្អាតឯកសារដែលកម្មវិធីបានរក្សាទុក ហើយផ្ទុកឡើងវិញ? អ្នកនៅតែចូលគណនី ហើយព្រឹត្តិការណ៍មិនប៉ះពាល់ទេ។', updating:'កំពុងធ្វើបច្ចុប្បន្នភាព…', installAndroid:'ដំឡើងកម្មវិធី Android', installIos:'ដើម្បីដំឡើងលើ iPhone៖ ចុច ចែករំលែក បន្ទាប់មក បន្ថែមទៅអេក្រង់ដើម។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
   nothingPlanned:'មិនមានអ្វីគ្រោងទុកទេ។', tapAdd:'ចុច «បន្ថែមព្រឹត្តិការណ៍» ដើម្បីបន្ថែម។', noEvents:'មិនទាន់មានព្រឹត្តិការណ៍ទេ។',
   dayEmpty:'ចុចពីរដងលើថ្ងៃ ឬចុច + ដើម្បីបន្ថែម។',
   evWord:()=>'ព្រឹត្តិការណ៍', nEvents:n=>`${n} ព្រឹត្តិការណ៍`, nDone:'រួចរាល់ {n}',
@@ -2067,7 +2120,7 @@ function jrTranslatePage(){
   document.querySelectorAll('[data-i18n-title]').forEach(e=>{ e.title=tx(e.dataset.i18nTitle); });
   document.querySelectorAll('[data-i18n-aria]').forEach(e=>{ e.setAttribute('aria-label', tx(e.dataset.i18nAria)); });
   document.querySelectorAll('[data-i18n-ph]').forEach(e=>{ e.placeholder=tx(e.dataset.i18nPh); });
-  document.querySelectorAll('#jr-cal-dow span').forEach((s,i)=>{ s.textContent=L[JR_LANG].dow[i]; });
+  document.querySelectorAll('#jr-cal-dow span').forEach((s,i)=>{ s.textContent=L[JR_LANG].dow[(i+JR_WEEK_START)%7]; });
   document.querySelectorAll('[data-lang-slot]').forEach(s=>{ s.innerHTML=jrLangHtml('jr-lang-'+s.dataset.langSlot); });
 }
 function jrSetLang(l){
@@ -2191,8 +2244,7 @@ function jrRenderMe(){
   if(typeof jrSyncPeopleTab==='function') jrSyncPeopleTab();
   const el=document.getElementById('jr-me'); if(!el) return;
   el.innerHTML=JR_USER?`<span>${esc(JR_USER.name)}${!jrCanEdit()?` <em class="jr-role">${esc(tx('roleViewerNote'))}</em>`:''}</span>`
-    +(jrRole()==='admin'?`<button type="button" class="mini" onclick="jrAccounts()">${esc(tx('accounts'))}</button>`:'')
-    +`<button type="button" class="mini" onclick="jrSecurity()">${esc(tx('security'))}</button><button type="button" class="mini" onclick="jrSignOut()">${esc(tx('signOut'))}</button>`:'';
+    +`<button type="button" class="jr-gear" onclick="jrSettings()" title="${esc(tx('settings'))}" aria-label="${esc(tx('settings'))}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>${esc(tx('settings'))}</span></button>`:'';
 }
 // the signed-in account as the server has it now (an admin may have changed the role since)
 async function jrRefreshMe(){
@@ -2306,13 +2358,11 @@ function jrSecurity(){
   const home=()=>{
     card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('security'))}</h2></div>
       ${JR_USER.team_key?`<div class="jr-sec-row"><div><b>${esc(tx('tagTeam'))}</b><small>${esc(tx('errTeamAcct'))}</small></div></div>`:`<div class="jr-sec-row"><div><b>${esc(tx('changePw'))}</b><small>${esc(tx('pwRules'))}</small></div><button class="mini" data-a="pw">${esc(tx('changePw'))}</button></div>`}
-      ${K_REDUCED_OS.matches?`<div class="jr-sec-row"><div><b>${esc(tx('animTitle'))}</b><small>${esc(JR_MOTION_FULL?tx('animOn'):tx('animOff'))}</small></div><button class="mini" data-a="motion">${esc(JR_MOTION_FULL?tx('animTurnOff'):tx('animTurnOn'))}</button></div>`:''}
       <div class="jr-sec-row"><div><b>${esc(tx('twoStep'))}</b><small>${esc(JR_USER.totp_on?tx('twoStepOn'):tx('twoStepOff'))}</small></div>
         <button class="mini${JR_USER.totp_on?' jr-ae-del':''}" data-a="2fa">${esc(JR_USER.totp_on?tx('turnOff'):tx('turnOn'))}</button></div>
       <div class="item-edit-actions"><button class="mini" data-a="close">${esc(tx('close'))}</button></div>`;
     card.onclick=async e=>{ const a=e.target.closest('[data-a]')?.dataset.a; if(!a) return;
       if(a==='close') dismiss(ov);
-      if(a==='motion'){ JR_MOTION_FULL=!JR_MOTION_FULL; try{ localStorage.setItem('yai_motion',JR_MOTION_FULL?'full':'auto'); }catch(_){} jrApplyMotion(); home(); }
       if(a==='pw'){ dismiss(ov); jrChangePassword(false); }
       if(a==='2fa'){
         if(JR_USER.totp_on){
@@ -2493,9 +2543,11 @@ function jrDayLabel(iso){
   if(diffDays===-1) return `<span class="rel">${esc(tx('yesterday'))}</span>`;
   return jrFmtShort(d);   // Sat 10 Oct
 }
-function jrTimeLabel(t){ return t ? t.slice(0,5) : '—'; }
+// 24-hour by default; Settings can switch to 12-hour (2:30pm)
+const jrT12=t=>{ const h=+t.slice(0,2), m=t.slice(3,5); return ((h%12)||12)+':'+m+(h<12?'am':'pm'); };
+function jrTimeLabel(t){ return t ? (JR_TIME12?jrT12(t):t.slice(0,5)) : '—'; }
 // for the day squares, where every letter counts: "09:30:00" → "9:30"
-function jrShortTime(t){ return t ? t.slice(0,5).replace(/^0(\d)/,'$1') : ''; }
+function jrShortTime(t){ return t ? (JR_TIME12?jrT12(t):t.slice(0,5).replace(/^0(\d)/,'$1')) : ''; }
 // An event can run from a time to a time, and over several days (end_date). These say where it ends and
 // how to write its span; every view uses them, so a multi-day event shows on each day it covers.
 const jrEnd=e=>e.end_date && e.end_date>e.event_date ? e.end_date : e.event_date;   // its last day
@@ -2824,6 +2876,127 @@ function jrScanStart(files){
     draw();
   }
   start();
+}
+
+// ---- Settings ----
+// Everything a person can change about the app on this device, in one place: the account, how it looks (theme, glass, language,
+// animations), the calendar (week start, time format, where the day panel sits), reminders, getting the data out, and the version.
+// Choices are kept on the device (localStorage) except the account itself. Keys: sk_theme, yai_glass, yai_week, yai_time, yai_motion,
+// jr_dayfirst, yai_lang.
+const JR_THEMES=[['latte','Latte','#eff1f5','#1e66f5'],['daylight','Daylight','#ffffff','#2563eb'],['tokyo','Tokyo Night','#222436','#82aaff'],['gruvbox','Gruvbox','#282828','#fabd2f'],
+  ['nord','Nord','#2e3440','#88c0d0'],['rose-pine','Rosé Pine','#191724','#c4a7e7'],['odin-black','Black','#000000','#9ece6a'],['forest','Forest','#1b2b24','#8fbf7f']];
+const jrSetPref=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(_){} };
+function jrApplyGlass(){ const g=jrPref('yai_glass','full'); document.documentElement.classList.toggle('gl-soft',g==='soft'); document.documentElement.classList.toggle('gl-solid',g==='solid'); }
+function jrSetTheme(t){ document.documentElement.setAttribute('data-theme',t); jrSetPref('sk_theme',t); }
+const jrIcsDate=iso=>iso.replace(/-/g,'');
+function jrIcsText(t){ return String(t||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\;'); }
+function jrIcsFold(l){ let o=''; while(l.length>72){ o+=l.slice(0,72)+'\r\n '; l=l.slice(72); } return o+l; }
+// the calendar as an .ics file (opens in Apple/Google/Outlook calendars); times are the same wall-clock times, no zone
+function jrExportIcs(){
+  const now=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z'), L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Yai Calendar//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:Yai Calendar'];
+  for(const e of JOURNAL_EVENTS){
+    L.push('BEGIN:VEVENT','UID:yai-'+e.id+'@yai-calendar','DTSTAMP:'+now);
+    const end=jrEnd(e);
+    if(e.event_time){
+      const st=e.event_time.slice(0,5).replace(':','')+'00';
+      let et=e.end_time?e.end_time.slice(0,5).replace(':','')+'00':null, ed=end;
+      if(!et){ const h=Math.min(23,+e.event_time.slice(0,2)+1); et=String(h).padStart(2,'0')+e.event_time.slice(3,5)+'00'; ed=e.event_date; }
+      L.push('DTSTART:'+jrIcsDate(e.event_date)+'T'+st,'DTEND:'+jrIcsDate(ed)+'T'+et);
+    } else {
+      L.push('DTSTART;VALUE=DATE:'+jrIcsDate(e.event_date),'DTEND;VALUE=DATE:'+jrIcsDate(jrAddDays(end,1)));
+    }
+    L.push('SUMMARY:'+jrIcsText(e.title));
+    if(e.location) L.push('LOCATION:'+jrIcsText(e.location));
+    const who=jrAttendees(e).map(jrPName).join(', ');
+    const desc=[e.notes, e.category?'#'+e.category:'', who?'Attending: '+who:''].filter(Boolean).join('\n');
+    if(desc) L.push('DESCRIPTION:'+jrIcsText(desc));
+    if(e.done) L.push('STATUS:CONFIRMED','X-YAI-DONE:1');
+    L.push('END:VEVENT');
+  }
+  L.push('END:VCALENDAR'); jrDownload('yai-calendar.ics','text/calendar;charset=utf-8',L.map(jrIcsFold).join('\r\n')+'\r\n');
+}
+function jrExportJson(){ jrDownload('yai-calendar-backup.json','application/json',JSON.stringify({exported:new Date().toISOString(),events:JOURNAL_EVENTS},null,2)); }
+function jrDownload(name,type,text){
+  const u=URL.createObjectURL(new Blob([text],{type})), a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000);
+}
+async function jrRemState(){
+  if(!jrPushable()) return {ok:false};
+  try{   // no service worker yet (first visit, or one that failed): don't wait for ever
+    const reg=await Promise.race([navigator.serviceWorker.ready, new Promise((_,rej)=>setTimeout(()=>rej(new Error('no worker')),2500))]);
+    const sub=await reg.pushManager.getSubscription(); return {ok:true,on:!!sub&&Notification.permission==='granted',sub};
+  }catch(_){ return {ok:false}; }
+}
+function jrSettings(){
+  if(document.getElementById('set-ov')) return;
+  const ov=document.createElement('div'); ov.className='modal-ov'; ov.id='set-ov';
+  const card=document.createElement('div'); card.className='modal-card jr-set'; card.style.cssText='max-width:30rem;width:100%';
+  ov.appendChild(card); document.body.appendChild(ov); ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
+  const chips=(key,cur,opts)=>`<div class="jr-chips" role="group">${opts.map(([v,label])=>`<button type="button" class="jr-chipbtn${cur===v?' on':''}" data-set="${key}" data-v="${esc(v)}" aria-pressed="${cur===v}">${esc(label)}</button>`).join('')}</div>`;
+  const row=(label,control,hint)=>`<div class="jr-set-row"><div class="jr-set-l"><b>${esc(label)}</b>${hint?`<small>${esc(hint)}</small>`:''}</div><div class="jr-set-c">${control}</div></div>`;
+  const curTheme=document.documentElement.getAttribute('data-theme')||'latte';
+  const dow=L[JR_LANG].dow;
+  const iosBrowser=jrIsIOS() && !navigator.standalone, android=/Android/i.test(navigator.userAgent);
+  const draw=()=>{
+    card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('settings'))}</h2></div>
+    ${JR_USER?`<section class="jr-set-sec"><h3>${esc(tx('setAccount'))}</h3>
+      <div class="jr-set-acct"><span class="jr-av jr-set-av" style="--h:${(JR_USER.id*137)%360}"><b>${esc(jrInitials(JR_USER.name))}</b></span>
+        <div><b>${esc(JR_USER.name)}</b><small>@${esc(JR_USER.username)} · <em class="jr-role">${esc(tx('role'+jrRole()[0].toUpperCase()+jrRole().slice(1)))}</em></small></div></div>
+      <div class="jr-set-btns"><button class="mini" data-act="security">${esc(tx('security'))}</button>${jrRole()==='admin'?`<button class="mini" data-act="accounts">${esc(tx('accounts'))}</button>`:''}<button class="mini jr-ae-del" data-act="signout">${esc(tx('signOut'))}</button></div></section>`:''}
+    <section class="jr-set-sec"><h3>${esc(tx('setAppearance'))}</h3>
+      ${row(tx('themeTitle'),`<div class="jr-themes">${JR_THEMES.map(([k,n,bg,ac])=>`<button type="button" class="jr-theme${curTheme===k?' on':''}" data-set="theme" data-v="${k}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${curTheme===k}"><i style="background:linear-gradient(135deg,${bg} 50%,${ac} 50%)"></i><span>${esc(n)}</span></button>`).join('')}</div>`)}
+      ${row(tx('glassTitle'),chips('glass',jrPref('yai_glass','full'),[['full',tx('glassFull')],['soft',tx('glassSoft')],['solid',tx('glassSolid')]]),tx('glassHint'))}
+      ${row(tx('langTitle'),chips('lang',JR_LANG,[['en','English'],['zh','中文'],['km','ខ្មែរ']]))}
+      ${K_REDUCED_OS.matches?row(tx('animTitle'),chips('motion',JR_MOTION_FULL?'full':'auto',[['auto',tx('animTurnOff')],['full',tx('animTurnOn')]]),JR_MOTION_FULL?tx('animOn'):tx('animOff')):''}
+    </section>
+    <section class="jr-set-sec"><h3>${esc(tx('setCalendar'))}</h3>
+      ${row(tx('weekStart'),chips('week',String(JR_WEEK_START),[['0',dow[0]],['1',dow[1]]]))}
+      ${row(tx('timeFormat'),chips('time',JR_TIME12?'12':'24',[['24','24h  (14:30)'],['12','12h  (2:30pm)']]))}
+      ${row(tx('dayPanel'),chips('dayfirst',document.body.classList.contains('jr-dayfirst')?'above':'below',[['below',tx('dpBelow')],['above',tx('dpAbove')]]))}
+    </section>
+    <section class="jr-set-sec"><h3>${esc(tx('setNotify'))}</h3><div id="set-rem" class="jr-set-rem"><small>…</small></div></section>
+    <section class="jr-set-sec"><h3>${esc(tx('setData'))}</h3>
+      <div class="jr-set-btns"><button class="mini" data-act="ics">${esc(tx('exportIcs'))}</button><button class="mini" data-act="json">${esc(tx('exportJson'))}</button></div>
+      <p class="jr-ae-hint">${esc(tx('exportHint'))}</p></section>
+    <section class="jr-set-sec"><h3>${esc(tx('setAbout'))}</h3>
+      <div class="jr-set-about"><span>${esc(tx('version'))} <b id="set-ver">…</b></span>
+        <div class="jr-set-btns"><button class="mini" data-act="update">${esc(tx('checkUpdates'))}</button><button class="mini" data-act="clear">${esc(tx('clearCache'))}</button>
+        ${android?`<a class="mini" href="Yai-Calendar.apk" download>${esc(tx('installAndroid'))}</a>`:''}</div>
+        ${iosBrowser?`<p class="jr-ae-hint">${esc(tx('installIos'))}</p>`:''}</div></section>
+    <div class="item-edit-actions"><button class="act" data-act="close">${esc(tx('close'))}</button></div>`;
+    jrSetRem(); fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>{ const m=t.match(/yai-shell-v(\d+)/); const el=card.querySelector('#set-ver'); if(el) el.textContent=m?'v'+m[1]:'—'; }).catch(()=>{ const el=card.querySelector('#set-ver'); if(el) el.textContent='—'; });
+  };
+  async function jrSetRem(){
+    const box=card.querySelector('#set-rem'); if(!box) return; const st=await jrRemState(); if(!card.isConnected) return;
+    if(!st.ok){ box.innerHTML=`<small>${esc(tx(jrIsIOS()&&!navigator.standalone?'remIphone':'remNA'))}</small>`; return; }
+    box.innerHTML=st.on?`<div class="jr-set-row"><div class="jr-set-l"><b>${esc(tx('remOnDev'))}</b><small>${esc(tx('remHow'))}</small></div><div class="jr-set-c"><button class="mini" data-act="remtest">${esc(tx('remTest'))}</button><button class="mini" data-act="remoff">${esc(tx('turnOff'))}</button></div></div>`
+      :`<div class="jr-set-row"><div class="jr-set-l"><b>${esc(tx('remOffDev'))}</b><small>${esc(tx('remHow'))}</small></div><div class="jr-set-c"><button class="mini" data-act="remon">${esc(tx('turnOn'))}</button></div></div>`;
+  }
+  card.onclick=async e=>{
+    const s=e.target.closest('[data-set]'), a=e.target.closest('[data-act]')?.dataset.act;
+    if(s){ const k=s.dataset.set, v=s.dataset.v;
+      if(k==='theme') jrSetTheme(v);
+      else if(k==='glass'){ jrSetPref('yai_glass',v); jrApplyGlass(); }
+      else if(k==='lang') jrSetLang(v);
+      else if(k==='motion'){ JR_MOTION_FULL=v==='full'; jrSetPref('yai_motion',v); jrApplyMotion(); }
+      else if(k==='week'){ JR_WEEK_START=+v; jrSetPref('yai_week',v); jrTranslatePage(); jrRender(); }
+      else if(k==='time'){ JR_TIME12=v==='12'; jrSetPref('yai_time',v); JR_UPNEXT_SIG=''; jrRender(); jrRenderUpNext(); }
+      else if(k==='dayfirst'){ if((v==='above')!==document.body.classList.contains('jr-dayfirst')) jrSwapPanels(); }
+      draw(); return; }
+    if(!a) return;
+    if(a==='close') dismiss(ov);
+    else if(a==='security'){ dismiss(ov); jrSecurity(); }
+    else if(a==='accounts'){ dismiss(ov); jrAccounts(); }
+    else if(a==='signout'){ dismiss(ov); jrSignOut(); }
+    else if(a==='ics') jrExportIcs();
+    else if(a==='json') jrExportJson();
+    else if(a==='update'){ toast(tx('updating')); try{ const reg=await navigator.serviceWorker.getRegistration(); await reg?.update(); }catch(_){} setTimeout(()=>location.reload(),900); }
+    else if(a==='clear'){ if(!await askConfirm(tx('clearAsk'),tx('clearCache'))) return;
+      try{ for(const k of await caches.keys()) await caches.delete(k); const regs=await navigator.serviceWorker.getRegistrations(); for(const r of regs) await r.unregister(); }catch(_){} location.reload(); }
+    else if(a==='remon'){ await jrTurnOnReminders(); setTimeout(jrSetRem,1500); }
+    else if(a==='remtest'){ try{ toast(await jrSubscribe(true)?tx('remOn'):tx('remNoServer'),4000); }catch(err){ toast(jrPushWhy(err),8000); } }
+    else if(a==='remoff'){ const st=await jrRemState(); try{ if(st.sub){ const ep=st.sub.endpoint; await st.sub.unsubscribe(); try{ await api('/api/push/unsubscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:ep})}); }catch(_){} } toast(tx('remOffToast')); }catch(err){ toast(jrPushWhy(err)); } jrSetRem(); }
+  };
+  draw();
 }
 
 // ---- the People tab (editors and admins): give each person a nickname ----
@@ -3328,9 +3501,10 @@ function renderCalendar(opt={}){
     .sort((a,b)=>a.event_date.localeCompare(b.event_date) || jrEnd(b).localeCompare(jrEnd(a)) || a.id-b.id);
   for(const e of JOURNAL_EVENTS) if(!jrMulti(e)) (byDate[e.event_date] = byDate[e.event_date] || []).push(e);
   const firstOfMonth = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1);
-  const gridStart = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1 - firstOfMonth.getDay());   // weeks start on Sunday
+  const lead = (firstOfMonth.getDay() - JR_WEEK_START + 7) % 7;   // days of the previous month shown first (weeks start on Sunday or Monday, Settings)
+  const gridStart = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1 - lead);
   // 5 or 6 weeks, whichever the month needs, so the rows are as tall as they can be
-  const weeks = Math.ceil((firstOfMonth.getDay() + new Date(JR_CAL_YEAR, JR_CAL_MONTH+1, 0).getDate()) / 7);
+  const weeks = Math.ceil((lead + new Date(JR_CAL_YEAR, JR_CAL_MONTH+1, 0).getDate()) / 7);
   const [mTitle,yTitle]=jrCalTitle(JR_CAL_YEAR,JR_CAL_MONTH);
   $('#jr-cal-month').textContent = mTitle;
   $('#jr-cal-year').textContent = yTitle;
