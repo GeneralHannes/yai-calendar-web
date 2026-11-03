@@ -2526,6 +2526,9 @@ function jrParseEvents(lines, today){
     while((m=reMD.exec(s))){ const mo=monthOf(m[1]); if(!mo) continue; if(found.some(f=>f.row===i&&Math.abs(f.idx-m.index)<m[0].length)) continue;
       const y=+m[5]||0; const a=iso(y,mo,+m[2]); let b=null; if(m[4]) b=iso(y,m[3]?monthOf(m[3]):mo,+m[4]);
       if(a){ found.push({from:a,to:b&&b>a?b:null,row:i,idx:m.index}); take(i,m); } }
+    // a slash the OCR lost or turned into a character: 20/11 12026, 20/11|2026
+    const reFz=/(?<![\d.:])(\d{1,2})[/.-](\d{1,2})\s{0,2}[1Il|/\\.-]\s?(20\d\d)(?!\d)/g;
+    while((m=reFz.exec(s))){ let d=+m[1], mo=+m[2]; if(mo>12&&d<=12){ [d,mo]=[mo,d]; } const x=iso(+m[3],mo,d); if(x&&!found.some(f=>f.row===i&&f.from===x)){ found.push({from:x,row:i,idx:m.index}); take(i,m); } }
     // 12/11/2026, 12-11-26, 12.11.2026 (day first, as written here; month first only when the day part can't be a month)
     const reN=/(?<![\d.:])(\d{1,2})[/.-](\d{1,2})[/.-](\d{2}|20\d\d)(?![\d:])/g;
     while((m=reN.exec(s))){ let d=+m[1], mo=+m[2]; if(mo>12&&d<=12){ [d,mo]=[mo,d]; } const x=iso(+m[3],mo,d); if(x&&!found.some(f=>f.row===i&&f.from===x)){ found.push({from:x,row:i,idx:m.index}); take(i,m); } }
@@ -2568,7 +2571,9 @@ function jrParseEvents(lines, today){
   let ti=-1; for(const i of (pool.length?pool:cand)){ if(ti<0||rows[i].h>rows[ti].h*1.08) ti=i; }
   let title=''; const taken=new Set();
   if(ti>=0){ title=stripped[ti]; taken.add(ti);
-    const nx=ti+1; if(nx<rows.length && cand.includes(nx) && rows[ti].h && rows[nx].h>=rows[ti].h*.85 && title.length<60){ title+=' '+stripped[nx]; taken.add(nx); } }
+    const big=rows[ti].h; let a=ti-1, b=ti+1;
+    while(a>=0 && cand.includes(a) && !taken.has(a) && big && rows[a].h>=big*.8 && title.length<60){ title=stripped[a]+' '+title; taken.add(a); a--; }
+    while(b<rows.length && cand.includes(b) && !taken.has(b) && big && rows[b].h>=big*.8 && title.length<60){ title+=' '+stripped[b]; taken.add(b); b++; } }
   title=title.replace(/^[\s\-–•*·:|"'“”]+|[\s\-–•*·:|"'“”]+$/g,'').slice(0,120);
 
   // place: "Venue: …" or a line that names one
