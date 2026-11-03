@@ -1437,6 +1437,10 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-rail .jr-monthnav .jr-add, .jr-monthnav .jr-add { flex:0 0 3.3rem; width:3.3rem; height:3.3rem; margin:0 0 0 .1rem; border-radius:50%; }   /* a round + */
     .jr-monthnav .jr-add svg { width:26px; height:26px; }
     html, body { overflow-x:clip; }   /* the page never pans sideways */
+    /* Agenda and People have no ‹ Today ›: the views take the room, and the photo button and + stay their own size */
+    body:not(.jr-cal-view) .jr-rail .jr-viewtoggle { flex:1 1 0; }
+    body:not(.jr-cal-view) .jr-rail .jr-monthnav { flex:0 0 auto; margin-left:auto; }
+    body:not(.jr-cal-view) .jr-monthnav .jr-scan { flex:0 0 3.3rem; width:3.3rem; }
   }
   .jr-scan-wait { display:flex; align-items:center; gap:.7rem; padding:1.4rem .2rem; color:var(--muted); }
   .jr-spin { width:1.2rem; height:1.2rem; border-radius:50%; border:2.5px solid color-mix(in srgb,var(--accent) 25%,transparent); border-top-color:var(--accent); animation:jrSpin .8s linear infinite; }
@@ -1505,6 +1509,16 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-cell.jr-check, .jr-cell.jr-del { align-items:flex-start; padding-top:.55rem; font-size:1rem; }
   .jr-cell.jr-check { border-right-color:transparent; }
   .jr-cell .jr-ag-ppl { flex:none; width:auto; order:0; margin:.2rem 0 .1rem; }
+  /* each agenda row in its event's colour: the same light fill and dark shade as its bar in the calendar (jrTint sets
+     --k-act and --accent on the row) */
+  .jr-row .jr-cell { background:color-mix(in srgb,var(--k-act) 62%,var(--k-bg2)); color:var(--accent); }
+  .jr-row .jr-cell:hover, .jr-row .jr-cell:active { background:color-mix(in srgb,var(--k-act) 85%,var(--k-bg2)); }
+  .jr-row .jr-cell.jr-time { box-shadow:inset 4px 0 0 var(--accent); padding-left:.7rem; }
+  .jr-row .jr-cell .muted, .jr-row .jr-cell .jr-by, .jr-row .jr-cell .jr-ag-where, .jr-row .jr-cell .jr-notes-txt { color:color-mix(in srgb,var(--accent) 78%,transparent); }
+  .jr-row .jr-cell .chip-lbl { color:var(--accent); background:color-mix(in srgb,var(--k-act) 100%,#fff 0%); border:1px solid color-mix(in srgb,var(--accent) 25%,transparent); }
+  .jr-row .jr-cell.jr-check.done { color:var(--accent); }
+  .jr-row .jr-cell.jr-del:hover { color:var(--warn); }
+  .jr-row.done .jr-cell { opacity:.62; }
   /* the category column: room for a real label, wrapping rather than cut off, lined up with the other cells */
   @media (min-width:641px) { .jr-table { grid-template-columns:5.2rem 1fr 9.5rem 2.2rem 2.2rem; } }
   .jr-cell.jr-cat { white-space:normal; overflow:visible; align-items:flex-start; padding-top:.6rem; }
