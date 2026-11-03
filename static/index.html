@@ -1405,6 +1405,11 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-pp-btn { width:2.5rem; height:2.5rem; font-size:1.05rem; }   /* a finger-sized target */
   }
 
+  /* iPhone Safari zooms the whole page when a field with text smaller than 16px is tapped, and it stays zoomed afterwards.
+     On touch screens every field is at least 16px, so it never does (pinch-zoom still works as usual). */
+  @media (pointer:coarse), (hover:none) {
+    input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea { font-size:max(16px,1rem) !important; }
+  }
   /* ================= add from a photo ================= */
   .jr-scan { all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.45rem; color:var(--accent); border-radius:999px; position:relative; }
   .jr-scan:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
