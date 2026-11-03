@@ -2264,22 +2264,19 @@ function jrSignIn(){
     setTimeout(()=>{ try{ f.code.focus(); }catch(_){} }, 60);
   };
   const draw=()=>{
-    const up=mode==='up';
+    const up=false;   // there is no sign-up any more: the team password makes an account on first use
     ov.innerHTML=`<form class="jr-signin-card" autocomplete="on">
       <img src="static/icon-192.png" class="jr-signin-mark" alt="">
-      <h2>${esc(up?tx('createAccount'):tx('signIn'))}</h2>
-      <p class="muted">${esc(up?tx('usernameShown'):tx('sharedTeam'))}</p>
+      <h2>${esc(tx('signIn'))}</h2>
+      <p class="muted">${esc(tx('usernameShown'))}</p>
       <label class="field"><span>${esc(tx('username'))}</span><input name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32"></label>
       <label class="field"><span>${esc(tx('password'))}</span><input name="password" type="password" autocomplete="${up?'new-password':'current-password'}"></label>
-      ${up?`<p class="muted jr-pwrules">${esc(tx('pwRules'))}</p>`:''}
       ${up&&JR_AUTH?.team_code?`<label class="field"><span>${esc(tx('teamCode'))}</span><input name="code" inputmode="numeric" autocomplete="off"></label>`:''}
-      <button class="act" type="submit">${esc(up?tx('createAccount'):tx('signIn'))}</button>
+      <button class="act" type="submit">${esc(tx('signIn'))}</button>
       <div class="jr-signin-err" role="alert"></div>
-      <button class="jr-signin-switch" type="button">${esc(up?tx('haveAccount'):tx('newHere'))}</button>
       ${jrLangHtml('jr-lang-signin')}
     </form>`;
     const f=ov.querySelector('form'), errEl=ov.querySelector('.jr-signin-err'), go=f.querySelector('[type=submit]');
-    ov.querySelector('.jr-signin-switch').onclick=()=>{ mode=up?'in':'up'; draw(); };
     f.onsubmit=async e=>{
       e.preventDefault();
       const v=Object.fromEntries(new FormData(f));
