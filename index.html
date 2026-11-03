@@ -3630,6 +3630,10 @@ function jrFitCells(){
 }
 // An event's details in a small card that springs out of it: when, where (a Maps link), category, notes, who added
 // it, with Edit / Done / Delete. Tapping outside, Escape, or picking another day closes it.
+// where the pointer (mouse or finger) was last, so a card can open beside it
+let JR_PTR={x:0,y:0,t:0,touch:false};
+addEventListener('pointerdown',e=>{ JR_PTR={x:e.clientX,y:e.clientY,t:Date.now(),touch:e.pointerType!=='mouse'}; },true);
+addEventListener('pointermove',e=>{ if(e.pointerType==='mouse') JR_PTR={x:e.clientX,y:e.clientY,t:Date.now(),touch:false}; },{passive:true,capture:true});
 function jrEventPop(id, iso){
   const e=jrEvent(id); if(!e) return;
   jrPopClose(true);
@@ -3653,11 +3657,22 @@ function jrEventPop(id, iso){
       <button class="mini jr-pop-del" data-a="del"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:3px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>${esc(tx('del'))}</button>
     </div>`;
   document.body.appendChild(p);
-  // beside the event: below it if there's room, else above; kept on screen
-  const W=p.offsetWidth, H=p.offsetHeight, m=8;
-  const left=Math.min(Math.max(m, r.left+r.width/2-W/2), innerWidth-W-m);
-  const below=r.bottom+6+H<=innerHeight-m, top=below ? r.bottom+6 : Math.max(m, r.top-6-H);
-  Object.assign(p.style,{left:left+'px', top:top+'px', transformOrigin:`${Math.min(W,Math.max(0,r.left+r.width/2-left))}px ${below?0:H}px`});
+  // beside the pointer: to its lower right, or the other side where there isn't room (a finger covers what's under it, so for touch
+  // it opens above the finger when it fits); kept on screen. With no recent pointer (keyboard), beside the event as before.
+  const W=p.offsetWidth, H=p.offsetHeight, m=8, g=14, near=Date.now()-JR_PTR.t<2500;
+  let left, top, ox, oy;
+  if(near){
+    const px=JR_PTR.x, py=JR_PTR.y;
+    if(JR_PTR.touch){ left=px-W/2; top=py-H-22; if(top<m) top=py+26; }
+    else { left=px+g; top=py+g; if(left+W>innerWidth-m) left=px-W-g; if(top+H>innerHeight-m) top=py-H-g; }
+    left=Math.min(Math.max(m,left),innerWidth-W-m); top=Math.min(Math.max(m,top),innerHeight-H-m);
+    ox=Math.min(W,Math.max(0,px-left)); oy=Math.min(H,Math.max(0,py-top));
+  } else {
+    left=Math.min(Math.max(m, r.left+r.width/2-W/2), innerWidth-W-m);
+    const below=r.bottom+6+H<=innerHeight-m; top=below ? r.bottom+6 : Math.max(m, r.top-6-H);
+    ox=Math.min(W,Math.max(0,r.left+r.width/2-left)); oy=below?0:H;
+  }
+  Object.assign(p.style,{left:left+'px', top:top+'px', transformOrigin:`${ox}px ${oy}px`});
   requestAnimationFrame(()=>p.classList.add('on'));
   // with a mouse it's a peek: it closes once the pointer has left both the event and the card (a short grace lets
   // the pointer cross the gap between them). Touch screens keep it until a tap elsewhere.
