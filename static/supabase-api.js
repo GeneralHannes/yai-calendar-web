@@ -54,6 +54,10 @@
     if (us2 && us2[2] === "password" && method === "POST") return rpc(origin, "yai_admin_set_password", { p_token: token, p_id: +us2[1], p_password: body.password ?? "" });
     if (us2 && us2[2] === "reset2fa" && method === "POST") return rpc(origin, "yai_admin_reset_2fa", { p_token: token, p_id: +us2[1] });
     if (us && !us[2] && method === "DELETE") return rpc(origin, "yai_remove_user", { p_token: token, p_id: +us[1] });
+    if (path === "/api/people" && method === "POST") return rpc(origin, "yai_add_person", { p_token: token, p_person: body });
+    const pe = path.match(/^\/api\/people\/([^/]+)$/);
+    if (pe && method === "POST") return rpc(origin, "yai_update_person", { p_token: token, p_code: decodeURIComponent(pe[1]), p_person: body });
+    if (pe && method === "DELETE") return rpc(origin, "yai_remove_person", { p_token: token, p_code: decodeURIComponent(pe[1]) });
     const pp = path.match(/^\/api\/people\/([^/]+)\/nickname$/);
     if (pp && method === "POST") return rpc(origin, "yai_set_nickname", { p_token: token, p_code: decodeURIComponent(pp[1]), p_nickname: body.nickname ?? "" });
     if (path === "/api/scan" && method === "POST") return functionCall(origin, "scan-event", { token, images: body.images, today: body.today });

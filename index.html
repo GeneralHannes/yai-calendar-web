@@ -1241,7 +1241,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     display:grid; place-items:center; color:var(--k-on-act); }
   .jr-monthnav .jr-add svg { width:22px; height:22px; }
   .jr-monthnav .jr-add span { display:none; }
-  body:not(.jr-cal-view) .jr-monthnav > button:not(.jr-add) { display:none; }   /* Agenda: just + */
+  body:not(.jr-cal-view) .jr-monthnav > button:not(.jr-add):not(.jr-scan) { display:none; }   /* Agenda and People: just the photo button and + */
   main > .jr-monthnav { margin-top:.75rem; }                                       /* desktop: under the open view */
   .jr-swap { display:none; flex:none; margin-left:auto; place-items:center; width:2.3rem; height:2.3rem; border-radius:999px; cursor:pointer;
     color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 50%,transparent); border:1px solid var(--glass-line); box-shadow:var(--glass-edge);
@@ -1389,7 +1389,21 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-pp-who small { color:var(--muted); font-size:.78rem; }
   .jr-pp-nick { flex:1 1 40%; min-width:0; width:auto; padding:.45rem .65rem; font-size:.95rem; font-weight:600; }
   .jr-vt-btn[hidden] { display:none !important; }
-  @media (max-width:640px) { #jr-people { padding-bottom:5rem; } .jr-pp { flex-wrap:wrap; } .jr-pp-who { flex:1 1 calc(100% - 4rem); } .jr-pp-nick { flex:1 1 100%; } }
+  #jr-people .jr-agenda-head { display:flex; align-items:center; gap:.6rem; }
+  .jr-pp-add { margin-left:auto; padding:.45rem .9rem; border-radius:999px; font-size:.88rem; }
+  .jr-pp-add[hidden] { display:none; }
+  .jr-pp-acts { display:flex; gap:.25rem; flex:none; }
+  .jr-pp-btn { all:unset; cursor:pointer; width:2rem; height:2rem; display:grid; place-items:center; border-radius:50%; color:var(--muted); font-size:.95rem; border:1px solid var(--glass-line); }
+  .jr-pp-btn:hover, .jr-pp-btn:focus-visible { color:var(--accent); outline:none; background:color-mix(in srgb,var(--accent) 10%,transparent); }
+  .jr-pp-btn.del:hover, .jr-pp-btn.del:focus-visible { color:var(--k-bad,#c0392b); background:color-mix(in srgb,var(--k-bad,#c0392b) 10%,transparent); }
+  @media (max-width:640px) {
+    #jr-people { padding-bottom:5rem; }
+    /* avatar, name and the admin's buttons on one line; the nickname box under them, the full width */
+    .jr-pp { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:.5rem .7rem; }
+    .jr-pp-who { min-width:0; }
+    .jr-pp-nick { grid-column:1 / -1; width:100%; }
+    .jr-pp-btn { width:2.5rem; height:2.5rem; font-size:1.05rem; }   /* a finger-sized target */
+  }
 
   /* ================= add from a photo ================= */
   .jr-scan { all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.45rem; color:var(--accent); border-radius:999px; position:relative; }
@@ -1631,7 +1645,7 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
     </div>
 
     <div id="jr-people" style="display:none">
-      <div class="row jr-agenda-head"><h2 class="view-title" data-i18n="peopleTab">People</h2></div>
+      <div class="row jr-agenda-head"><h2 class="view-title" data-i18n="peopleTab">People</h2><button type="button" class="act jr-pp-add" id="jr-pp-add" onclick="jrPersonForm()" hidden>＋ <span data-i18n="addPerson">Add person</span></button></div>
       <p class="jr-ae-hint" data-i18n="peopleHint"></p>
       <input id="jr-people-q" type="search" autocomplete="off" data-i18n-ph="findPeople" oninput="jrRenderPeople()">
       <div id="jr-people-list"></div>
@@ -1794,7 +1808,7 @@ en:{
   setupKey:'Setup key', openAuth:'Open in authenticator app', recoveryTitle:'Save your recovery codes', recoveryHint:'Each one works once if you lose your phone. They are shown only now.',
   copyCodes:'Copy', copied:'Copied', savedThem:'I saved them', twoStepNowOn:'Two-step sign-in is on', twoStepNowOff:'Two-step sign-in is off', askPwOff:'Enter your password to turn off two-step sign-in.',
   setPw:'Set password', setPwAsk:'A temporary password for {name}. They must change it when they next sign in.', reset2:'Reset 2-step', reset2Ask:'Turn off two-step sign-in for {name}? They will then sign in with just their password.',
-  pwSet:'Password set. {name} must change it at the next sign-in.', done2:'Two-step sign-in reset', recent:'Recent activity', tagTwoStep:'2-step', tagMustChange:'must change password', tagLocked:'locked', scanBtn:'Add from a photo', scanTitle:'Events from a photo', scanReading:'Reading the photo…', scanNone:'No events were found in that photo.', scanFound:'{n} found. Check them, then add.', scanAdd:'Add {n}', scanDup:'Already in the calendar', scanNoDate:'Pick a date', scanAdded:'{n} added to the calendar', scanNotSetUp:'Reading photos isn’t set up yet.', scanLimit:'Today’s photo limit is used up. Try again tomorrow.', scanFail:'Couldn’t read that photo. Try a clearer one.', scanTip:'Take a clear, straight photo of the invitation, flyer or schedule.', scanCheck:'check this', scanSaving:'Adding…', scanBadPhoto:'That photo can’t be used.', scanLangs:'Language in the photo', scanFirst:'The first time, the reading data is downloaded (about 10–20 MB). After that it works without internet.', scanRead:'Read the photo', scanLoadingReader:'Loading the reader…', scanReadingPct:'Reading the photo… {p}%', scanRaw:'Text read from the photo', scanFree:'Everything is read on this device: the photo is not sent anywhere.', errTeamAcct:'This account signs in with the team password, so it has no password of its own to change.', tagTeam:'team password', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
+  pwSet:'Password set. {name} must change it at the next sign-in.', done2:'Two-step sign-in reset', recent:'Recent activity', tagTwoStep:'2-step', tagMustChange:'must change password', tagLocked:'locked', scanBtn:'Add from a photo', scanTitle:'Events from a photo', scanReading:'Reading the photo…', scanNone:'No events were found in that photo.', scanFound:'{n} found. Check them, then add.', scanAdd:'Add {n}', scanDup:'Already in the calendar', scanNoDate:'Pick a date', scanAdded:'{n} added to the calendar', scanNotSetUp:'Reading photos isn’t set up yet.', scanLimit:'Today’s photo limit is used up. Try again tomorrow.', scanFail:'Couldn’t read that photo. Try a clearer one.', scanTip:'Take a clear, straight photo of the invitation, flyer or schedule.', scanCheck:'check this', scanSaving:'Adding…', scanBadPhoto:'That photo can’t be used.', scanLangs:'Language in the photo', scanFirst:'The first time, the reading data is downloaded (about 10–20 MB). After that it works without internet.', scanRead:'Read the photo', scanLoadingReader:'Loading the reader…', scanReadingPct:'Reading the photo… {p}%', scanRaw:'Text read from the photo', scanFree:'Everything is read on this device: the photo is not sent anywhere.', errTeamAcct:'This account signs in with the team password, so it has no password of its own to change.', tagTeam:'team password', addPerson:'Add person', editPerson:'Edit person', personName:'Full name', personRole:'Role or position', personPhoto:'Photo link (optional)', personPhotoHint:'A link starting with https://. Without one, the person shows with their initials.', personAdded:'Person added', personSaved:'Person saved', personRemoved:'Person removed', removePersonAsk:'Remove “{name}” from the team list? They disappear from the attendee picker.', errPName:'The name needs 1–80 characters.', errPRole:'The role can be at most 60 characters.', errPPhoto:'The photo must be a link starting with https://, or left empty.', noTeamAdmin:'No one has been added yet. Add the first person.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
   nothingPlanned:'Nothing planned.', tapAdd:'Tap “Add event” to put something on it.', noEvents:'No events yet.',
   dayEmpty:'Double-tap a day or press + to add one.',
   evWord:n=>n>1?'events':'event', nEvents:n=>`${n} event${n>1?'s':''}`, nDone:'{n} done',
@@ -1853,7 +1867,7 @@ zh:{
   setupKey:'设置密钥', openAuth:'在验证器应用中打开', recoveryTitle:'保存你的恢复码', recoveryHint:'如果手机丢失，每个恢复码可使用一次。它们只显示这一次。',
   copyCodes:'复制', copied:'已复制', savedThem:'我已保存', twoStepNowOn:'两步验证已开启', twoStepNowOff:'两步验证已关闭', askPwOff:'请输入密码以关闭两步验证。',
   setPw:'设置密码', setPwAsk:'为 {name} 设置临时密码。对方下次登录时必须更改。', reset2:'重置两步验证', reset2Ask:'关闭 {name} 的两步验证？之后对方只需密码即可登录。',
-  pwSet:'密码已设置。{name} 下次登录时必须更改。', done2:'两步验证已重置', recent:'最近活动', tagTwoStep:'两步验证', tagMustChange:'须更改密码', tagLocked:'已锁定', scanBtn:'从照片添加', scanTitle:'从照片添加活动', scanReading:'正在识别照片…', scanNone:'这张照片里没有找到活动。', scanFound:'找到 {n} 个。请检查后添加。', scanAdd:'添加 {n} 个', scanDup:'日历中已有', scanNoDate:'请选择日期', scanAdded:'已添加 {n} 个活动', scanNotSetUp:'尚未设置照片识别。', scanLimit:'今天的照片识别次数已用完，请明天再试。', scanFail:'无法识别这张照片，请换一张更清晰的。', scanTip:'请拍一张清晰、端正的邀请函、传单或日程表照片。', scanCheck:'请核对', scanSaving:'正在添加…', scanBadPhoto:'无法使用这张照片。', scanLangs:'照片中的语言', scanFirst:'首次使用需要下载识别数据（约 10–20 MB），之后无需网络即可使用。', scanRead:'识别照片', scanLoadingReader:'正在加载识别器…', scanReadingPct:'正在识别照片… {p}%', scanRaw:'从照片中读取的文字', scanFree:'所有识别都在本设备上完成：照片不会发送到任何地方。', errTeamAcct:'此账号使用团队密码登录，没有可更改的个人密码。', tagTeam:'团队密码', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
+  pwSet:'密码已设置。{name} 下次登录时必须更改。', done2:'两步验证已重置', recent:'最近活动', tagTwoStep:'两步验证', tagMustChange:'须更改密码', tagLocked:'已锁定', scanBtn:'从照片添加', scanTitle:'从照片添加活动', scanReading:'正在识别照片…', scanNone:'这张照片里没有找到活动。', scanFound:'找到 {n} 个。请检查后添加。', scanAdd:'添加 {n} 个', scanDup:'日历中已有', scanNoDate:'请选择日期', scanAdded:'已添加 {n} 个活动', scanNotSetUp:'尚未设置照片识别。', scanLimit:'今天的照片识别次数已用完，请明天再试。', scanFail:'无法识别这张照片，请换一张更清晰的。', scanTip:'请拍一张清晰、端正的邀请函、传单或日程表照片。', scanCheck:'请核对', scanSaving:'正在添加…', scanBadPhoto:'无法使用这张照片。', scanLangs:'照片中的语言', scanFirst:'首次使用需要下载识别数据（约 10–20 MB），之后无需网络即可使用。', scanRead:'识别照片', scanLoadingReader:'正在加载识别器…', scanReadingPct:'正在识别照片… {p}%', scanRaw:'从照片中读取的文字', scanFree:'所有识别都在本设备上完成：照片不会发送到任何地方。', errTeamAcct:'此账号使用团队密码登录，没有可更改的个人密码。', tagTeam:'团队密码', addPerson:'添加人员', editPerson:'编辑人员', personName:'姓名', personRole:'职位', personPhoto:'照片链接（可选）', personPhotoHint:'以 https:// 开头的链接。没有的话将显示姓名首字母。', personAdded:'已添加人员', personSaved:'已保存', personRemoved:'已移除', removePersonAsk:'将“{name}”从团队名单中移除？他们将从参加人员选择中消失。', errPName:'姓名需要 1–80 个字符。', errPRole:'职位最多 60 个字符。', errPPhoto:'照片必须是以 https:// 开头的链接，或留空。', noTeamAdmin:'还没有添加任何人。请添加第一位。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
   nothingPlanned:'暂时没有安排。', tapAdd:'点按“添加活动”来添加。', noEvents:'还没有活动。',
   dayEmpty:'双击某一天，或点按 + 来添加。',
   evWord:()=>'个活动', nEvents:n=>`${n} 个活动`, nDone:'已完成 {n}',
@@ -1912,7 +1926,7 @@ km:{
   setupKey:'សោដំឡើង', openAuth:'បើកក្នុងកម្មវិធីផ្ទៀងផ្ទាត់', recoveryTitle:'រក្សាទុកលេខកូដស្តារ', recoveryHint:'លេខកូដនីមួយៗប្រើបានម្តង ប្រសិនបើអ្នកបាត់ទូរសព្ទ។ វាបង្ហាញតែពេលនេះប៉ុណ្ណោះ។',
   copyCodes:'ចម្លង', copied:'បានចម្លង', savedThem:'ខ្ញុំបានរក្សាទុករួច', twoStepNowOn:'ការចូលពីរជំហានបានបើក', twoStepNowOff:'ការចូលពីរជំហានបានបិទ', askPwOff:'បញ្ចូលពាក្យសម្ងាត់របស់អ្នក ដើម្បីបិទការចូលពីរជំហាន។',
   setPw:'កំណត់ពាក្យសម្ងាត់', setPwAsk:'ពាក្យសម្ងាត់បណ្តោះអាសន្នសម្រាប់ {name}។ គាត់ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', reset2:'កំណត់ពីរជំហានឡើងវិញ', reset2Ask:'បិទការចូលពីរជំហានរបស់ {name}? បន្ទាប់មកគាត់នឹងចូលដោយប្រើតែពាក្យសម្ងាត់។',
-  pwSet:'បានកំណត់ពាក្យសម្ងាត់។ {name} ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', done2:'បានកំណត់ពីរជំហានឡើងវិញ', recent:'សកម្មភាពថ្មីៗ', tagTwoStep:'ពីរជំហាន', tagMustChange:'ត្រូវប្តូរពាក្យសម្ងាត់', tagLocked:'ជាប់សោ', scanBtn:'បន្ថែមពីរូបថត', scanTitle:'ព្រឹត្តិការណ៍ពីរូបថត', scanReading:'កំពុងអានរូបថត…', scanNone:'រកមិនឃើញព្រឹត្តិការណ៍ក្នុងរូបថតនោះទេ។', scanFound:'រកឃើញ {n}។ សូមពិនិត្យ រួចបន្ថែម។', scanAdd:'បន្ថែម {n}', scanDup:'មានក្នុងប្រតិទិនរួចហើយ', scanNoDate:'ជ្រើសរើសកាលបរិច្ឆេទ', scanAdded:'បានបន្ថែម {n} ទៅក្នុងប្រតិទិន', scanNotSetUp:'ការអានរូបថតមិនទាន់បានរៀបចំទេ។', scanLimit:'កម្រិតរូបថតថ្ងៃនេះត្រូវបានប្រើអស់ហើយ។ សូមសាកល្បងម្តងទៀតថ្ងៃស្អែក។', scanFail:'មិនអាចអានរូបថតនោះបានទេ។ សូមសាកល្បងរូបដែលច្បាស់ជាងនេះ។', scanTip:'ថតរូបឲ្យច្បាស់ និងត្រង់ នៃលិខិតអញ្ជើញ ខិត្តប័ណ្ណ ឬកាលវិភាគ។', scanCheck:'សូមពិនិត្យ', scanSaving:'កំពុងបន្ថែម…', scanBadPhoto:'មិនអាចប្រើរូបថតនោះបានទេ។', scanLangs:'ភាសានៅក្នុងរូបថត', scanFirst:'លើកដំបូង ទិន្នន័យអានត្រូវបានទាញយក (ប្រហែល 10–20 MB)។ បន្ទាប់មកវាដំណើរការដោយមិនបាច់មានអ៊ីនធឺណិត។', scanRead:'អានរូបថត', scanLoadingReader:'កំពុងផ្ទុកកម្មវិធីអាន…', scanReadingPct:'កំពុងអានរូបថត… {p}%', scanRaw:'អក្សរដែលអានពីរូបថត', scanFree:'ការអានទាំងអស់ធ្វើនៅលើឧបករណ៍នេះ៖ រូបថតមិនត្រូវបានផ្ញើទៅកន្លែងណាទេ។', errTeamAcct:'គណនីនេះចូលដោយប្រើពាក្យសម្ងាត់ក្រុម ដូច្នេះមិនមានពាក្យសម្ងាត់ផ្ទាល់ខ្លួនដើម្បីប្តូរទេ។', tagTeam:'ពាក្យសម្ងាត់ក្រុម', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
+  pwSet:'បានកំណត់ពាក្យសម្ងាត់។ {name} ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', done2:'បានកំណត់ពីរជំហានឡើងវិញ', recent:'សកម្មភាពថ្មីៗ', tagTwoStep:'ពីរជំហាន', tagMustChange:'ត្រូវប្តូរពាក្យសម្ងាត់', tagLocked:'ជាប់សោ', scanBtn:'បន្ថែមពីរូបថត', scanTitle:'ព្រឹត្តិការណ៍ពីរូបថត', scanReading:'កំពុងអានរូបថត…', scanNone:'រកមិនឃើញព្រឹត្តិការណ៍ក្នុងរូបថតនោះទេ។', scanFound:'រកឃើញ {n}។ សូមពិនិត្យ រួចបន្ថែម។', scanAdd:'បន្ថែម {n}', scanDup:'មានក្នុងប្រតិទិនរួចហើយ', scanNoDate:'ជ្រើសរើសកាលបរិច្ឆេទ', scanAdded:'បានបន្ថែម {n} ទៅក្នុងប្រតិទិន', scanNotSetUp:'ការអានរូបថតមិនទាន់បានរៀបចំទេ។', scanLimit:'កម្រិតរូបថតថ្ងៃនេះត្រូវបានប្រើអស់ហើយ។ សូមសាកល្បងម្តងទៀតថ្ងៃស្អែក។', scanFail:'មិនអាចអានរូបថតនោះបានទេ។ សូមសាកល្បងរូបដែលច្បាស់ជាងនេះ។', scanTip:'ថតរូបឲ្យច្បាស់ និងត្រង់ នៃលិខិតអញ្ជើញ ខិត្តប័ណ្ណ ឬកាលវិភាគ។', scanCheck:'សូមពិនិត្យ', scanSaving:'កំពុងបន្ថែម…', scanBadPhoto:'មិនអាចប្រើរូបថតនោះបានទេ។', scanLangs:'ភាសានៅក្នុងរូបថត', scanFirst:'លើកដំបូង ទិន្នន័យអានត្រូវបានទាញយក (ប្រហែល 10–20 MB)។ បន្ទាប់មកវាដំណើរការដោយមិនបាច់មានអ៊ីនធឺណិត។', scanRead:'អានរូបថត', scanLoadingReader:'កំពុងផ្ទុកកម្មវិធីអាន…', scanReadingPct:'កំពុងអានរូបថត… {p}%', scanRaw:'អក្សរដែលអានពីរូបថត', scanFree:'ការអានទាំងអស់ធ្វើនៅលើឧបករណ៍នេះ៖ រូបថតមិនត្រូវបានផ្ញើទៅកន្លែងណាទេ។', errTeamAcct:'គណនីនេះចូលដោយប្រើពាក្យសម្ងាត់ក្រុម ដូច្នេះមិនមានពាក្យសម្ងាត់ផ្ទាល់ខ្លួនដើម្បីប្តូរទេ។', tagTeam:'ពាក្យសម្ងាត់ក្រុម', addPerson:'បន្ថែមបុគ្គលិក', editPerson:'កែបុគ្គលិក', personName:'ឈ្មោះពេញ', personRole:'តួនាទី', personPhoto:'តំណរូបថត (ស្រេចចិត្ត)', personPhotoHint:'តំណដែលចាប់ផ្តើមដោយ https://។ បើគ្មានទេ នឹងបង្ហាញអក្សរដំបូងនៃឈ្មោះ។', personAdded:'បានបន្ថែមបុគ្គលិក', personSaved:'បានរក្សាទុក', personRemoved:'បានដកចេញ', removePersonAsk:'ដក “{name}” ចេញពីបញ្ជីក្រុម? ពួកគេនឹងបាត់ពីការជ្រើសរើសអ្នកចូលរួម។', errPName:'ឈ្មោះត្រូវមាន 1–80 តួអក្សរ។', errPRole:'តួនាទីអតិបរមា 60 តួអក្សរ។', errPPhoto:'រូបថតត្រូវតែជាតំណដែលចាប់ផ្តើមដោយ https:// ឬទុកទទេ។', noTeamAdmin:'មិនទាន់មានអ្នកណាត្រូវបានបន្ថែមទេ។ សូមបន្ថែមអ្នកទីមួយ។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
   nothingPlanned:'មិនមានអ្វីគ្រោងទុកទេ។', tapAdd:'ចុច «បន្ថែមព្រឹត្តិការណ៍» ដើម្បីបន្ថែម។', noEvents:'មិនទាន់មានព្រឹត្តិការណ៍ទេ។',
   dayEmpty:'ចុចពីរដងលើថ្ងៃ ឬចុច + ដើម្បីបន្ថែម។',
   evWord:()=>'ព្រឹត្តិការណ៍', nEvents:n=>`${n} ព្រឹត្តិការណ៍`, nDone:'រួចរាល់ {n}',
@@ -1935,7 +1949,7 @@ const JR_ERRS=[[/wrong username or password/i,'errLogin'],[/wrong team code/i,'e
   [/^username:/i,'errUsername'],[/^password:/i,'errPassword'],[/too many wrong/i,'tooMany'],[/please sign in/i,'errSignIn'],
   [/title (is required|cannot be blank)/i,'titleReq'],[/(event|end)_date must be/i,'errDate'],[/(event|end)_time must be/i,'errTime'],
   [/end date is before/i,'endBeforeStart'],[/end time is before/i,'endTimeBefore'],[/give a start time/i,'needStart'],[/no event #/i,'errNoEvent'],
-  [/^nickname:/i,'errNick'],[/team password/i,'errTeamAcct'],[/not set up yet/i,'scanNotSetUp'],[/not set up correctly/i,'scanNotSetUp'],[/too many scans/i,'scanLimit'],[/photo can.t be used/i,'scanBadPhoto'],[/wrong code/i,'errWrongCode'],[/sign in again/i,'errAgain'],[/^wrong password$/i,'errWrongPw'],[/already on/i,'errTotpOn'],[/can only view/i,'viewOnly'],[/only an admin/i,'adminOnly'],[/at least one admin/i,'lastAdmin'],[/own account/i,'ownAcct']];
+  [/^nickname:/i,'errNick'],[/^name:/i,'errPName'],[/^role:/i,'errPRole'],[/^photo:/i,'errPPhoto'],[/team password/i,'errTeamAcct'],[/not set up yet/i,'scanNotSetUp'],[/not set up correctly/i,'scanNotSetUp'],[/too many scans/i,'scanLimit'],[/photo can.t be used/i,'scanBadPhoto'],[/wrong code/i,'errWrongCode'],[/sign in again/i,'errAgain'],[/^wrong password$/i,'errWrongPw'],[/already on/i,'errTotpOn'],[/can only view/i,'viewOnly'],[/only an admin/i,'adminOnly'],[/at least one admin/i,'lastAdmin'],[/own account/i,'ownAcct']];
 function jrErr(m){ const s=String(m||''); if(JR_LANG==='en') return s; for(const [re,k] of JR_ERRS) if(re.test(s)) return tx(k); return s; }
 
 // The words in the page's own markup (data-i18n = text, -title, -aria, -ph = placeholder), the weekday row, the
@@ -2705,7 +2719,7 @@ function jrScanStart(files){
 }
 
 // ---- the People tab (editors and admins): give each person a nickname ----
-const jrPeopleTab=()=>jrCanEdit() && JR_PEOPLE.length>0;
+const jrPeopleTab=()=>jrCanEdit() && (JR_PEOPLE.length>0 || jrRole()==='admin');
 function jrSyncPeopleTab(){
   const b=document.getElementById('jr-view-people-btn'); if(b) b.hidden=!jrPeopleTab();
   if(JR_VIEW==='people' && !jrPeopleTab()) setJournalView('calendar', true);
@@ -2714,9 +2728,11 @@ function jrRenderPeople(){
   const box=document.getElementById('jr-people-list'); if(!box) return;
   const f=(document.getElementById('jr-people-q')?.value||'').trim().toLowerCase();
   const list=JR_PEOPLE.filter(p=>!f || (p.name+' '+(p.nickname||'')+' '+(p.role||'')).toLowerCase().includes(f));
-  if(!JR_PEOPLE.length){ box.innerHTML=`<div class="empty">${esc(tx('noTeam'))}</div>`; return; }
+  const admin=jrRole()==='admin'; document.getElementById('jr-pp-add').hidden=!admin;
+  if(!JR_PEOPLE.length){ box.innerHTML=`<div class="empty">${esc(admin?tx('noTeamAdmin'):tx('noTeam'))}</div>`; return; }
   box.innerHTML=list.length?list.map(p=>`<div class="jr-pp" data-c="${esc(p.code)}">${jrAvatar(p)}
       <span class="jr-pp-who"><b>${esc(p.name)}</b><small>${esc(p.role||'')}</small></span>
+      ${admin?`<span class="jr-pp-acts"><button type="button" class="jr-pp-btn" data-edit="${esc(p.code)}" title="${esc(tx('edit'))}" aria-label="${esc(tx('edit'))} ${esc(p.name)}">✎</button><button type="button" class="jr-pp-btn del" data-rm="${esc(p.code)}" title="${esc(tx('del'))}" aria-label="${esc(tx('del'))} ${esc(p.name)}">✕</button></span>`:''}
       <input class="jr-pp-nick" maxlength="30" autocomplete="off" placeholder="${esc(tx('nickPh'))}" aria-label="${esc(tx('nickPh'))}: ${esc(p.name)}" value="${esc(p.nickname||'')}"></div>`).join('')
     : `<div class="empty">${esc(tx('noPeopleFound'))}</div>`;
 }
@@ -2731,6 +2747,39 @@ document.addEventListener('change',async e=>{
   catch(err){ inp.value=p.nickname||''; toast(tx('errPrefix')+jrErr(err.message)); }
 });
 document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.classList?.contains('jr-pp-nick')) e.target.blur(); });
+// admins: add a person to the team list, change one, or remove one
+function jrPersonForm(code){
+  if(jrRole()!=='admin') return;
+  const p=code?jrPerson(code):null; if(code&&!p) return;
+  const ov=document.createElement('div'); ov.className='modal-ov';
+  const card=document.createElement('form'); card.className='modal-card'; card.style.cssText='max-width:24rem;width:100%'; card.autocomplete='off';
+  card.innerHTML=`<div class="jr-ae-head"><h2>${esc(p?tx('editPerson'):tx('addPerson'))}</h2></div>
+    <label class="field"><span>${esc(tx('personName'))}</span><input name="name" maxlength="80" value="${esc(p?.name||'')}"></label>
+    <label class="field"><span>${esc(tx('personRole'))} <span class="muted">${esc(tx('optional'))}</span></span><input name="role" maxlength="60" value="${esc(p?.role||'')}"></label>
+    <label class="field"><span>${esc(tx('personPhoto'))}</span><input name="photo" inputmode="url" autocapitalize="none" spellcheck="false" placeholder="https://" value="${esc(p?.photo||'')}"></label>
+    <p class="jr-ae-hint">${esc(tx('personPhotoHint'))}</p>
+    <div class="item-edit-actions"><button type="button" class="mini" data-x>${esc(tx('cancel'))}</button><button class="act" type="submit">${esc(p?tx('save'):tx('add'))}</button></div>`;
+  ov.appendChild(card); document.body.appendChild(ov); ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
+  card.querySelector('[data-x]').onclick=()=>dismiss(ov);
+  card.onsubmit=async e=>{ e.preventDefault(); const body={name:card.name.value, role:card.role.value, photo:card.photo.value};
+    if(!body.name.trim()){ toast(tx('errPName')); return; }
+    try{
+      const saved=await api(p?'/api/people/'+encodeURIComponent(p.code):'/api/people',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(p) Object.assign(p,saved); else JR_PEOPLE.push(saved);
+      try{ localStorage.setItem('yai_people', JSON.stringify(JR_PEOPLE)); }catch(_){}
+      JR_UPNEXT_SIG=''; dismiss(ov); toast(p?tx('personSaved'):tx('personAdded')); jrRenderPeople(); jrSyncPeopleTab();
+    }catch(err){ toast(tx('errPrefix')+jrErr(err.message)); } };
+  setTimeout(()=>card.name.focus(),40);
+}
+document.addEventListener('click',async e=>{
+  const ed=e.target.closest?.('[data-edit]'); if(ed){ jrPersonForm(ed.dataset.edit); return; }
+  const rm=e.target.closest?.('[data-rm]'); if(!rm||!rm.closest('.jr-pp')) return;
+  const p=jrPerson(rm.dataset.rm); if(!p||!await askConfirm(tx('removePersonAsk',{name:p.name}), tx('del'), true)) return;
+  try{ await api('/api/people/'+encodeURIComponent(p.code),{method:'DELETE'}); JR_PEOPLE=JR_PEOPLE.filter(x=>x.code!==p.code);
+    try{ localStorage.setItem('yai_people', JSON.stringify(JR_PEOPLE)); }catch(_){}
+    JR_UPNEXT_SIG=''; toast(tx('personRemoved')); jrRenderPeople(); jrSyncPeopleTab(); }
+  catch(err){ toast(tx('errPrefix')+jrErr(err.message)); }
+});
 
 // Desktop side menu: everything from today on, in date order, under month and day headings — the Agenda in
 // brief. Clicking one opens that day in the calendar. (Phones hide it: there the menu is a bar.)
