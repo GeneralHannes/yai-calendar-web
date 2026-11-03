@@ -1412,6 +1412,14 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-monthnav .jr-scan { width:2.3rem; }
     .jr-rail .jr-monthnav .jr-add, .jr-monthnav .jr-add { width:2.7rem; height:2.7rem; }
   }
+  .jr-sc-thumbs { display:flex; gap:.4rem; overflow:auto; margin:.2rem 0 .7rem; }
+  .jr-sc-thumbs img { height:5.5rem; width:auto; max-width:8rem; object-fit:cover; border-radius:10px; border:1px solid var(--glass-line); flex:none; }
+  .jr-sc-langs { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; margin:.2rem 0 .5rem; }
+  .jr-sc-langs > span { flex:1 0 100%; font-size:.78rem; color:var(--muted); }
+  .jr-chipbtn { all:unset; cursor:pointer; padding:.35rem .8rem; border-radius:999px; font-size:.9rem; font-weight:600; border:1px solid var(--glass-line); color:var(--muted); background:color-mix(in srgb,var(--k-bg3) 45%,transparent); }
+  .jr-chipbtn.on { color:var(--k-on-act); background:var(--accent); border-color:var(--accent); }
+  .jr-chipbtn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .jr-sc-raw { white-space:pre-wrap; font:.78rem/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; max-height:9rem; overflow:auto; margin:.4rem 0 0; color:var(--muted); }
   .jr-scan-wait { display:flex; align-items:center; gap:.7rem; padding:1.4rem .2rem; color:var(--muted); }
   .jr-spin { width:1.2rem; height:1.2rem; border-radius:50%; border:2.5px solid color-mix(in srgb,var(--accent) 25%,transparent); border-top-color:var(--accent); animation:jrSpin .8s linear infinite; }
   @keyframes jrSpin { to { transform:rotate(360deg); } }
@@ -1789,7 +1797,7 @@ en:{
   setupKey:'Setup key', openAuth:'Open in authenticator app', recoveryTitle:'Save your recovery codes', recoveryHint:'Each one works once if you lose your phone. They are shown only now.',
   copyCodes:'Copy', copied:'Copied', savedThem:'I saved them', twoStepNowOn:'Two-step sign-in is on', twoStepNowOff:'Two-step sign-in is off', askPwOff:'Enter your password to turn off two-step sign-in.',
   setPw:'Set password', setPwAsk:'A temporary password for {name}. They must change it when they next sign in.', reset2:'Reset 2-step', reset2Ask:'Turn off two-step sign-in for {name}? They will then sign in with just their password.',
-  pwSet:'Password set. {name} must change it at the next sign-in.', done2:'Two-step sign-in reset', recent:'Recent activity', tagTwoStep:'2-step', tagMustChange:'must change password', tagLocked:'locked', scanBtn:'Add from a photo', scanTitle:'Events from a photo', scanReading:'Reading the photo…', scanNone:'No events were found in that photo.', scanFound:'{n} found. Check them, then add.', scanAdd:'Add {n}', scanDup:'Already in the calendar', scanNoDate:'Pick a date', scanAdded:'{n} added to the calendar', scanNotSetUp:'Reading photos isn’t set up yet.', scanLimit:'Today’s photo limit is used up. Try again tomorrow.', scanFail:'Couldn’t read that photo. Try a clearer one.', scanTip:'Take a clear, straight photo of the invitation, flyer or schedule.', scanCheck:'check this', scanSaving:'Adding…', scanBadPhoto:'That photo can’t be used.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
+  pwSet:'Password set. {name} must change it at the next sign-in.', done2:'Two-step sign-in reset', recent:'Recent activity', tagTwoStep:'2-step', tagMustChange:'must change password', tagLocked:'locked', scanBtn:'Add from a photo', scanTitle:'Events from a photo', scanReading:'Reading the photo…', scanNone:'No events were found in that photo.', scanFound:'{n} found. Check them, then add.', scanAdd:'Add {n}', scanDup:'Already in the calendar', scanNoDate:'Pick a date', scanAdded:'{n} added to the calendar', scanNotSetUp:'Reading photos isn’t set up yet.', scanLimit:'Today’s photo limit is used up. Try again tomorrow.', scanFail:'Couldn’t read that photo. Try a clearer one.', scanTip:'Take a clear, straight photo of the invitation, flyer or schedule.', scanCheck:'check this', scanSaving:'Adding…', scanBadPhoto:'That photo can’t be used.', scanLangs:'Language in the photo', scanFirst:'The first time, the reading data is downloaded (about 10–20 MB). After that it works without internet.', scanRead:'Read the photo', scanLoadingReader:'Loading the reader…', scanReadingPct:'Reading the photo… {p}%', scanRaw:'Text read from the photo', scanFree:'Everything is read on this device: the photo is not sent anywhere.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
   nothingPlanned:'Nothing planned.', tapAdd:'Tap “Add event” to put something on it.', noEvents:'No events yet.',
   dayEmpty:'Double-tap a day or press + to add one.',
   evWord:n=>n>1?'events':'event', nEvents:n=>`${n} event${n>1?'s':''}`, nDone:'{n} done',
@@ -1848,7 +1856,7 @@ zh:{
   setupKey:'设置密钥', openAuth:'在验证器应用中打开', recoveryTitle:'保存你的恢复码', recoveryHint:'如果手机丢失，每个恢复码可使用一次。它们只显示这一次。',
   copyCodes:'复制', copied:'已复制', savedThem:'我已保存', twoStepNowOn:'两步验证已开启', twoStepNowOff:'两步验证已关闭', askPwOff:'请输入密码以关闭两步验证。',
   setPw:'设置密码', setPwAsk:'为 {name} 设置临时密码。对方下次登录时必须更改。', reset2:'重置两步验证', reset2Ask:'关闭 {name} 的两步验证？之后对方只需密码即可登录。',
-  pwSet:'密码已设置。{name} 下次登录时必须更改。', done2:'两步验证已重置', recent:'最近活动', tagTwoStep:'两步验证', tagMustChange:'须更改密码', tagLocked:'已锁定', scanBtn:'从照片添加', scanTitle:'从照片添加活动', scanReading:'正在识别照片…', scanNone:'这张照片里没有找到活动。', scanFound:'找到 {n} 个。请检查后添加。', scanAdd:'添加 {n} 个', scanDup:'日历中已有', scanNoDate:'请选择日期', scanAdded:'已添加 {n} 个活动', scanNotSetUp:'尚未设置照片识别。', scanLimit:'今天的照片识别次数已用完，请明天再试。', scanFail:'无法识别这张照片，请换一张更清晰的。', scanTip:'请拍一张清晰、端正的邀请函、传单或日程表照片。', scanCheck:'请核对', scanSaving:'正在添加…', scanBadPhoto:'无法使用这张照片。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
+  pwSet:'密码已设置。{name} 下次登录时必须更改。', done2:'两步验证已重置', recent:'最近活动', tagTwoStep:'两步验证', tagMustChange:'须更改密码', tagLocked:'已锁定', scanBtn:'从照片添加', scanTitle:'从照片添加活动', scanReading:'正在识别照片…', scanNone:'这张照片里没有找到活动。', scanFound:'找到 {n} 个。请检查后添加。', scanAdd:'添加 {n} 个', scanDup:'日历中已有', scanNoDate:'请选择日期', scanAdded:'已添加 {n} 个活动', scanNotSetUp:'尚未设置照片识别。', scanLimit:'今天的照片识别次数已用完，请明天再试。', scanFail:'无法识别这张照片，请换一张更清晰的。', scanTip:'请拍一张清晰、端正的邀请函、传单或日程表照片。', scanCheck:'请核对', scanSaving:'正在添加…', scanBadPhoto:'无法使用这张照片。', scanLangs:'照片中的语言', scanFirst:'首次使用需要下载识别数据（约 10–20 MB），之后无需网络即可使用。', scanRead:'识别照片', scanLoadingReader:'正在加载识别器…', scanReadingPct:'正在识别照片… {p}%', scanRaw:'从照片中读取的文字', scanFree:'所有识别都在本设备上完成：照片不会发送到任何地方。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
   nothingPlanned:'暂时没有安排。', tapAdd:'点按“添加活动”来添加。', noEvents:'还没有活动。',
   dayEmpty:'双击某一天，或点按 + 来添加。',
   evWord:()=>'个活动', nEvents:n=>`${n} 个活动`, nDone:'已完成 {n}',
@@ -1907,7 +1915,7 @@ km:{
   setupKey:'សោដំឡើង', openAuth:'បើកក្នុងកម្មវិធីផ្ទៀងផ្ទាត់', recoveryTitle:'រក្សាទុកលេខកូដស្តារ', recoveryHint:'លេខកូដនីមួយៗប្រើបានម្តង ប្រសិនបើអ្នកបាត់ទូរសព្ទ។ វាបង្ហាញតែពេលនេះប៉ុណ្ណោះ។',
   copyCodes:'ចម្លង', copied:'បានចម្លង', savedThem:'ខ្ញុំបានរក្សាទុករួច', twoStepNowOn:'ការចូលពីរជំហានបានបើក', twoStepNowOff:'ការចូលពីរជំហានបានបិទ', askPwOff:'បញ្ចូលពាក្យសម្ងាត់របស់អ្នក ដើម្បីបិទការចូលពីរជំហាន។',
   setPw:'កំណត់ពាក្យសម្ងាត់', setPwAsk:'ពាក្យសម្ងាត់បណ្តោះអាសន្នសម្រាប់ {name}។ គាត់ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', reset2:'កំណត់ពីរជំហានឡើងវិញ', reset2Ask:'បិទការចូលពីរជំហានរបស់ {name}? បន្ទាប់មកគាត់នឹងចូលដោយប្រើតែពាក្យសម្ងាត់។',
-  pwSet:'បានកំណត់ពាក្យសម្ងាត់។ {name} ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', done2:'បានកំណត់ពីរជំហានឡើងវិញ', recent:'សកម្មភាពថ្មីៗ', tagTwoStep:'ពីរជំហាន', tagMustChange:'ត្រូវប្តូរពាក្យសម្ងាត់', tagLocked:'ជាប់សោ', scanBtn:'បន្ថែមពីរូបថត', scanTitle:'ព្រឹត្តិការណ៍ពីរូបថត', scanReading:'កំពុងអានរូបថត…', scanNone:'រកមិនឃើញព្រឹត្តិការណ៍ក្នុងរូបថតនោះទេ។', scanFound:'រកឃើញ {n}។ សូមពិនិត្យ រួចបន្ថែម។', scanAdd:'បន្ថែម {n}', scanDup:'មានក្នុងប្រតិទិនរួចហើយ', scanNoDate:'ជ្រើសរើសកាលបរិច្ឆេទ', scanAdded:'បានបន្ថែម {n} ទៅក្នុងប្រតិទិន', scanNotSetUp:'ការអានរូបថតមិនទាន់បានរៀបចំទេ។', scanLimit:'កម្រិតរូបថតថ្ងៃនេះត្រូវបានប្រើអស់ហើយ។ សូមសាកល្បងម្តងទៀតថ្ងៃស្អែក។', scanFail:'មិនអាចអានរូបថតនោះបានទេ។ សូមសាកល្បងរូបដែលច្បាស់ជាងនេះ។', scanTip:'ថតរូបឲ្យច្បាស់ និងត្រង់ នៃលិខិតអញ្ជើញ ខិត្តប័ណ្ណ ឬកាលវិភាគ។', scanCheck:'សូមពិនិត្យ', scanSaving:'កំពុងបន្ថែម…', scanBadPhoto:'មិនអាចប្រើរូបថតនោះបានទេ។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
+  pwSet:'បានកំណត់ពាក្យសម្ងាត់។ {name} ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', done2:'បានកំណត់ពីរជំហានឡើងវិញ', recent:'សកម្មភាពថ្មីៗ', tagTwoStep:'ពីរជំហាន', tagMustChange:'ត្រូវប្តូរពាក្យសម្ងាត់', tagLocked:'ជាប់សោ', scanBtn:'បន្ថែមពីរូបថត', scanTitle:'ព្រឹត្តិការណ៍ពីរូបថត', scanReading:'កំពុងអានរូបថត…', scanNone:'រកមិនឃើញព្រឹត្តិការណ៍ក្នុងរូបថតនោះទេ។', scanFound:'រកឃើញ {n}។ សូមពិនិត្យ រួចបន្ថែម។', scanAdd:'បន្ថែម {n}', scanDup:'មានក្នុងប្រតិទិនរួចហើយ', scanNoDate:'ជ្រើសរើសកាលបរិច្ឆេទ', scanAdded:'បានបន្ថែម {n} ទៅក្នុងប្រតិទិន', scanNotSetUp:'ការអានរូបថតមិនទាន់បានរៀបចំទេ។', scanLimit:'កម្រិតរូបថតថ្ងៃនេះត្រូវបានប្រើអស់ហើយ។ សូមសាកល្បងម្តងទៀតថ្ងៃស្អែក។', scanFail:'មិនអាចអានរូបថតនោះបានទេ។ សូមសាកល្បងរូបដែលច្បាស់ជាងនេះ។', scanTip:'ថតរូបឲ្យច្បាស់ និងត្រង់ នៃលិខិតអញ្ជើញ ខិត្តប័ណ្ណ ឬកាលវិភាគ។', scanCheck:'សូមពិនិត្យ', scanSaving:'កំពុងបន្ថែម…', scanBadPhoto:'មិនអាចប្រើរូបថតនោះបានទេ។', scanLangs:'ភាសានៅក្នុងរូបថត', scanFirst:'លើកដំបូង ទិន្នន័យអានត្រូវបានទាញយក (ប្រហែល 10–20 MB)។ បន្ទាប់មកវាដំណើរការដោយមិនបាច់មានអ៊ីនធឺណិត។', scanRead:'អានរូបថត', scanLoadingReader:'កំពុងផ្ទុកកម្មវិធីអាន…', scanReadingPct:'កំពុងអានរូបថត… {p}%', scanRaw:'អក្សរដែលអានពីរូបថត', scanFree:'ការអានទាំងអស់ធ្វើនៅលើឧបករណ៍នេះ៖ រូបថតមិនត្រូវបានផ្ញើទៅកន្លែងណាទេ។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
   nothingPlanned:'មិនមានអ្វីគ្រោងទុកទេ។', tapAdd:'ចុច «បន្ថែមព្រឹត្តិការណ៍» ដើម្បីបន្ថែម។', noEvents:'មិនទាន់មានព្រឹត្តិការណ៍ទេ។',
   dayEmpty:'ចុចពីរដងលើថ្ងៃ ឬចុច + ដើម្បីបន្ថែម។',
   evWord:()=>'ព្រឹត្តិការណ៍', nEvents:n=>`${n} ព្រឹត្តិការណ៍`, nDone:'រួចរាល់ {n}',
@@ -2476,79 +2484,225 @@ function setJournalView(v, skipSave){
 }
 function jrRender(){ if(JR_VIEW==='people') jrRenderPeople(); else if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar(); }
 
-// ---- Add events from a photo ----
-// A photo of an invitation, flyer or schedule is read (the scan-event Edge Function) and the events on it are shown
-// for checking, with everything editable; nothing is saved until "Add". The photo is shrunk here first.
-async function jrShrink(file, max=1600){
-  const bmp=await createImageBitmap(file, {imageOrientation:'from-image'});
-  const k=Math.min(1, max/Math.max(bmp.width,bmp.height)), c=document.createElement('canvas');
+// ---- Add events from a photo, free and on this device ----
+// The photo is turned to text with Tesseract (open-source OCR, loaded the first time it's used), then patterns find the dates,
+// times, place and title (jrParseEvents). The events are shown for checking and editing; nothing is saved until "Add".
+// Nothing is sent anywhere, and no account or key is needed. It reads clean, printed text best: a flat, well-lit photo.
+// lines: [{text, h}] top to bottom (h: how tall the letters are, so the biggest line can be the title); today: 'YYYY-MM-DD'
+function jrParseEvents(lines, today){
+  const KD='០១២៣៤៥６７８９'; 
+  const norm=t=>String(t||'').replace(/[០-៩]/g,c=>'០១២៣៤៥៦៧៨៩'.indexOf(c)).replace(/[０-９]/g,c=>String(c.charCodeAt(0)-0xFF10)).replace(/[：]/g,':').replace(/[–—−~～]/g,'-').replace(/\s+/g,' ').replace(/(?<=[\u3400-\u9fff\uff08\uff09\u3001\u3002\uff0c])\s+(?=[\u3400-\u9fff\uff08\uff09])/g,'').trim();   // OCR puts spaces between Chinese characters
+  const EN=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const KM=['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
+  const monthOf=w=>{ w=w.toLowerCase(); let i=EN.findIndex(m=>w.startsWith(m)); if(i>=0) return i+1; i=KM.findIndex(m=>w.includes(m)); return i>=0?i+1:0; };
+  const MN='(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|'+KM.join('|')+')';
+  const pad=n=>String(n).padStart(2,'0');
+  const valid=(y,m,d)=>{ const t=new Date(Date.UTC(y,m-1,d)); return m>=1&&m<=12&&d>=1&&d<=31&&t.getUTCMonth()===m-1&&t.getUTCDate()===d; };
+  const ty=+today.slice(0,4);
+  // no year written: the first such date on or after today
+  const fill=(y,m,d)=>{ if(y) return y<100?2000+y:y; return valid(ty,m,d)&&`${ty}-${pad(m)}-${pad(d)}`>=today?ty:ty+1; };
+  const iso=(y,m,d)=>{ const yy=fill(y,m,d); return valid(yy,m,d)?`${yy}-${pad(m)}-${pad(d)}`:null; };
+
+  const rows=lines.map(l=>({raw:l.text, t:norm(l.text), h:l.h||0})).filter(r=>r.t);
+  const found=[];                                     // {from,to?, row, text} one per date or range
+  const used=rows.map(()=>[]);                        // pieces of each row taken as date/time/place, to drop from the title and notes
+  const take=(i,m)=>used[i].push(m[0]);
+  rows.forEach((r,i)=>{
+    let s=r.t, m;
+    // 2026-11-12
+    const reIso=/(20\d\d)[-/.](\d{1,2})[-/.](\d{1,2})/g; while((m=reIso.exec(s))){ const d=iso(+m[1],+m[2],+m[3]); if(d){ found.push({from:d,row:i,idx:m.index}); take(i,m); } }
+    // 2026年11月12日 - 14日 ; 11月12日-11月14日
+    const reZh=/(?:(20\d\d)\s*年)?\s*(\d{1,2})\s*月\s*(\d{1,2})\s*[日号號]?(?:\s*-\s*(?:(\d{1,2})\s*月)?\s*(\d{1,2})\s*[日号號]?)?/g;
+    while((m=reZh.exec(s))){ if(!/月/.test(m[0])) continue; const a=iso(+m[1]||0,+m[2],+m[3]); if(!a) continue;
+      let b=null; if(m[5]) b=iso(+m[1]||0,+(m[4]||m[2]),+m[5]); found.push({from:a,to:b&&b>a?b:null,row:i,idx:m.index}); take(i,m); }
+    // 12-14 Nov 2026 ; 12th November ; ថ្ងៃទី 12 ខែ វិច្ឆិកា ឆ្នាំ 2026 ; 12 Nov - 14 Nov 2026
+    const reDM=new RegExp('(\\d{1,2})(?:st|nd|rd|th)?\\s*(?:-\\s*(\\d{1,2})(?:st|nd|rd|th)?\\s*)?(?:of\\s+|ខែ\\s*)?'+MN+'\\.?(?:\\s*,?\\s*(?:ឆ្នាំ\\s*)?(20\\d\\d))?(?:\\s*-\\s*(\\d{1,2})(?:st|nd|rd|th)?\\s*(?:ខែ\\s*)?'+MN+'\\.?(?:\\s*,?\\s*(?:ឆ្នាំ\\s*)?(20\\d\\d))?)?','gi');
+    while((m=reDM.exec(s))){ const mo=monthOf(m[3]); if(!mo) continue;
+      const y1=+m[4]||+m[8]||0; let a=iso(y1,mo,+m[1]), b=null;
+      if(m[2]) b=iso(y1,mo,+m[2]); else if(m[5]) b=iso(y1,monthOf(m[6]),+m[5]);
+      if(a){ if(b&&a>b&&!(+m[4]||+m[8])) { /* range over a year end */ } found.push({from:a,to:b&&b>a?b:null,row:i,idx:m.index}); take(i,m); } }
+    // November 12 - 14, 2026 ; Nov 12th
+    const reMD=new RegExp('\\b'+MN+'[a-z]*\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:\\s*-\\s*(?:'+MN+'[a-z]*\\.?\\s+)?(\\d{1,2})(?:st|nd|rd|th)?)?(?:\\s*,?\\s*(20\\d\\d))?','gi');
+    while((m=reMD.exec(s))){ const mo=monthOf(m[1]); if(!mo) continue; if(found.some(f=>f.row===i&&Math.abs(f.idx-m.index)<m[0].length)) continue;
+      const y=+m[5]||0; const a=iso(y,mo,+m[2]); let b=null; if(m[4]) b=iso(y,m[3]?monthOf(m[3]):mo,+m[4]);
+      if(a){ found.push({from:a,to:b&&b>a?b:null,row:i,idx:m.index}); take(i,m); } }
+    // 12/11/2026, 12-11-26, 12.11.2026 (day first, as written here; month first only when the day part can't be a month)
+    const reN=/(?<![\d.:])(\d{1,2})[/.-](\d{1,2})[/.-](\d{2}|20\d\d)(?![\d:])/g;
+    while((m=reN.exec(s))){ let d=+m[1], mo=+m[2]; if(mo>12&&d<=12){ [d,mo]=[mo,d]; } const x=iso(+m[3],mo,d); if(x&&!found.some(f=>f.row===i&&f.from===x)){ found.push({from:x,row:i,idx:m.index}); take(i,m); } }
+  });
+  // two dates on one row joined by a dash are a range
+  const dates=[];
+  found.sort((a,b)=>a.row-b.row||a.idx-b.idx);
+  for(let k=0;k<found.length;k++){ const f=found[k], g=found[k+1];
+    if(!f.to && g && g.row===f.row && !g.to && g.from>f.from && /^\s*(-|to|until|ដល់|至|到)\s*$/i.test(rows[f.row].t.slice(f.idx+0, g.idx).replace(/^.*?(\s*(?:-|to|until|ដល់|至|到)\s*)$/i,'$1'))){ dates.push({from:f.from,to:g.from}); k++; }
+    else dates.push({from:f.from,to:f.to||null}); }
+  const seen=new Set(), ds=dates.filter(d=>{ const key=d.from+'/'+(d.to||''); if(seen.has(key)) return false; seen.add(key); return true; });
+
+  // times: 09:00-17:00, 9am, 14h30, 上午9点, ម៉ោង 9:00 ព្រឹក
+  const hh=(h,mi,ap)=>{ h=+h; mi=+(mi||0); if(ap==='pm'&&h<12) h+=12; if(ap==='am'&&h===12) h=0; return h>23||mi>59?null:`${pad(h)}:${pad(mi)}`; };
+  const apOf=w=>!w?'':/^(p\.?m\.?|下午|晚上|晚|រសៀល|ល្ងាច|យប់)$/i.test(w)?'pm':/^(a\.?m\.?|上午|早上|早|ព្រឹក)$/i.test(w)?'am':'';
+  let start=null,end=null; const timeRows=new Set();
+  const timeRe=/(?<![\d./])(\d{1,2})(?:[:h.]([0-5]\d))?\s*(a\.?m\.?|p\.?m\.?|ព្រឹក|រសៀល|ល្ងាច|យប់)?(?:\s*-\s*(\d{1,2})(?:[:h.]([0-5]\d))?\s*(a\.?m\.?|p\.?m\.?|ព្រឹក|រសៀល|ល្ងាច|យប់)?)?(?![\d/])/gi;
+  rows.forEach((r,i)=>{
+    if(start) return; let m; const had=start;
+    let s=r.t; used[i].forEach(u=>{ s=s.replace(u,' '.repeat(u.length)); });   // not the digits of a date
+    // Chinese
+    const zh=/(上午|早上|下午|晚上|中午)?\s*(\d{1,2})\s*[点時时](?:\s*(\d{1,2})\s*分?|半)?(?:\s*-\s*(上午|早上|下午|晚上)?\s*(\d{1,2})\s*[点時时](?:\s*(\d{1,2})\s*分?)?)?/g;
+    while(!start&&(m=zh.exec(s))){ const ap=apOf(m[1]||''); start=hh(m[2],/半/.test(m[0])&&!m[3]?30:m[3],ap); if(m[5]) end=hh(m[5],m[6],apOf(m[4]||'')||ap); }
+    // Khmer: ម៉ោង 9:00 ព្រឹក
+    const km=/ម៉ោង\s*(\d{1,2})(?:[:.]([0-5]\d))?\s*(ព្រឹក|រសៀល|ល្ងាច|យប់)?(?:\s*-\s*(\d{1,2})(?:[:.]([0-5]\d))?\s*(ព្រឹក|រសៀល|ល្ងាច|យប់)?)?/g;
+    while(!start&&(m=km.exec(s))){ const ap=apOf(m[3]||''); start=hh(m[1],m[2],ap); if(m[4]) end=hh(m[4],m[5],apOf(m[6]||'')||ap); }
+    while(!start&&(m=timeRe.exec(s))){
+      const onlyTime=/^[\d.:h\s\-apm]+$/i.test(s.trim()), hasColon=/[:h]/i.test(m[0].split('-')[0]) || (onlyTime&&/\./.test(m[0])), ap=apOf(m[3]||''); if(!hasColon&&!ap) continue;   // a bare number is not a time
+      const ap2=apOf(m[6]||'')||ap; start=hh(m[1],m[2],ap||ap2); if(m[4]) end=hh(m[4],m[5],ap2); if(!start){ end=null; } }
+    if(start&&!had) timeRows.add(i);
+  });
+  if(start&&end&&end<=start) end=null;
+
+  // title: the tallest line near the top that has words in it (and the line under it, if it is as tall: a wrapped title)
+  const stripped=rows.map((r,i)=>{ let s=r.t; used[i].forEach(u=>{ s=s.replace(u,' '); }); return s.replace(/\b\d{1,2}(?::\d{2})?\s*(am|pm)?\b/gi,' ').replace(/\s+/g,' ').trim(); });
+  const letters=s=>(s.match(/\p{L}/gu)||[]).length;
+  const KEY=/^(venue|location|address|place|where|at|date|time|when|tel|phone|contact|email|e-?mail|website|www|fee|price|rsvp|ទីកន្លែង|ទីតាំង|អាសយដ្ឋាន|កាលបរិច្ឆេទ|ម៉ោង|ទូរស័ព្ទ|地点|地點|地址|场地|日期|时间|時間|电话|電話)\b/i;
+  const cand=rows.map((r,i)=>i).filter(i=>letters(stripped[i])>=3 && !KEY.test(stripped[i]));
+  const topN=Math.max(3,Math.ceil(rows.length*.6)); const pool=cand.filter(i=>i<topN);
+  let ti=-1; for(const i of (pool.length?pool:cand)){ if(ti<0||rows[i].h>rows[ti].h*1.08) ti=i; }
+  let title=''; const taken=new Set();
+  if(ti>=0){ title=stripped[ti]; taken.add(ti);
+    const nx=ti+1; if(nx<rows.length && cand.includes(nx) && rows[ti].h && rows[nx].h>=rows[ti].h*.85 && title.length<60){ title+=' '+stripped[nx]; taken.add(nx); } }
+  title=title.replace(/^[\s\-–•*·:|"'“”]+|[\s\-–•*·:|"'“”]+$/g,'').slice(0,120);
+
+  // place: "Venue: …" or a line that names one
+  let location=''; 
+  const LK=/^(?:venue|location|address|place|where|at|@|ទីកន្លែង|ទីតាំង|អាសយដ្ឋាន|地点|地點|地址|场地)\s*[:：៖-]?\s*(.+)$/i;
+  const PLACE=/(hotel|resort|center|centre|hall|building|tower|road|street|\bst\b\.?|blvd|boulevard|avenue|phnom penh|siem reap|sihanoukville|សណ្ឋាគារ|ផ្លូវ|វិមាន|酒店|大厦|大廈|路|中心|会议|會議)/i;
+  rows.forEach((r,i)=>{ if(location||taken.has(i)) return; const m=LK.exec(r.t); if(m){ location=m[1].trim(); taken.add(i); } });
+  if(!location) rows.forEach((r,i)=>{ if(location||taken.has(i)||!PLACE.test(r.t)||letters(stripped[i])<4) return; location=r.t; taken.add(i); });
+  location=location.slice(0,200);
+
+  // notes: the other lines that have something in them
+  const notes=rows.map((r,i)=>[r,i]).filter(([r,i])=>{ if(taken.has(i)||letters(stripped[i])<3||stripped[i].length<4) return false;
+      return !(used[i].length||timeRows.has(i)) || letters(stripped[i])>=14; })
+    .map(([r,i])=>(used[i].length||timeRows.has(i))?stripped[i]:r.t).join(' · ').slice(0,500);
+
+  const base={title,event_time:start||'',end_time:end||'',location,notes,category:'',needs_check:!title||title.length<4};
+  const out=(ds.length?ds:[{from:'',to:null}]).slice(0,6).map(d=>({...base,event_date:d.from,end_date:d.to||'',needs_check:base.needs_check||!d.from,end_time:d.to?base.end_time:base.end_time}));
+  return out;
+}
+
+let JR_TESS=null;
+function jrLoadTesseract(){
+  if(window.Tesseract) return Promise.resolve();
+  return JR_TESS||(JR_TESS=new Promise((res,rej)=>{ const sc=document.createElement('script');
+    sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'; sc.onload=res; sc.onerror=()=>{ JR_TESS=null; rej(new JrOffline('reader not loaded')); }; document.head.appendChild(sc); }));
+}
+// a photo made easier to read: upright, big enough (letters ~30px tall read best), grey, with the contrast stretched
+async function jrPrep(file){
+  const bmp=await createImageBitmap(file,{imageOrientation:'from-image'});
+  const long=Math.max(bmp.width,bmp.height), k=long<1800?Math.min(2,1800/long):Math.min(1,2600/long), c=document.createElement('canvas');
   c.width=Math.round(bmp.width*k); c.height=Math.round(bmp.height*k);
-  c.getContext('2d').drawImage(bmp,0,0,c.width,c.height); bmp.close?.();
-  const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));
-  const data=await new Promise((res,rej)=>{ const f=new FileReader(); f.onload=()=>res(String(f.result).split(',')[1]); f.onerror=rej; f.readAsDataURL(blob); });
-  return {type:'image/jpeg', data};
+  const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(bmp,0,0,c.width,c.height); bmp.close?.();
+  const im=g.getImageData(0,0,c.width,c.height), d=im.data, hist=new Uint32Array(256);
+  for(let p=0;p<d.length;p+=4){ const y=(d[p]*299+d[p+1]*587+d[p+2]*114)/1000|0; d[p]=y; hist[y]++; }
+  const n=c.width*c.height; let lo=0,hi=255,a=0; while(lo<254&&(a+=hist[lo])<n*.01) lo++; a=0; while(hi>lo+1&&(a+=hist[hi])<n*.01) hi--;
+  const sc=255/Math.max(1,hi-lo);
+  for(let p=0;p<d.length;p+=4){ const v=Math.max(0,Math.min(255,((d[p]-lo)*sc)|0)); d[p]=d[p+1]=d[p+2]=v; }
+  g.putImageData(im,0,0); return c;
 }
 function jrScan(){
   if(!jrCanEdit()){ toast(tx('viewOnly')); return; }
   if(JR_FROZEN){ toast(tx('offlinePaused')); return; }
   const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true; inp.style.display='none';
-  inp.onchange=()=>{ const files=[...inp.files].slice(0,4); inp.remove(); if(files.length) jrScanFiles(files); };
+  inp.onchange=()=>{ const files=[...inp.files].slice(0,4); inp.remove(); if(files.length) jrScanStart(files); };
   document.body.appendChild(inp); inp.click();
 }
-async function jrScanFiles(files){
+// first: which language is in the photo (what to download and read), then read
+function jrScanStart(files){
   const ov=document.createElement('div'); ov.className='modal-ov';
   const card=document.createElement('div'); card.className='modal-card jr-scancard'; card.style.cssText='max-width:30rem;width:100%';
-  card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('scanTitle'))}</h2></div><div class="jr-scan-wait"><span class="jr-spin" aria-hidden="true"></span>${esc(tx('scanReading'))}</div>`;
   ov.appendChild(card); document.body.appendChild(ov);
   let alive=true; const close=()=>{ alive=false; dismiss(ov); }; ov.onclick=e=>{ if(e.target===ov) close(); };
-  let found;
-  try{
-    const images=[]; for(const f of files) images.push(await jrShrink(f));
-    found=(await api('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({images,today:jrToday()})})).events||[];
-  }catch(e){ if(!alive) return; card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('scanTitle'))}</h2></div><p class="jr-scan-msg">${esc(e instanceof JrOffline?tx('cantReach'):(/scan|set up|photo|busy|reader/i.test(e.message)?jrErr(e.message):tx('scanFail')))}</p>
-      <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('close'))}</button></div>`; card.querySelector('#sc-x').onclick=close; return; }
-  if(!alive) return;
-  if(!found.length){ card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('scanTitle'))}</h2></div><p class="jr-scan-msg">${esc(tx('scanNone'))}</p><p class="jr-ae-hint">${esc(tx('scanTip'))}</p>
-      <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('close'))}</button></div>`; card.querySelector('#sc-x').onclick=close; return; }
-  // already there? (same day and same title): offered but unticked
-  const dup=e=>JOURNAL_EVENTS.some(x=>x.event_date===e.event_date && x.title.trim().toLowerCase()===e.title.trim().toLowerCase());
-  const list=found.map(e=>({...e, on:!dup(e) && !!e.event_date, dup:dup(e)}));
-  const draw=()=>{
-    const n=list.filter(e=>e.on).length;
-    card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('scanTitle'))}</h2></div><p class="jr-ae-hint">${esc(tx('scanFound',{n:list.length}))}</p>
-      <div class="jr-scan-list">${list.map((e,i)=>`<div class="jr-sc${e.on?' on':''}" data-i="${i}">
-        <label class="jr-sc-top"><input type="checkbox" data-f="on"${e.on?' checked':''}><input class="jr-sc-title" data-f="title" value="${esc(e.title)}" maxlength="120" aria-label="${esc(tx('lblTitle'))}"></label>
-        ${e.dup?`<em class="jr-role">${esc(tx('scanDup'))}</em>`:''}${e.needs_check&&!e.dup?`<em class="jr-role warn">${esc(tx('scanCheck'))}</em>`:''}
-        <div class="jr-sc-row"><input type="date" data-f="event_date" value="${esc(e.event_date)}" aria-label="${esc(tx('lblDate'))}"><input type="date" data-f="end_date" value="${esc(e.end_date)}" aria-label="${esc(tx('lblDateTo'))}"></div>
-        <div class="jr-sc-row"><input type="time" data-f="event_time" value="${esc(e.event_time)}" aria-label="${esc(tx('lblFrom'))}"><input type="time" data-f="end_time" value="${esc(e.end_time)}" aria-label="${esc(tx('lblToTime'))}"></div>
-        <input data-f="location" value="${esc(e.location)}" placeholder="${esc(tx('lblLoc'))}" maxlength="200" aria-label="${esc(tx('lblLoc'))}">
-        <input data-f="notes" value="${esc(e.notes)}" placeholder="${esc(tx('lblNotes'))}" maxlength="500" aria-label="${esc(tx('lblNotes'))}">
-      </div>`).join('')}</div>
-      <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('cancel'))}</button><button class="act" id="sc-ok"${n?'':' disabled'}>${esc(tx('scanAdd',{n}))}</button></div>`;
+  let langs; try{ langs=JSON.parse(localStorage.getItem('yai_ocr_langs')); }catch(_){} if(!Array.isArray(langs)||!langs.length) langs=['en',JR_LANG].filter((v,i,a)=>a.indexOf(v)===i);
+  const NAMES={en:'English',km:'ខ្មែរ',zh:'中文'}, CODE={en:'eng',km:'khm',zh:'chi_sim'};
+  const head=`<div class="jr-ae-head"><h2>${esc(tx('scanTitle'))}</h2></div>`;
+  const start=()=>{
+    card.innerHTML=head+`<p class="jr-ae-hint">${esc(tx('scanTip'))}</p>
+      <div class="jr-sc-thumbs">${files.map(f=>`<img src="${URL.createObjectURL(f)}" alt="">`).join('')}</div>
+      <div class="jr-sc-langs" role="group" aria-label="${esc(tx('scanLangs'))}"><span>${esc(tx('scanLangs'))}</span>${Object.keys(NAMES).map(l=>`<button type="button" class="jr-chipbtn${langs.includes(l)?' on':''}" data-l="${l}" aria-pressed="${langs.includes(l)}">${NAMES[l]}</button>`).join('')}</div>
+      <p class="jr-ae-hint">${esc(tx('scanFirst'))}<br>${esc(tx('scanFree'))}</p>
+      <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('cancel'))}</button><button class="act" id="sc-go"${langs.length?'':' disabled'}>${esc(tx('scanRead'))}</button></div>`;
     card.querySelector('#sc-x').onclick=close;
-    card.querySelector('#sc-ok').onclick=save;
+    card.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{ const l=b.dataset.l; langs=langs.includes(l)?langs.filter(x=>x!==l):[...langs,l]; start(); });
+    card.querySelector('#sc-go').onclick=run;
   };
-  // typing changes the list without redrawing (a redraw would drop the cursor); ticking redraws for the count
-  card.addEventListener('input',e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const f=e.target.dataset.f; if(!f||f==='on') return; list[+row.dataset.i][f]=e.target.value; });
-  card.addEventListener('change',e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const it=list[+row.dataset.i], f=e.target.dataset.f;
-    if(f==='on'){ it.on=e.target.checked; draw(); } else if(f==='event_date'||f==='end_date'){ it[f]=e.target.value;
-      const ok=card.querySelector('#sc-ok'); const n=list.filter(x=>x.on).length; ok.disabled=!n; } });
-  async function save(){
-    const todo=list.filter(e=>e.on); const bad=todo.find(e=>!e.event_date||!e.title.trim());
-    if(bad){ toast(!bad.title.trim()?tx('titleReq'):tx('scanNoDate')); return; }
-    const ok=card.querySelector('#sc-ok'); ok.disabled=true; ok.textContent=tx('scanSaving'); let added=0, last=null;
-    for(const e of todo){
-      let end=e.end_date||null; if(end && end<=e.event_date) end=null;
-      let t2=e.end_time||null; if(t2 && (!e.event_time || (!end && t2<=e.event_time))) t2=null;
-      try{
-        const saved=await api('/api/journal/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:e.title.trim(),event_date:e.event_date,end_date:end,event_time:e.event_time||null,end_time:t2,
-          location:(e.location||'').trim()||null,notes:(e.notes||'').trim()||null,category:(e.category||'').trim()||null})});
-        JOURNAL_EVENTS.push(saved); added++; last=saved;
-      }catch(err){ toast(tx('errPrefix')+jrErr(err.message)); }
-    }
-    close(); if(added){ toast(tx('scanAdded',{n:added})); if(JR_VIEW==='calendar'&&last) calSelect(last.event_date); else jrRender(); jrRenderUpNext(); }
+  const wait=msg=>{ card.innerHTML=head+`<div class="jr-scan-wait"><span class="jr-spin" aria-hidden="true"></span><span id="sc-msg">${esc(msg)}</span></div>`; };
+  const fail=m=>{ card.innerHTML=head+`<p class="jr-scan-msg">${esc(m)}</p><div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('close'))}</button><button class="act" id="sc-back">${esc(tx('back'))}</button></div>`;
+    card.querySelector('#sc-x').onclick=close; card.querySelector('#sc-back').onclick=start; };
+  async function run(){
+    try{ localStorage.setItem('yai_ocr_langs',JSON.stringify(langs)); }catch(_){}
+    wait(tx('scanLoadingReader'));
+    let worker; const found=[], raws=[];
+    try{
+      await jrLoadTesseract();
+      const code=langs.map(l=>CODE[l]).join('+'); let pic=0;
+      worker=await Tesseract.createWorker(code,1,{logger:m=>{ if(!alive) return; const el=card.querySelector('#sc-msg');
+        if(el&&m.status==='recognizing text') el.textContent=tx('scanReadingPct',{p:Math.round(((pic+m.progress)/files.length)*100)}); }});
+      for(pic=0;pic<files.length;pic++){
+        const c=await jrPrep(files[pic]); if(!alive) return;
+        const {data}=await worker.recognize(c);
+        const lines=(data.lines&&data.lines.length?data.lines:(data.text||'').split('\n').map(t=>({text:t}))).map(l=>({text:String(l.text||'').trim(), h:l.bbox?l.bbox.y1-l.bbox.y0:0})).filter(l=>l.text);
+        raws.push(lines.map(l=>l.text).join('\n'));
+        for(const e of jrParseEvents(lines,jrToday())) found.push(e);
+      }
+    }catch(e){ if(!alive) return; fail(e instanceof JrOffline?tx('cantReach'):tx('scanFail')); try{ worker?.terminate(); }catch(_){} return; }
+    try{ worker.terminate(); }catch(_){}
+    if(!alive) return;
+    review(found, raws.filter(Boolean).join('\n———\n'));
   }
-  draw();
+  function review(found, raw){
+    if(!found.length || !found.some(e=>e.title||e.event_date)){ card.innerHTML=head+`<p class="jr-scan-msg">${esc(tx('scanNone'))}</p><p class="jr-ae-hint">${esc(tx('scanTip'))}</p>
+      ${raw?`<details class="jr-audit"><summary>${esc(tx('scanRaw'))}</summary><pre class="jr-sc-raw">${esc(raw)}</pre></details>`:''}
+      <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('close'))}</button><button class="act" id="sc-back">${esc(tx('back'))}</button></div>`;
+      card.querySelector('#sc-x').onclick=close; card.querySelector('#sc-back').onclick=start; return; }
+    // already there? (same day and same title): offered but unticked
+    const dup=e=>!!e.event_date && JOURNAL_EVENTS.some(x=>x.event_date===e.event_date && x.title.trim().toLowerCase()===e.title.trim().toLowerCase());
+    const list=found.map(e=>({...e, on:!dup(e) && !!e.event_date && !!e.title, dup:dup(e)}));
+    const draw=()=>{
+      const n=list.filter(e=>e.on).length;
+      card.innerHTML=head+`<p class="jr-ae-hint">${esc(tx('scanFound',{n:list.length}))}</p>
+        <div class="jr-scan-list">${list.map((e,i)=>`<div class="jr-sc${e.on?' on':''}" data-i="${i}">
+          <label class="jr-sc-top"><input type="checkbox" data-f="on"${e.on?' checked':''}><input class="jr-sc-title" data-f="title" value="${esc(e.title)}" maxlength="120" aria-label="${esc(tx('lblTitle'))}"></label>
+          ${e.dup?`<em class="jr-role">${esc(tx('scanDup'))}</em>`:''}${e.needs_check&&!e.dup?`<em class="jr-role warn">${esc(tx('scanCheck'))}</em>`:''}
+          <div class="jr-sc-row"><input type="date" data-f="event_date" value="${esc(e.event_date)}" aria-label="${esc(tx('lblDate'))}"><input type="date" data-f="end_date" value="${esc(e.end_date)}" aria-label="${esc(tx('lblDateTo'))}"></div>
+          <div class="jr-sc-row"><input type="time" data-f="event_time" value="${esc(e.event_time)}" aria-label="${esc(tx('lblFrom'))}"><input type="time" data-f="end_time" value="${esc(e.end_time)}" aria-label="${esc(tx('lblToTime'))}"></div>
+          <input data-f="location" value="${esc(e.location)}" placeholder="${esc(tx('lblLoc'))}" maxlength="200" aria-label="${esc(tx('lblLoc'))}">
+          <input data-f="notes" value="${esc(e.notes)}" placeholder="${esc(tx('lblNotes'))}" maxlength="500" aria-label="${esc(tx('lblNotes'))}">
+        </div>`).join('')}</div>
+        ${raw?`<details class="jr-audit"><summary>${esc(tx('scanRaw'))}</summary><pre class="jr-sc-raw">${esc(raw)}</pre></details>`:''}
+        <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('cancel'))}</button><button class="act" id="sc-ok"${n?'':' disabled'}>${esc(tx('scanAdd',{n}))}</button></div>`;
+      card.querySelector('#sc-x').onclick=close; card.querySelector('#sc-ok').onclick=save;
+    };
+    // typing changes the list without redrawing (a redraw would drop the cursor); ticking redraws for the count
+    card.oninput=e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const f=e.target.dataset.f; if(!f||f==='on') return; list[+row.dataset.i][f]=e.target.value; };
+    card.onchange=e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const it=list[+row.dataset.i], f=e.target.dataset.f;
+      if(f==='on'){ it.on=e.target.checked; draw(); } };
+    async function save(){
+      const todo=list.filter(e=>e.on); const bad=todo.find(e=>!e.event_date||!e.title.trim());
+      if(bad){ toast(!bad.title.trim()?tx('titleReq'):tx('scanNoDate')); return; }
+      const ok=card.querySelector('#sc-ok'); ok.disabled=true; ok.textContent=tx('scanSaving'); let added=0, last=null;
+      for(const e of todo){
+        let end=e.end_date||null; if(end && end<=e.event_date) end=null;
+        let t2=e.end_time||null; if(t2 && (!e.event_time || (!end && t2<=e.event_time))) t2=null;
+        try{
+          const saved=await api('/api/journal/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:e.title.trim(),event_date:e.event_date,end_date:end,event_time:e.event_time||null,end_time:t2,
+            location:(e.location||'').trim()||null,notes:(e.notes||'').trim()||null,category:(e.category||'').trim()||null})});
+          JOURNAL_EVENTS.push(saved); added++; last=saved;
+        }catch(err){ toast(tx('errPrefix')+jrErr(err.message)); }
+      }
+      close(); if(added){ toast(tx('scanAdded',{n:added})); if(JR_VIEW==='calendar'&&last) calSelect(last.event_date); else jrRender(); jrRenderUpNext(); }
+    }
+    draw();
+  }
+  start();
 }
 
 // ---- the People tab (editors and admins): give each person a nickname ----
