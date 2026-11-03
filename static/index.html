@@ -3502,8 +3502,9 @@ function renderCalendar(opt={}){
   const firstOfMonth = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1);
   const lead = (firstOfMonth.getDay() - JR_WEEK_START + 7) % 7;   // days of the previous month shown first (weeks start on Sunday or Monday, Settings)
   const gridStart = new Date(JR_CAL_YEAR, JR_CAL_MONTH, 1 - lead);
-  // 5 or 6 weeks, whichever the month needs, so the rows are as tall as they can be
-  const weeks = Math.ceil((lead + new Date(JR_CAL_YEAR, JR_CAL_MONTH+1, 0).getDate()) / 7);
+  // always 6 weeks (42 cells): a month that needs only 5 shows the start of the next one in its last row. Every month then has
+  // the same cell size, so nothing jumps or resizes when you move between months.
+  const weeks = 6;
   const [mTitle,yTitle]=jrCalTitle(JR_CAL_YEAR,JR_CAL_MONTH);
   $('#jr-cal-month').textContent = mTitle;
   $('#jr-cal-year').textContent = yTitle;
