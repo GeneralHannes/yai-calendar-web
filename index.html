@@ -1600,6 +1600,67 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     #toast,.jr-h,.jr-cell,.jr-ae label,.jr-ae-hint,.jr-ae-tab,.jr-signin-card p,.jr-signin-card label,.jr-remind-txt,.jr-remind-txt *,
     .mini,.act,.jr-lang button,.jr-signin-switch,.jr-showpast,.jr-me,.empty,.empty span,.jr-ag-where,.jr-by,.chip-lbl) { line-height:1.6; }
   :root:lang(km) .jr-month { line-height:1.5; }
+  /* ================= Liquid glass v2 =================
+     A material with depth rather than a flat translucent fill: a bright specular rim that catches light at the top-left
+     (and fades round the edge like a lens), a soft inner glow, saturated blur of what's behind, a tinted drop shadow, and a
+     slowly drifting colour field behind everything so there is something for the glass to bend. Light themes get the full
+     brightness (--gl-a:1); dark themes a quieter one. All motion here is skipped for reduced-motion, and Android (which
+     drops backdrop-filter, see below) keeps the rims but not the blur. */
+  :root { --gl-a:.4; --gl-shadow:0 0 0; }
+  :root[data-theme="latte"], :root[data-theme="daylight"] { --gl-a:1; --gl-shadow:70 60 120; }
+  :root {
+    --gl-fill:linear-gradient(150deg, rgb(255 255 255 / calc(var(--gl-a) * .46)) 0%, rgb(255 255 255 / calc(var(--gl-a) * .12)) 48%, rgb(255 255 255 / calc(var(--gl-a) * .26)) 100%);
+    --gl-rim:inset 0 1.5px 0 rgb(255 255 255 / calc(var(--gl-a) * .95)), inset 0 -1px 0 rgb(255 255 255 / calc(var(--gl-a) * .38)),
+             inset 1.5px 0 0 rgb(255 255 255 / calc(var(--gl-a) * .55)), inset -1px 0 0 rgb(255 255 255 / calc(var(--gl-a) * .28)),
+             inset 0 0 26px rgb(255 255 255 / calc(var(--gl-a) * .22));
+    --gl-drop:0 22px 46px -18px rgb(var(--gl-shadow) / .42), 0 3px 10px -2px rgb(var(--gl-shadow) / .14);
+    --gl-blur:blur(24px) saturate(190%) brightness(1.04);
+  }
+  /* the surfaces */
+  .jr-rail .jr-viewtoggle, .jr-monthnav, .jr-bottom, .jr-pop, #toast, .jr-lang, .jr-pick-box, .jr-table, .jr-pp {
+    background:var(--gl-fill), color-mix(in srgb,var(--k-bg2) 50%,transparent);
+    -webkit-backdrop-filter:var(--gl-blur); backdrop-filter:var(--gl-blur);
+    border:1px solid rgb(255 255 255 / calc(var(--gl-a) * .55));
+    box-shadow:var(--gl-rim), var(--gl-drop); }
+  .modal-card { background:var(--gl-fill), color-mix(in srgb,var(--k-bg2) 93%,transparent);
+    border:1px solid rgb(255 255 255 / calc(var(--gl-a) * .6)); box-shadow:var(--gl-rim), 0 30px 70px -20px rgb(var(--gl-shadow) / .55), 0 4px 14px -4px rgb(var(--gl-shadow) / .2); }
+  .jr-dcard, .jr-up-ev { box-shadow:inset 0 1px 0 rgb(255 255 255 / calc(var(--gl-a) * .7)), 0 6px 14px -10px rgb(var(--gl-shadow) / .4); }
+  .jr-monthnav { position:relative; }
+  /* the lens rim: a hairline brightest at the top-left and bottom-right, clear between */
+  :is(.jr-rail .jr-viewtoggle, .jr-monthnav, .jr-bottom, .jr-pop, #toast)::after {
+    content:""; position:absolute; inset:0; border-radius:inherit; padding:1.2px; pointer-events:none; z-index:4;
+    background:conic-gradient(from 200deg, rgb(255 255 255 / calc(var(--gl-a) * .95)), rgb(255 255 255 / 0) 22%, rgb(255 255 255 / calc(var(--gl-a) * .55)) 48%, rgb(255 255 255 / 0) 70%, rgb(255 255 255 / calc(var(--gl-a) * .95)));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+  /* the colour field behind the glass: soft blobs of the theme's own colours that drift very slowly */
+  body::after { content:""; position:fixed; inset:-25%; z-index:-1; pointer-events:none; will-change:transform;
+    background:radial-gradient(38% 34% at 18% 22%, color-mix(in srgb,var(--k-act) 26%,transparent), transparent 70%),
+               radial-gradient(34% 30% at 82% 14%, color-mix(in srgb,var(--k-gold) 24%,transparent), transparent 70%),
+               radial-gradient(40% 36% at 70% 82%, color-mix(in srgb,var(--k-act) 18%,var(--k-gold) 12%), transparent 72%),
+               radial-gradient(30% 28% at 12% 85%, color-mix(in srgb,var(--k-warn) 16%,transparent), transparent 70%); }
+  @media (prefers-reduced-motion:no-preference) {
+    body::after { animation:glDrift 52s ease-in-out infinite alternate; }
+    @keyframes glDrift { 0% { transform:translate3d(0,0,0) rotate(0deg) scale(1); } 50% { transform:translate3d(3%,-2%,0) rotate(6deg) scale(1.07); } 100% { transform:translate3d(-3%,3%,0) rotate(-5deg) scale(1.03); } }
+    /* a pressed control gives way under the finger and springs back */
+    .jr-mn-btn:active, .jr-vt-btn:active, .jr-scan:active, .jr-mn-today:active, .jr-pp-btn:active, .jr-chipbtn:active { transform:scale(.9); transition:transform var(--k-t-press) ease-out; }
+    /* sheets arrive over a blurring backdrop; on a computer the card pops with a small rebound (phones keep their slide-up) */
+    .modal-ov { -webkit-backdrop-filter:blur(7px) saturate(115%); backdrop-filter:blur(7px) saturate(115%); animation:glOv .35s ease-out both; }
+    @keyframes glOv { from { opacity:0; -webkit-backdrop-filter:blur(0); backdrop-filter:blur(0); } }
+  }
+  @media (prefers-reduced-motion:no-preference) and (min-width:761px) {
+    .modal-card { animation:glCard .6s var(--k-bouncy) both; }
+    @keyframes glCard { from { opacity:0; transform:translateY(22px) scale(.94); } 45% { opacity:1; } }
+  }
+  /* a computer's pointer: things lift a little as it passes */
+  @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+    .jr-cal-day { transition:background-color .2s, box-shadow .25s; }
+    .jr-cal-day:hover { background:rgb(255 255 255 / calc(var(--gl-a) * .32)); box-shadow:inset 0 0 0 1px rgb(255 255 255 / calc(var(--gl-a) * .7)), 0 8px 18px -10px rgb(var(--gl-shadow) / .35); }
+    .jr-ev { transition:transform .25s var(--k-smooth), box-shadow .25s, filter .25s; }
+    .jr-ev:hover { transform:translateY(-1px) scale(1.02); filter:saturate(1.12); box-shadow:0 8px 16px -8px rgb(var(--gl-shadow) / .45); }
+    .jr-dcard { transition:transform .25s var(--k-smooth), box-shadow .25s; }
+    .jr-dcard:hover { transform:translateY(-1px); box-shadow:inset 0 1px 0 rgb(255 255 255 / calc(var(--gl-a) * .8)), 0 12px 22px -12px rgb(var(--gl-shadow) / .5); }
+    .jr-up-ev:hover { transform:translateX(2px); }
+  }
+
   /* ================= Android (script in <head> adds html.android) =================
      Chrome on Android paints live background blur wrongly: a blurred panel leaves a stale strip over whatever
      is below it (the month name and weekdays vanished under the day panel). So on Android nothing uses
