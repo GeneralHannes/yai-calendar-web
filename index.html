@@ -1391,6 +1391,41 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-vt-btn[hidden] { display:none !important; }
   @media (max-width:640px) { #jr-people { padding-bottom:5rem; } .jr-pp { flex-wrap:wrap; } .jr-pp-who { flex:1 1 calc(100% - 4rem); } .jr-pp-nick { flex:1 1 100%; } }
 
+  /* ================= add from a photo ================= */
+  .jr-scan { all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.45rem; color:var(--accent); border-radius:999px; position:relative; }
+  .jr-scan:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .jr-scan svg { width:22px; height:22px; flex:none; }
+  .jr-monthnav .jr-scan { width:2.6rem; height:2.6rem; flex:none; }
+  .jr-monthnav .jr-scan span { display:none; }
+  .jr-rail > .jr-scan { margin-top:auto; padding:.6rem .7rem; border:1px solid var(--glass-line); background:color-mix(in srgb,var(--k-bg3) 45%,transparent); font-size:.88rem; font-weight:600; }
+  .jr-rail > .jr-scan + .jr-add { margin-top:.4rem; }
+  body:not(.jr-cal-view) .jr-monthnav > button:not(.jr-add):not(.jr-scan) { display:none; }
+  body.jr-viewer .jr-scan { display:none !important; }
+  /* a narrow phone held upright: Calendar / Agenda / People, ‹ Today ›, the photo button and + all have to fit one bar */
+  @media (max-width:430px) and (orientation:portrait) {
+    .jr-rail { gap:.3rem; }
+    .jr-rail .jr-vt-btn { width:2.3rem; height:2.7rem; }
+    .jr-rail .jr-vt-btn svg { width:22px; height:22px; }
+    .jr-monthnav { gap:.15rem; padding:.25rem; }
+    .jr-monthnav .jr-mn-btn { width:1.8rem; }
+    .jr-monthnav .jr-mn-today { padding:0 .5rem; font-size:.86rem; }
+    .jr-monthnav .jr-scan { width:2.3rem; }
+    .jr-rail .jr-monthnav .jr-add, .jr-monthnav .jr-add { width:2.7rem; height:2.7rem; }
+  }
+  .jr-scan-wait { display:flex; align-items:center; gap:.7rem; padding:1.4rem .2rem; color:var(--muted); }
+  .jr-spin { width:1.2rem; height:1.2rem; border-radius:50%; border:2.5px solid color-mix(in srgb,var(--accent) 25%,transparent); border-top-color:var(--accent); animation:jrSpin .8s linear infinite; }
+  @keyframes jrSpin { to { transform:rotate(360deg); } }
+  .jr-scan-msg { margin:.6rem 0; line-height:1.4; }
+  .jr-scan-list { display:grid; gap:.55rem; margin:.4rem 0 .9rem; max-height:min(52vh,26rem); overflow:auto; overscroll-behavior:contain; padding:.1rem; }
+  .jr-sc { display:grid; gap:.35rem; padding:.55rem .6rem; border-radius:12px; border:1px solid var(--glass-line); background:color-mix(in srgb,var(--k-bg3) 40%,transparent); opacity:.65; }
+  .jr-sc.on { opacity:1; background:color-mix(in srgb,var(--accent) 7%,var(--k-bg3)); border-color:color-mix(in srgb,var(--accent) 35%,transparent); }
+  .jr-sc input:not([type=checkbox]) { width:100%; min-width:0; padding:.4rem .55rem; font-size:.92rem; }
+  .jr-sc-top { display:flex; align-items:center; gap:.55rem; }
+  .jr-sc-top input[type=checkbox] { width:1.2rem; height:1.2rem; flex:none; margin:0; }
+  .jr-sc-title { font-weight:700; font-size:1rem !important; }
+  .jr-sc-row { display:grid; grid-template-columns:1fr 1fr; gap:.4rem; }
+  .jr-sc .jr-role { justify-self:start; }
+
   /* ================= security ================= */
   .jr-pwrules { font-size:.78rem !important; line-height:1.4; }
   .jr-sec-row { display:flex; align-items:center; gap:.8rem; padding:.6rem 0; border-bottom:1px solid var(--glass-line); }
@@ -1579,6 +1614,7 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
     <!-- desktop: what's coming up, in date order (hidden on phones) -->
     <section class="jr-upnext" id="jr-upnext" aria-label="Upcoming events" data-i18n-aria="upcomingAria"></section>
     <div data-lang-slot="rail"></div>
+    <button type="button" class="jr-scan k-shine" onclick="jrScan()" title="Add from a photo" data-i18n-title="scanBtn" aria-label="Add from a photo" data-i18n-aria="scanBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7H8l1.2-2h5.6L16 7h2.5A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.4"/></svg><span data-i18n="scanBtn">Add from a photo</span></button>
     <button class="act jr-add k-shine" onclick="openAddEvent(JR_VIEW==='calendar'?JR_SEL:undefined)" title="Add event" data-i18n-title="addEvent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="addEvent">Add event</span></button>
   </nav>
 
@@ -1753,7 +1789,7 @@ en:{
   setupKey:'Setup key', openAuth:'Open in authenticator app', recoveryTitle:'Save your recovery codes', recoveryHint:'Each one works once if you lose your phone. They are shown only now.',
   copyCodes:'Copy', copied:'Copied', savedThem:'I saved them', twoStepNowOn:'Two-step sign-in is on', twoStepNowOff:'Two-step sign-in is off', askPwOff:'Enter your password to turn off two-step sign-in.',
   setPw:'Set password', setPwAsk:'A temporary password for {name}. They must change it when they next sign in.', reset2:'Reset 2-step', reset2Ask:'Turn off two-step sign-in for {name}? They will then sign in with just their password.',
-  pwSet:'Password set. {name} must change it at the next sign-in.', done2:'Two-step sign-in reset', recent:'Recent activity', tagTwoStep:'2-step', tagMustChange:'must change password', tagLocked:'locked', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
+  pwSet:'Password set. {name} must change it at the next sign-in.', done2:'Two-step sign-in reset', recent:'Recent activity', tagTwoStep:'2-step', tagMustChange:'must change password', tagLocked:'locked', scanBtn:'Add from a photo', scanTitle:'Events from a photo', scanReading:'Reading the photo…', scanNone:'No events were found in that photo.', scanFound:'{n} found. Check them, then add.', scanAdd:'Add {n}', scanDup:'Already in the calendar', scanNoDate:'Pick a date', scanAdded:'{n} added to the calendar', scanNotSetUp:'Reading photos isn’t set up yet.', scanLimit:'Today’s photo limit is used up. Try again tomorrow.', scanFail:'Couldn’t read that photo. Try a clearer one.', scanTip:'Take a clear, straight photo of the invitation, flyer or schedule.', scanCheck:'check this', scanSaving:'Adding…', scanBadPhoto:'That photo can’t be used.', addNote:'+ note', addTag:'+ tag', thTime:'Time', thTitle:'Title', thCat:'Category',
   nothingPlanned:'Nothing planned.', tapAdd:'Tap “Add event” to put something on it.', noEvents:'No events yet.',
   dayEmpty:'Double-tap a day or press + to add one.',
   evWord:n=>n>1?'events':'event', nEvents:n=>`${n} event${n>1?'s':''}`, nDone:'{n} done',
@@ -1812,7 +1848,7 @@ zh:{
   setupKey:'设置密钥', openAuth:'在验证器应用中打开', recoveryTitle:'保存你的恢复码', recoveryHint:'如果手机丢失，每个恢复码可使用一次。它们只显示这一次。',
   copyCodes:'复制', copied:'已复制', savedThem:'我已保存', twoStepNowOn:'两步验证已开启', twoStepNowOff:'两步验证已关闭', askPwOff:'请输入密码以关闭两步验证。',
   setPw:'设置密码', setPwAsk:'为 {name} 设置临时密码。对方下次登录时必须更改。', reset2:'重置两步验证', reset2Ask:'关闭 {name} 的两步验证？之后对方只需密码即可登录。',
-  pwSet:'密码已设置。{name} 下次登录时必须更改。', done2:'两步验证已重置', recent:'最近活动', tagTwoStep:'两步验证', tagMustChange:'须更改密码', tagLocked:'已锁定', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
+  pwSet:'密码已设置。{name} 下次登录时必须更改。', done2:'两步验证已重置', recent:'最近活动', tagTwoStep:'两步验证', tagMustChange:'须更改密码', tagLocked:'已锁定', scanBtn:'从照片添加', scanTitle:'从照片添加活动', scanReading:'正在识别照片…', scanNone:'这张照片里没有找到活动。', scanFound:'找到 {n} 个。请检查后添加。', scanAdd:'添加 {n} 个', scanDup:'日历中已有', scanNoDate:'请选择日期', scanAdded:'已添加 {n} 个活动', scanNotSetUp:'尚未设置照片识别。', scanLimit:'今天的照片识别次数已用完，请明天再试。', scanFail:'无法识别这张照片，请换一张更清晰的。', scanTip:'请拍一张清晰、端正的邀请函、传单或日程表照片。', scanCheck:'请核对', scanSaving:'正在添加…', scanBadPhoto:'无法使用这张照片。', addNote:'+ 备注', addTag:'+ 标签', thTime:'时间', thTitle:'标题', thCat:'分类',
   nothingPlanned:'暂时没有安排。', tapAdd:'点按“添加活动”来添加。', noEvents:'还没有活动。',
   dayEmpty:'双击某一天，或点按 + 来添加。',
   evWord:()=>'个活动', nEvents:n=>`${n} 个活动`, nDone:'已完成 {n}',
@@ -1871,7 +1907,7 @@ km:{
   setupKey:'សោដំឡើង', openAuth:'បើកក្នុងកម្មវិធីផ្ទៀងផ្ទាត់', recoveryTitle:'រក្សាទុកលេខកូដស្តារ', recoveryHint:'លេខកូដនីមួយៗប្រើបានម្តង ប្រសិនបើអ្នកបាត់ទូរសព្ទ។ វាបង្ហាញតែពេលនេះប៉ុណ្ណោះ។',
   copyCodes:'ចម្លង', copied:'បានចម្លង', savedThem:'ខ្ញុំបានរក្សាទុករួច', twoStepNowOn:'ការចូលពីរជំហានបានបើក', twoStepNowOff:'ការចូលពីរជំហានបានបិទ', askPwOff:'បញ្ចូលពាក្យសម្ងាត់របស់អ្នក ដើម្បីបិទការចូលពីរជំហាន។',
   setPw:'កំណត់ពាក្យសម្ងាត់', setPwAsk:'ពាក្យសម្ងាត់បណ្តោះអាសន្នសម្រាប់ {name}។ គាត់ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', reset2:'កំណត់ពីរជំហានឡើងវិញ', reset2Ask:'បិទការចូលពីរជំហានរបស់ {name}? បន្ទាប់មកគាត់នឹងចូលដោយប្រើតែពាក្យសម្ងាត់។',
-  pwSet:'បានកំណត់ពាក្យសម្ងាត់។ {name} ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', done2:'បានកំណត់ពីរជំហានឡើងវិញ', recent:'សកម្មភាពថ្មីៗ', tagTwoStep:'ពីរជំហាន', tagMustChange:'ត្រូវប្តូរពាក្យសម្ងាត់', tagLocked:'ជាប់សោ', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
+  pwSet:'បានកំណត់ពាក្យសម្ងាត់។ {name} ត្រូវប្តូរវាពេលចូលលើកក្រោយ។', done2:'បានកំណត់ពីរជំហានឡើងវិញ', recent:'សកម្មភាពថ្មីៗ', tagTwoStep:'ពីរជំហាន', tagMustChange:'ត្រូវប្តូរពាក្យសម្ងាត់', tagLocked:'ជាប់សោ', scanBtn:'បន្ថែមពីរូបថត', scanTitle:'ព្រឹត្តិការណ៍ពីរូបថត', scanReading:'កំពុងអានរូបថត…', scanNone:'រកមិនឃើញព្រឹត្តិការណ៍ក្នុងរូបថតនោះទេ។', scanFound:'រកឃើញ {n}។ សូមពិនិត្យ រួចបន្ថែម។', scanAdd:'បន្ថែម {n}', scanDup:'មានក្នុងប្រតិទិនរួចហើយ', scanNoDate:'ជ្រើសរើសកាលបរិច្ឆេទ', scanAdded:'បានបន្ថែម {n} ទៅក្នុងប្រតិទិន', scanNotSetUp:'ការអានរូបថតមិនទាន់បានរៀបចំទេ។', scanLimit:'កម្រិតរូបថតថ្ងៃនេះត្រូវបានប្រើអស់ហើយ។ សូមសាកល្បងម្តងទៀតថ្ងៃស្អែក។', scanFail:'មិនអាចអានរូបថតនោះបានទេ។ សូមសាកល្បងរូបដែលច្បាស់ជាងនេះ។', scanTip:'ថតរូបឲ្យច្បាស់ និងត្រង់ នៃលិខិតអញ្ជើញ ខិត្តប័ណ្ណ ឬកាលវិភាគ។', scanCheck:'សូមពិនិត្យ', scanSaving:'កំពុងបន្ថែម…', scanBadPhoto:'មិនអាចប្រើរូបថតនោះបានទេ។', addNote:'+ កំណត់ចំណាំ', addTag:'+ ស្លាក', thTime:'ម៉ោង', thTitle:'ចំណងជើង', thCat:'ប្រភេទ',
   nothingPlanned:'មិនមានអ្វីគ្រោងទុកទេ។', tapAdd:'ចុច «បន្ថែមព្រឹត្តិការណ៍» ដើម្បីបន្ថែម។', noEvents:'មិនទាន់មានព្រឹត្តិការណ៍ទេ។',
   dayEmpty:'ចុចពីរដងលើថ្ងៃ ឬចុច + ដើម្បីបន្ថែម។',
   evWord:()=>'ព្រឹត្តិការណ៍', nEvents:n=>`${n} ព្រឹត្តិការណ៍`, nDone:'រួចរាល់ {n}',
@@ -1894,7 +1930,7 @@ const JR_ERRS=[[/wrong username or password/i,'errLogin'],[/wrong team code/i,'e
   [/^username:/i,'errUsername'],[/^password:/i,'errPassword'],[/too many wrong/i,'tooMany'],[/please sign in/i,'errSignIn'],
   [/title (is required|cannot be blank)/i,'titleReq'],[/(event|end)_date must be/i,'errDate'],[/(event|end)_time must be/i,'errTime'],
   [/end date is before/i,'endBeforeStart'],[/end time is before/i,'endTimeBefore'],[/give a start time/i,'needStart'],[/no event #/i,'errNoEvent'],
-  [/^nickname:/i,'errNick'],[/wrong code/i,'errWrongCode'],[/sign in again/i,'errAgain'],[/^wrong password$/i,'errWrongPw'],[/already on/i,'errTotpOn'],[/can only view/i,'viewOnly'],[/only an admin/i,'adminOnly'],[/at least one admin/i,'lastAdmin'],[/own account/i,'ownAcct']];
+  [/^nickname:/i,'errNick'],[/not set up yet/i,'scanNotSetUp'],[/not set up correctly/i,'scanNotSetUp'],[/too many scans/i,'scanLimit'],[/photo can.t be used/i,'scanBadPhoto'],[/wrong code/i,'errWrongCode'],[/sign in again/i,'errAgain'],[/^wrong password$/i,'errWrongPw'],[/already on/i,'errTotpOn'],[/can only view/i,'viewOnly'],[/only an admin/i,'adminOnly'],[/at least one admin/i,'lastAdmin'],[/own account/i,'ownAcct']];
 function jrErr(m){ const s=String(m||''); if(JR_LANG==='en') return s; for(const [re,k] of JR_ERRS) if(re.test(s)) return tx(k); return s; }
 
 // The words in the page's own markup (data-i18n = text, -title, -aria, -ph = placeholder), the weekday row, the
@@ -2439,6 +2475,81 @@ function setJournalView(v, skipSave){
   if(v==='people') jrRenderPeople(); else if(v==='agenda') renderAgenda(); else renderCalendar({wave:true, enter:true});
 }
 function jrRender(){ if(JR_VIEW==='people') jrRenderPeople(); else if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar(); }
+
+// ---- Add events from a photo ----
+// A photo of an invitation, flyer or schedule is read (the scan-event Edge Function) and the events on it are shown
+// for checking, with everything editable; nothing is saved until "Add". The photo is shrunk here first.
+async function jrShrink(file, max=1600){
+  const bmp=await createImageBitmap(file, {imageOrientation:'from-image'});
+  const k=Math.min(1, max/Math.max(bmp.width,bmp.height)), c=document.createElement('canvas');
+  c.width=Math.round(bmp.width*k); c.height=Math.round(bmp.height*k);
+  c.getContext('2d').drawImage(bmp,0,0,c.width,c.height); bmp.close?.();
+  const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));
+  const data=await new Promise((res,rej)=>{ const f=new FileReader(); f.onload=()=>res(String(f.result).split(',')[1]); f.onerror=rej; f.readAsDataURL(blob); });
+  return {type:'image/jpeg', data};
+}
+function jrScan(){
+  if(!jrCanEdit()){ toast(tx('viewOnly')); return; }
+  if(JR_FROZEN){ toast(tx('offlinePaused')); return; }
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true; inp.style.display='none';
+  inp.onchange=()=>{ const files=[...inp.files].slice(0,4); inp.remove(); if(files.length) jrScanFiles(files); };
+  document.body.appendChild(inp); inp.click();
+}
+async function jrScanFiles(files){
+  const ov=document.createElement('div'); ov.className='modal-ov';
+  const card=document.createElement('div'); card.className='modal-card jr-scancard'; card.style.cssText='max-width:30rem;width:100%';
+  card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('scanTitle'))}</h2></div><div class="jr-scan-wait"><span class="jr-spin" aria-hidden="true"></span>${esc(tx('scanReading'))}</div>`;
+  ov.appendChild(card); document.body.appendChild(ov);
+  let alive=true; const close=()=>{ alive=false; dismiss(ov); }; ov.onclick=e=>{ if(e.target===ov) close(); };
+  let found;
+  try{
+    const images=[]; for(const f of files) images.push(await jrShrink(f));
+    found=(await api('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({images,today:jrToday()})})).events||[];
+  }catch(e){ if(!alive) return; card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('scanTitle'))}</h2></div><p class="jr-scan-msg">${esc(e instanceof JrOffline?tx('cantReach'):(/scan|set up|photo|busy|reader/i.test(e.message)?jrErr(e.message):tx('scanFail')))}</p>
+      <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('close'))}</button></div>`; card.querySelector('#sc-x').onclick=close; return; }
+  if(!alive) return;
+  if(!found.length){ card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('scanTitle'))}</h2></div><p class="jr-scan-msg">${esc(tx('scanNone'))}</p><p class="jr-ae-hint">${esc(tx('scanTip'))}</p>
+      <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('close'))}</button></div>`; card.querySelector('#sc-x').onclick=close; return; }
+  // already there? (same day and same title): offered but unticked
+  const dup=e=>JOURNAL_EVENTS.some(x=>x.event_date===e.event_date && x.title.trim().toLowerCase()===e.title.trim().toLowerCase());
+  const list=found.map(e=>({...e, on:!dup(e) && !!e.event_date, dup:dup(e)}));
+  const draw=()=>{
+    const n=list.filter(e=>e.on).length;
+    card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('scanTitle'))}</h2></div><p class="jr-ae-hint">${esc(tx('scanFound',{n:list.length}))}</p>
+      <div class="jr-scan-list">${list.map((e,i)=>`<div class="jr-sc${e.on?' on':''}" data-i="${i}">
+        <label class="jr-sc-top"><input type="checkbox" data-f="on"${e.on?' checked':''}><input class="jr-sc-title" data-f="title" value="${esc(e.title)}" maxlength="120" aria-label="${esc(tx('lblTitle'))}"></label>
+        ${e.dup?`<em class="jr-role">${esc(tx('scanDup'))}</em>`:''}${e.needs_check&&!e.dup?`<em class="jr-role warn">${esc(tx('scanCheck'))}</em>`:''}
+        <div class="jr-sc-row"><input type="date" data-f="event_date" value="${esc(e.event_date)}" aria-label="${esc(tx('lblDate'))}"><input type="date" data-f="end_date" value="${esc(e.end_date)}" aria-label="${esc(tx('lblDateTo'))}"></div>
+        <div class="jr-sc-row"><input type="time" data-f="event_time" value="${esc(e.event_time)}" aria-label="${esc(tx('lblFrom'))}"><input type="time" data-f="end_time" value="${esc(e.end_time)}" aria-label="${esc(tx('lblToTime'))}"></div>
+        <input data-f="location" value="${esc(e.location)}" placeholder="${esc(tx('lblLoc'))}" maxlength="200" aria-label="${esc(tx('lblLoc'))}">
+        <input data-f="notes" value="${esc(e.notes)}" placeholder="${esc(tx('lblNotes'))}" maxlength="500" aria-label="${esc(tx('lblNotes'))}">
+      </div>`).join('')}</div>
+      <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('cancel'))}</button><button class="act" id="sc-ok"${n?'':' disabled'}>${esc(tx('scanAdd',{n}))}</button></div>`;
+    card.querySelector('#sc-x').onclick=close;
+    card.querySelector('#sc-ok').onclick=save;
+  };
+  // typing changes the list without redrawing (a redraw would drop the cursor); ticking redraws for the count
+  card.addEventListener('input',e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const f=e.target.dataset.f; if(!f||f==='on') return; list[+row.dataset.i][f]=e.target.value; });
+  card.addEventListener('change',e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const it=list[+row.dataset.i], f=e.target.dataset.f;
+    if(f==='on'){ it.on=e.target.checked; draw(); } else if(f==='event_date'||f==='end_date'){ it[f]=e.target.value;
+      const ok=card.querySelector('#sc-ok'); const n=list.filter(x=>x.on).length; ok.disabled=!n; } });
+  async function save(){
+    const todo=list.filter(e=>e.on); const bad=todo.find(e=>!e.event_date||!e.title.trim());
+    if(bad){ toast(!bad.title.trim()?tx('titleReq'):tx('scanNoDate')); return; }
+    const ok=card.querySelector('#sc-ok'); ok.disabled=true; ok.textContent=tx('scanSaving'); let added=0, last=null;
+    for(const e of todo){
+      let end=e.end_date||null; if(end && end<=e.event_date) end=null;
+      let t2=e.end_time||null; if(t2 && (!e.event_time || (!end && t2<=e.event_time))) t2=null;
+      try{
+        const saved=await api('/api/journal/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:e.title.trim(),event_date:e.event_date,end_date:end,event_time:e.event_time||null,end_time:t2,
+          location:(e.location||'').trim()||null,notes:(e.notes||'').trim()||null,category:(e.category||'').trim()||null})});
+        JOURNAL_EVENTS.push(saved); added++; last=saved;
+      }catch(err){ toast(tx('errPrefix')+jrErr(err.message)); }
+    }
+    close(); if(added){ toast(tx('scanAdded',{n:added})); if(JR_VIEW==='calendar'&&last) calSelect(last.event_date); else jrRender(); jrRenderUpNext(); }
+  }
+  draw();
+}
 
 // ---- the People tab (editors and admins): give each person a nickname ----
 const jrPeopleTab=()=>jrCanEdit() && JR_PEOPLE.length>0;
@@ -3357,12 +3468,13 @@ jrBead(document.getElementById('jr-monthnav'));
 // The two elements are moved into place whenever the screen changes; moving keeps their handlers and the bead.
 (function jrPhoneBar(){
   const phone=matchMedia('(max-width:760px) and (orientation:portrait)'), desk=matchMedia('(min-width:761px) and (min-height:521px)');
-  const rail=document.querySelector('.jr-rail'), main=document.querySelector('main'), nav=document.getElementById('jr-monthnav'), add=rail.querySelector('.jr-add');
+  const rail=document.querySelector('.jr-rail'), main=document.querySelector('main'), nav=document.getElementById('jr-monthnav'), add=rail.querySelector('.jr-add'), scan=rail.querySelector('.jr-scan');
   const navHome=nav.parentElement, navNext=nav.nextSibling;
   const place=()=>{
     if(phone.matches){ if(nav.parentElement!==rail) rail.appendChild(nav); if(add.parentElement!==nav) nav.appendChild(add); }
     else if(desk.matches){ if(nav.parentElement!==main) main.appendChild(nav); if(add.parentElement!==nav) nav.appendChild(add); }
     else { if(nav.parentElement!==navHome) navHome.insertBefore(nav, navNext); if(add.parentElement!==rail) rail.appendChild(add); }
+    add.parentElement.insertBefore(scan, add);   // the photo button always sits just before +
   };
   place();
   for(const mq of [phone,desk]) mq.addEventListener ? mq.addEventListener('change', place) : mq.addListener(place);
