@@ -3377,6 +3377,28 @@ jrBead(document.getElementById('jr-monthnav'));
   },{passive:false});
 })();
 
+// ---- mouse wheel and trackpad up/down: step through the calendar ----
+// Over the month, scrolling down goes to the next month and up to the previous; over the day panel it steps a day
+// (unless that panel has more events than fit, then the wheel scrolls them as usual). One wheel notch is one step; a
+// trackpad's small movements add up to one, and the tail of its momentum is let go by so a flick is one step, not five.
+(function(){
+  let acc=0, resetT=0, quietUntil=0;
+  addEventListener('wheel',e=>{
+    if(JR_VIEW!=='calendar' || e.ctrlKey || e.metaKey || document.querySelector('.modal-ov,#pin-ov,#pw-ov')) return;
+    if(Math.abs(e.deltaY)<=Math.abs(e.deltaX)) return;                       // sideways swipes are the handler above's
+    const top=e.target.closest?.('.jr-top'), bot=!top && e.target.closest?.('.jr-bottom'); if(!top && !bot) return;
+    if(bot){ const l=bot.querySelector('.jr-day-list'); if(l && l.scrollHeight>l.clientHeight+1) return; }   // let a long list scroll
+    e.preventDefault();
+    const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1), now=Date.now();
+    if(now<quietUntil) return;
+    acc+=dy; clearTimeout(resetT); resetT=setTimeout(()=>{ acc=0; },220);
+    if(Math.abs(acc)<70) return;
+    const dir=acc>0?1:-1, notch=Math.abs(dy)>=50;     // a mouse wheel gives big jumps, a trackpad many small ones
+    acc=0; quietUntil=now+(notch?220:480);
+    if(top) calShiftMonth(dir); else calShiftDay(dir);
+  },{passive:false});
+})();
+
 // ---- touch shine (Odin's Keep's tile sheen, for fingers too) ----
 // A soft highlight sits where the finger (or mouse) is on a glass surface, as if light caught it there.
 (function(){
