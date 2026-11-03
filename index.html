@@ -3381,8 +3381,16 @@ jrBead(document.getElementById('jr-monthnav'));
 // Over the month, scrolling down goes to the next month and up to the previous; over the day panel it steps a day
 // (unless that panel has more events than fit, then the wheel scrolls them as usual). One wheel notch is one step; a
 // trackpad's small movements add up to one, and the tail of its momentum is let go by so a flick is one step, not five.
+// Like the sideways swipe, what's under the fingers follows them (up and down here) and springs back if it doesn't go;
+// when it does go, the new month or day slides in from the direction you scrolled.
 (function(){
-  let acc=0, resetT=0, quietUntil=0;
+  let acc=0, resetT=0, quietUntil=0, el=null;
+  const settle=spring=>{
+    clearTimeout(resetT);
+    if(el){ const x=el; x.style.transition=spring&&!K_REDUCED.matches?'transform .3s var(--k-smooth), opacity .3s ease':''; x.style.transform=''; x.style.opacity='';
+      if(spring) setTimeout(()=>{ x.style.transition=''; },320); }
+    el=null; acc=0;
+  };
   addEventListener('wheel',e=>{
     if(JR_VIEW!=='calendar' || e.ctrlKey || e.metaKey || document.querySelector('.modal-ov,#pin-ov,#pw-ov')) return;
     if(Math.abs(e.deltaY)<=Math.abs(e.deltaX)) return;                       // sideways swipes are the handler above's
@@ -3391,11 +3399,20 @@ jrBead(document.getElementById('jr-monthnav'));
     e.preventDefault();
     const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1), now=Date.now();
     if(now<quietUntil) return;
-    acc+=dy; clearTimeout(resetT); resetT=setTimeout(()=>{ acc=0; },220);
-    if(Math.abs(acc)<70) return;
+    acc+=dy;
+    const find=()=>top?$('#jr-cal-grid'):bot.querySelector('.jr-day-list,.jr-day-empty');
+    if(Math.abs(acc)<70){
+      // not far enough yet: the content leans with the scroll, then settles
+      if(!K_REDUCED.matches){ el=el||find(); if(el){ el.style.transition='none'; el.style.transform=`translateY(${(-acc*.5).toFixed(1)}px)`; el.style.opacity=String(Math.max(.5,1-Math.abs(acc)/200)); } }
+      clearTimeout(resetT); resetT=setTimeout(()=>settle(true),180);
+      return;
+    }
     const dir=acc>0?1:-1, notch=Math.abs(dy)>=50;     // a mouse wheel gives big jumps, a trackpad many small ones
-    acc=0; quietUntil=now+(notch?220:480);
+    settle(false); quietUntil=now+(notch?240:520);
     if(top) calShiftMonth(dir); else calShiftDay(dir);
+    if(!K_REDUCED.matches){                           // the new one comes in from below when going on, from above when going back
+      const n=find(); n?.animate?.([{transform:`translateY(${dir*44}px)`,opacity:.2},{transform:'none',opacity:1}],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
+    }
   },{passive:false});
 })();
 
