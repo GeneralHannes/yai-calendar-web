@@ -2269,7 +2269,7 @@ function jrSignIn(){
       <img src="static/icon-192.png" class="jr-signin-mark" alt="">
       <h2>${esc(tx('signIn'))}</h2>
       <p class="muted">${esc(tx('usernameShown'))}</p>
-      <label class="field"><span>${esc(tx('username'))}</span><input name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32"></label>
+      <label class="field"><span>${esc(tx('username'))}</span><input name="username" autocomplete="username" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="40"></label>
       <label class="field"><span>${esc(tx('password'))}</span><input name="password" type="password" autocomplete="${up?'new-password':'current-password'}"></label>
       ${up&&JR_AUTH?.team_code?`<label class="field"><span>${esc(tx('teamCode'))}</span><input name="code" inputmode="numeric" autocomplete="off"></label>`:''}
       <button class="act" type="submit">${esc(tx('signIn'))}</button>
