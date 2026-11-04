@@ -3523,22 +3523,22 @@ async function openAddEvent(prefillDate, id, focus, day){
 // tapping an event's time, dates or place opens the form at that field
 const editEventWhen=(id, field)=>openAddEvent(null, id, field);
 
-function calShiftMonth(n){
+function calShiftMonth(n,quiet=false){
   JR_CAL_MONTH += n;
   if(JR_CAL_MONTH<0){ JR_CAL_MONTH=11; JR_CAL_YEAR--; }
   if(JR_CAL_MONTH>11){ JR_CAL_MONTH=0; JR_CAL_YEAR++; }
-  renderCalendar({wave:true, dir:n});
+  renderCalendar({wave:true, dir:n, quiet});
   const btn=document.querySelectorAll('.jr-mn-btn')[n<0?0:1];
   if(btn && !K_REDUCED.matches){ btn.classList.remove('nudge-l','nudge-r'); void btn.offsetWidth; btn.classList.add(n<0?'nudge-l':'nudge-r'); }
 }
 function calGoToday(){ calSelect(jrToday()); }
 // Select a day: the month follows it, and the bottom panel switches to it.
-function calSelect(iso){
+function calSelect(iso,quiet=false){
   if(document.querySelector('.jr-pop') && !window.event?.target?.closest?.('.jr-ev')) jrPopClose();
   const d=new Date(iso+'T00:00:00'), dir=(d.getFullYear()-JR_CAL_YEAR)*12+d.getMonth()-JR_CAL_MONTH;
   const changed=iso!==JR_SEL, dayDir=JR_SEL&&changed?(iso>JR_SEL?1:-1):0;
   JR_SEL=iso; JR_CAL_YEAR=d.getFullYear(); JR_CAL_MONTH=d.getMonth();
-  renderCalendar({wave:!!dir, dir:Math.sign(dir), enter:changed, dayDir});
+  renderCalendar({wave:!!dir, dir:Math.sign(dir), enter:changed, dayDir, quiet});
 }
 let jrJustSwiped=()=>false;
 let JR_EVDRAG=null, JR_GESTURE_AT=0;   // an event being dragged to another day; when a drag last ended
@@ -3578,7 +3578,7 @@ function jrSwapPanels(){
   }
 }
 try{ if(localStorage.getItem('jr_dayfirst')) document.body.classList.add('jr-dayfirst'); }catch(_){}
-function calShiftDay(n){ const d=new Date((JR_SEL||jrToday())+'T00:00:00'); d.setDate(d.getDate()+n); calSelect(jrISO(d)); }
+function calShiftDay(n,quiet=false){ const d=new Date((JR_SEL||jrToday())+'T00:00:00'); d.setDate(d.getDate()+n); calSelect(jrISO(d),quiet); }
 // Swipe: on the month it does what the ‹ › buttons do; on the day panel it steps to the day before or after.
 // What's under the finger follows it while dragging, then either goes or springs back.
 (function(){
@@ -3598,14 +3598,14 @@ function calShiftDay(n){ const d=new Date((JR_SEL||jrToday())+'T00:00:00'); d.se
     if(axis==='y'){                                   // up/down on the month: the same as scrolling the wheel on a computer
       const go=Math.abs(dy)>58 && Math.abs(dy)>Math.abs(dx)*1.3 || (Math.abs(dy)>26 && Math.abs(v.y||0)>.28 && Math.abs(dy)>Math.abs(dx));
       if(!go){ reset(el); return false; }
-      swipedAt=Date.now(); const dir=dy<0?1:-1; buzz(); calShiftMonth(dir);
+      swipedAt=Date.now(); const dir=dy<0?1:-1; buzz(); calShiftMonth(dir,true);
       if(!K_REDUCED.matches) $('#jr-cal-grid')?.animate?.([{transform:`translateY(${dir*44}px)`,opacity:.2},{transform:'none',opacity:1}],{duration:380,easing:'cubic-bezier(.16,1,.3,1)'});
       return true;
     }
     const go=Math.abs(dx)>48 && Math.abs(dx)>Math.abs(dy)*1.3 || (Math.abs(dx)>22 && Math.abs(v.x||0)>.28 && Math.abs(dx)>Math.abs(dy));
     if(!go){ reset(el); return false; }
     swipedAt=Date.now(); buzz();
-    if(day) calShiftDay(dx<0?1:-1); else calShiftMonth(dx<0?1:-1);
+    if(day) calShiftDay(dx<0?1:-1,true); else calShiftMonth(dx<0?1:-1,true);
     return true;
   };
   document.addEventListener('touchstart',e=>{
@@ -3696,7 +3696,7 @@ function renderCalendar(opt={}){
   }
   const grid=$('#jr-cal-grid');
   const was=grid.querySelector('.jr-cal-day.sel'), from=was&&{x:was.offsetLeft,y:was.offsetTop,w:was.offsetWidth,h:was.offsetHeight};
-  grid.classList.toggle('wave', !!opt.wave && !K_REDUCED.matches);
+  grid.classList.toggle('wave', !!opt.wave && !opt.quiet && !K_REDUCED.matches);
   grid.innerHTML=html;
   // Today glows softly while you're looking at some other month: it's the way back
   const now=new Date(), away=JR_CAL_YEAR!==now.getFullYear()||JR_CAL_MONTH!==now.getMonth();
@@ -3720,7 +3720,7 @@ function renderCalendar(opt={}){
   if(opt.enter && !opt.dir && !K_REDUCED.matches) grid.querySelector('.jr-cal-day.sel')?.classList.add('pick');
   jrFitCells();
   jrSpanCells();
-  renderDay(opt.enter, opt.dayDir);
+  renderDay(opt.enter && !opt.quiet, opt.dayDir);
   jrRenderUpNext();
 }
 
@@ -4187,7 +4187,7 @@ jrBead(document.getElementById('jr-monthnav'));
       el.style.opacity=String(Math.max(.35,1-Math.abs(acc)/400)); }
     if(Math.abs(acc)>120){
       const dir=acc<0?1:-1; settle(false); quietUntil=Date.now()+550;
-      if(day) calShiftDay(dir); else calShiftMonth(dir);
+      if(day) calShiftDay(dir,true); else calShiftMonth(dir,true);
       return;
     }
     clearTimeout(idleT); idleT=setTimeout(()=>settle(true), 160);   // fingers lifted short of it: spring back
@@ -4226,7 +4226,7 @@ jrBead(document.getElementById('jr-monthnav'));
     }
     const dir=acc>0?1:-1, notch=Math.abs(dy)>=50;     // a mouse wheel gives big jumps, a trackpad many small ones
     settle(false); quietUntil=now+(notch?240:520);
-    if(top) calShiftMonth(dir); else calShiftDay(dir);
+    if(top) calShiftMonth(dir,true); else calShiftDay(dir,true);
     if(!K_REDUCED.matches){                           // the new one comes in from below when going on, from above when going back
       const n=find(); n?.animate?.([{transform:`translateY(${dir*44}px)`,opacity:.2},{transform:'none',opacity:1}],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
     }
