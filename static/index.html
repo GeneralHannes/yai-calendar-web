@@ -4190,8 +4190,8 @@ jrBead(document.getElementById('jr-monthnav'));
     const top=e.target.closest?.('.jr-top'), bot=!top && e.target.closest?.('.jr-bottom'); if(!top && !bot) return;
     e.preventDefault();                                   // no browser back/forward swipe
     const now=Date.now();
-    if(now<quietUntil) return;                            // consume the bounded momentum tail as one gesture
     if(lastAt && now-lastAt>180) settle(false);           // a fresh swipe starts a fresh accumulator
+    if(now<quietUntil) return;                            // consume only the continuous momentum tail
     lastAt=now;
     if(!el){ day=!!bot; el=top?$('#jr-cal-grid'):bot.querySelector('.jr-day-list,.jr-day-empty'); }
     acc-=e.deltaX*(e.deltaMode===1?16:1);                 // the content moves with the fingers
@@ -4227,8 +4227,8 @@ jrBead(document.getElementById('jr-monthnav'));
     if(bot){ const l=bot.querySelector('.jr-day-list'); if(l && l.scrollHeight>l.clientHeight+1) return; }   // let a long list scroll
     e.preventDefault();
     const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1), now=Date.now();
-    if(now<quietUntil) return;                            // consume the bounded momentum tail as one gesture
     if(lastAt && now-lastAt>180) settle(false);           // a fresh wheel gesture starts from zero
+    if(now<quietUntil) return;                            // consume only the continuous momentum tail
     lastAt=now;
     acc+=dy;
     const find=()=>top?$('#jr-cal-grid'):bot.querySelector('.jr-day-list,.jr-day-empty');
