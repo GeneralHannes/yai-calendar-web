@@ -2990,6 +2990,15 @@ function jrScanStart(files){
   start();
 }
 
+// On iPhone, a tap on a button while a text field has the keyboard up is often swallowed: the touch is seen (the button shows pressed) but no
+// click follows, so it took two taps. If no click arrives shortly after the finger lifts, the button is clicked from here.
+document.addEventListener('pointerup',e=>{
+  if(e.pointerType!=='touch') return;
+  const b=e.target.closest?.('.modal-card button, .jr-signin-card button'); if(!b || b.disabled) return;
+  const a=document.activeElement; if(!a || !/^(INPUT|TEXTAREA)$/.test(a.tagName)) return;   // only this case loses taps
+  let got=false; const seen=()=>{ got=true; }; b.addEventListener('click',seen,{once:true,capture:true});
+  setTimeout(()=>{ b.removeEventListener('click',seen,true); if(!got && b.isConnected) b.click(); },140);
+},true);
 // ---- Settings ----
 // Everything a person can change about the app on this device, in one place: the account, how it looks (theme, glass, language,
 // animations), the calendar (week start, time format, where the day panel sits), reminders, getting the data out, and the version.
@@ -3406,7 +3415,7 @@ async function openAddEvent(prefillDate, id, focus, day){
     q('#ae-when').textContent=when;
   };
   const drawBall=()=>{
-    const k=color||(ev?jrColor({id:ev.id}):null);
+    const k=color||(ev?jrColor({id:ev.id}):'blue');   // a new event on automatic previews as blue (the theme colour as a fill AND text colour was invisible)
     if(k){ card.style.setProperty('--accent',`var(${JR_COLORS[k]}-ink)`); card.style.setProperty('--k-act',`var(${JR_COLORS[k]})`); card.style.setProperty('--ae-ball',`var(${JR_COLORS[k]}-ball)`); }
     else { card.style.removeProperty('--accent'); card.style.removeProperty('--k-act'); card.style.removeProperty('--ae-ball'); }
     card.querySelectorAll('#ae-colors .jr-ball').forEach(x=>{ const on=(x.dataset.c||null)===color; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); });
@@ -3494,7 +3503,9 @@ async function openAddEvent(prefillDate, id, focus, day){
       else renderAgenda();
     }catch(e){ toast(tx('errPrefix')+jrErr(e.message)); }
   };
-  setTimeout(()=>{ try{ if(focus==='#ae-people' && q('#ae-people-btn')){ q('#ae-people-btn').click(); return; } q(cur!=='all'?(PERDAY[focus]||'#ad-time'):(focus||'#ae-title')).focus(); }catch(_){} }, 30);
+  setTimeout(()=>{ try{ if(focus==='#ae-people' && q('#ae-people-btn')){ q('#ae-people-btn').click(); return; }
+    if(!focus && matchMedia('(pointer:coarse)').matches) return;   // a new event on a phone: don't raise the keyboard until a field is tapped
+    q(cur!=='all'?(PERDAY[focus]||'#ad-time'):(focus||'#ae-title')).focus(); }catch(_){} }, 30);
 }
 // tapping an event's time, dates or place opens the form at that field
 const editEventWhen=(id, field)=>openAddEvent(null, id, field);
