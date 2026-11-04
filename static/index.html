@@ -859,21 +859,15 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     /* the colour dots in the event form */
     --c-blue-ball:var(--c-blue); --c-green-ball:var(--c-green); --c-yellow-ball:var(--c-yellow); --c-orange-ball:var(--c-orange);
     --c-red-ball:var(--c-red); --c-purple-ball:var(--c-purple); --c-teal-ball:var(--c-teal); --c-sky-ball:var(--c-sky); }
-  /* Dark themes get their own take on the eight colours. The pastel fill + dark text above only works on a light page; on a dark one it
-     turned into a washed-out grey with dark text you couldn't read. Here the fill is the colour deepened into the page's own dark
-     (a rich tint), the text is the same hue lightened, and the dots are the colour at full strength. Everything that uses an event's
-     colour (calendar bars, day cards, Coming up, agenda rows, the form) picks these up through --k-act / --accent. */
-  :root:not([data-theme="latte"]):not([data-theme="daylight"]) {
-    --c-blue:color-mix(in srgb,var(--k-act) 46%,var(--k-bg2)); --c-green:color-mix(in srgb,var(--k-money) 46%,var(--k-bg2));
-    --c-yellow:color-mix(in srgb,var(--k-qty) 46%,var(--k-bg2)); --c-orange:color-mix(in srgb,var(--k-warn) 46%,var(--k-bg2));
-    --c-red:color-mix(in srgb,var(--k-bad) 48%,var(--k-bg2)); --c-purple:color-mix(in srgb,var(--k-cat) 46%,var(--k-bg2));
-    --c-teal:color-mix(in srgb,var(--k-tier) 46%,var(--k-bg2)); --c-sky:color-mix(in srgb,var(--k-size) 46%,var(--k-bg2));
-    --c-blue-ink:color-mix(in srgb,var(--k-act) 36%,#fff); --c-green-ink:color-mix(in srgb,var(--k-money) 36%,#fff);
-    --c-yellow-ink:color-mix(in srgb,var(--k-qty) 36%,#fff); --c-orange-ink:color-mix(in srgb,var(--k-warn) 36%,#fff);
-    --c-red-ink:color-mix(in srgb,var(--k-bad) 40%,#fff); --c-purple-ink:color-mix(in srgb,var(--k-cat) 36%,#fff);
-    --c-teal-ink:color-mix(in srgb,var(--k-tier) 36%,#fff); --c-sky-ink:color-mix(in srgb,var(--k-size) 36%,#fff);
-    --c-blue-ball:var(--k-act); --c-green-ball:var(--k-money); --c-yellow-ball:var(--k-qty); --c-orange-ball:var(--k-warn);
-    --c-red-ball:var(--k-bad); --c-purple-ball:var(--k-cat); --c-teal-ball:var(--k-tier); --c-sky-ball:var(--k-size); }
+  /* The eight event colours are the same bright pastels (dark text on them) in every theme. On a dark page the bars are made solid so the
+     pastel stays bright (a see-through fill over dark turned them into a muddy grey). */
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) #jr-cal-grid .jr-ev:not(.done) { background:var(--k-act); }
+    /* So on a dark page: text and edges ON a bright bar are a deep shade of that same colour (always >4.5:1); text and edges for an event ON the dark
+     page (Coming up, day cards, agenda rows, the pop-up, the form) are the bright colour itself. */
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) #jr-cal-grid .jr-ev:not(.done), :root:not([data-theme="latte"]):not([data-theme="daylight"]) #jr-cal-grid .jr-ev.span:not(.done), :root:not([data-theme="latte"]):not([data-theme="daylight"]) #jr-cal-grid .jr-ev:not(.done) .jr-ev-t { color:color-mix(in srgb,var(--k-act) 26%,#000); }
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) #jr-cal-grid .jr-ev:not(.done) { border-left-color:color-mix(in srgb,var(--k-act) 52%,#000); }
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) :is(.jr-up-ev, .jr-dcard, .jr-row, .jr-pop, .jr-ae) { --accent:var(--k-act) !important; }
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-ae-chip { color:color-mix(in srgb,var(--k-act) 26%,#000); border-left-color:color-mix(in srgb,var(--k-act) 52%,#000); }
   /* an event's words in its own dark shade (--accent, set per event by jrTint); the fill stays its light colour */
   #jr-cal-grid .jr-ev:not(.done), #jr-cal-grid .jr-ev.span:not(.done) { color:var(--accent); }
   #jr-cal-grid .jr-ev:not(.done) .jr-ev-t { color:var(--accent); }
@@ -1515,8 +1509,9 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-ae input:focus { border-color:color-mix(in srgb,var(--accent) 70%,transparent); box-shadow:var(--glass-edge),0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent); }
   .jr-ae button.act { background:var(--accent); box-shadow:inset 0 1px 0 rgb(255 255 255 / .35), 0 10px 20px -10px var(--accent); transition:background-color .35s, box-shadow .35s, transform .2s var(--k-bouncy); }
   .jr-ae button.act:active { transform:scale(.96); }
-  /* dark themes: the Add button is the colour at full strength (the text colour there is a pale tint, which made it cream) */
-  :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-ae button.act { background:var(--ae-ball, var(--k-act)); color:var(--k-on-act); box-shadow:inset 0 1px 0 rgb(255 255 255 / .3), 0 10px 22px -10px var(--ae-ball, var(--k-act)); }
+  /* dark themes: the Add button is the event's bright colour with its dark text (the text colour there is dark ink, so the default
+     filled-with-ink button turned dark-on-dark) */
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-ae button.act { background:var(--k-act); color:color-mix(in srgb,var(--k-act) 26%,#000); box-shadow:inset 0 1px 0 rgb(255 255 255 / .45), 0 10px 22px -10px var(--k-act); }
 
   /* ================= security ================= */
   .jr-pwrules { font-size:.78rem !important; line-height:1.4; }
@@ -1581,6 +1576,12 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-row .jr-cell.jr-check.done { color:var(--accent); }
   .jr-row .jr-cell.jr-del:hover { color:var(--warn); }
   .jr-row.done .jr-cell { opacity:.62; }
+  /* dark themes: the row's text is the normal light text (the event's own text colour is dark ink there), the strip stays bright */
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-row .jr-cell { color:var(--ink); background:color-mix(in srgb,var(--k-act) 24%,var(--k-bg2)); }
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-row .jr-cell:hover { background:color-mix(in srgb,var(--k-act) 36%,var(--k-bg2)); }
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-row .jr-cell.jr-time { box-shadow:inset 4px 0 0 var(--k-act); }
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-row .jr-cell .muted, :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-row .jr-cell .jr-by, :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-row .jr-cell .jr-ag-where, :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-row .jr-cell .jr-notes-txt { color:var(--muted); }
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-row .jr-cell .chip-lbl { color:color-mix(in srgb,var(--k-act) 26%,#000); background:var(--k-act); }
   /* the category column: room for a real label, wrapping rather than cut off, lined up with the other cells */
   @media (min-width:641px) { .jr-table { grid-template-columns:5.2rem 1fr 9.5rem 2.2rem 2.2rem; } }
   .jr-cell.jr-cat { white-space:normal; overflow:visible; align-items:flex-start; padding-top:.6rem; }
