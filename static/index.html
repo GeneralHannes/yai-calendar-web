@@ -3768,7 +3768,7 @@ function renderCalendar(opt={}){
       data-iso="${iso}" onclick="calDayClick('${iso}',event)" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${n?`<span class="jr-more" hidden></span><span class="jr-count">${n}</span>`:''}</span>
       ${bars.length||singles.length?`<span class="jr-preview">${
-        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}">${esc(e.title)}</span>`).join('')
+        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}" aria-label="${esc(e.title)}" title="${esc(e.title)}">${l?'':esc(e.title)}</span>`).join('')
       }${singles.map(e=>`<span class="jr-ev${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-t="${esc(e.title)}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
     </button>`;
   }
