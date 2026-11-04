@@ -1869,8 +1869,6 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
    switcher. Runs in <head> so the chrome never flashes in. */
 if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.documentElement.classList.add('embedded');
 </script>
-<!-- Optional enhancement: the app keeps its CSS glass fallback if this CDN is unavailable. -->
-<script defer src="https://cdn.jsdelivr.net/npm/liquid-web/liquid-core.min.js"></script>
 </head>
 <body>
 <!-- no title: the bar is just the gold line along the top (and the space under the phone's status bar) -->
@@ -4211,6 +4209,7 @@ jrBead(document.getElementById('jr-monthnav'));
 // Small, reversible Liquid Web trial: only the view switcher gets the shader effect.
 // The calendar, month bar and gesture hitboxes keep their existing CSS behavior.
 function jrTryLiquidWeb(){
+  if(!JR_LIQUID_TRIAL) return;
   const bar=document.getElementById('jr-viewtoggle');
   if(!bar || !window.LiquidWeb || bar.dataset.liquidReady) return;
   try{
@@ -4221,6 +4220,7 @@ function jrTryLiquidWeb(){
 }
 addEventListener('load',jrTryLiquidWeb,{once:true});
 
+const JR_LIQUID_TRIAL=false;
 const JR_SCAN_PREFER_ONLINE=true;
 
 // ---- trackpad swipe: the phone's swipe, on desktop ----
