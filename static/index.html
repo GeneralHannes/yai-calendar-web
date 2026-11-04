@@ -3129,10 +3129,10 @@ function jrSettings(){
   ov.appendChild(card); document.body.appendChild(ov); ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
   const chips=(key,cur,opts)=>`<div class="jr-chips" role="group">${opts.map(([v,label])=>`<button type="button" class="jr-chipbtn${cur===v?' on':''}" data-set="${key}" data-v="${esc(v)}" aria-pressed="${cur===v}">${esc(label)}</button>`).join('')}</div>`;
   const row=(label,control,hint)=>`<div class="jr-set-row"><div class="jr-set-l"><b>${esc(label)}</b>${hint?`<small>${esc(hint)}</small>`:''}</div><div class="jr-set-c">${control}</div></div>`;
-  const curTheme=document.documentElement.getAttribute('data-theme')||'latte';
   const dow=L[JR_LANG].dow;
   const iosBrowser=jrIsIOS() && !navigator.standalone, android=/Android/i.test(navigator.userAgent);
   const draw=()=>{
+    const curTheme=document.documentElement.getAttribute('data-theme')||'latte';
     card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('settings'))}</h2></div>
     ${JR_USER?`<section class="jr-set-sec"><h3>${esc(tx('setAccount'))}</h3>
       <div class="jr-set-acct"><span class="jr-av jr-set-av" style="--h:${(JR_USER.id*137)%360}"><b>${esc(jrInitials(JR_USER.name))}</b></span>
