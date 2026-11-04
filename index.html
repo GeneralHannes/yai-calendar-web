@@ -3594,7 +3594,7 @@ function calShiftDay(n,quiet=false){ const d=new Date((JR_SEL||jrToday())+'T00:0
 // What's under the finger follows it while dragging, then either goes or springs back.
 (function(){
   // A tap stays a tap: nothing is touched until the finger has clearly moved sideways (16px, mostly horizontal).
-  // The swipe areas are touch-action:pan-y, so the browser never takes a sideways drag over and cancels it.
+  // The whole calendar is one gesture surface, including the grid gaps and the space between the month and day panel.
   let s=null, swipedAt=0, gestureT=0;
   const clearGesture=()=>{
     clearTimeout(gestureT); gestureT=0;
@@ -3607,6 +3607,14 @@ function calShiftDay(n,quiet=false){ const d=new Date((JR_SEL||jrToday())+'T00:0
   const speed=(a,b)=>{ const p=s.hist; if(!p||p.length<2) return 0; const last=p[p.length-1]; let first=p[0];
     for(const q of p) if(last.t-q.t<=90){ first=q; break; } const dt=Math.max(1,last.t-first.t); return {x:(last[a]-first[a])/dt, y:(last[b]-first[b])/dt}; };
   const buzz=()=>{ try{ navigator.vibrate?.(6); }catch(_){} };   // a faint tick where the phone has one
+  const surfaceAt=(x,y)=>{
+    const cal=$('#jr-calendar'), bot=$('.jr-bottom');
+    if(!cal || !bot) return null;
+    const cr=cal.getBoundingClientRect();
+    if(x<cr.left || x>=cr.right || y<cr.top || y>=cr.bottom) return null;
+    const br=bot.getBoundingClientRect(), isDay=y>=br.top && y<br.bottom && x>=br.left && x<br.right;
+    return {day:isDay, el:isDay?bot.querySelector('.jr-day-list,.jr-day-empty'):$('#jr-cal-grid')};
+  };
   const finish=(dx,dy)=>{
     const {day,el,axis}=s, v=speed('x','y'); s=null;
     if(axis!=='x' && axis!=='y') return false;
@@ -3629,10 +3637,9 @@ function calShiftDay(n,quiet=false){ const d=new Date((JR_SEL||jrToday())+'T00:0
     if(JR_VIEW!=='calendar' || e.touches.length!==1 || document.querySelector('.modal-ov')) return;
     const t0=e.touches[0];
     if((t0.radiusX||0)>34 || (t0.radiusY||0)>34) return;   // a palm or a flat thumb resting on the glass isn't a swipe
-    const top=e.target.closest?.('.jr-top'), day=!top && e.target.closest?.('.jr-bottom');
-    if(!top && !day) return;
-    s={x:t0.clientX, y:t0.clientY, dx:0, dy:0, day:!!day, axis:null, hist:[{x:t0.clientX,y:t0.clientY,t:e.timeStamp}],
-       el:top?$('#jr-cal-grid'):day.querySelector('.jr-day-list,.jr-day-empty')};
+    const surface=surfaceAt(t0.clientX,t0.clientY); if(!surface) return;
+    s={x:t0.clientX, y:t0.clientY, dx:0, dy:0, day:surface.day, axis:null, hist:[{x:t0.clientX,y:t0.clientY,t:e.timeStamp}],
+       el:surface.el};
     gestureT=setTimeout(clearGesture,4000);
   },{passive:true});
   document.addEventListener('touchmove',e=>{
