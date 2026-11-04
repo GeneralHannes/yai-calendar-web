@@ -855,7 +855,25 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     --c-blue-ink:color-mix(in srgb,var(--k-act) 62%,#000); --c-green-ink:color-mix(in srgb,var(--k-money) 58%,#000);
     --c-yellow-ink:color-mix(in srgb,var(--k-qty) 52%,#000); --c-orange-ink:color-mix(in srgb,var(--k-warn) 58%,#000);
     --c-red-ink:color-mix(in srgb,var(--k-bad) 66%,#000); --c-purple-ink:color-mix(in srgb,var(--k-cat) 64%,#000);
-    --c-teal-ink:color-mix(in srgb,var(--k-tier) 55%,#000); --c-sky-ink:color-mix(in srgb,var(--k-size) 52%,#000); }
+    --c-teal-ink:color-mix(in srgb,var(--k-tier) 55%,#000); --c-sky-ink:color-mix(in srgb,var(--k-size) 52%,#000);
+    /* the colour dots in the event form */
+    --c-blue-ball:var(--c-blue); --c-green-ball:var(--c-green); --c-yellow-ball:var(--c-yellow); --c-orange-ball:var(--c-orange);
+    --c-red-ball:var(--c-red); --c-purple-ball:var(--c-purple); --c-teal-ball:var(--c-teal); --c-sky-ball:var(--c-sky); }
+  /* Dark themes get their own take on the eight colours. The pastel fill + dark text above only works on a light page; on a dark one it
+     turned into a washed-out grey with dark text you couldn't read. Here the fill is the colour deepened into the page's own dark
+     (a rich tint), the text is the same hue lightened, and the dots are the colour at full strength. Everything that uses an event's
+     colour (calendar bars, day cards, Coming up, agenda rows, the form) picks these up through --k-act / --accent. */
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) {
+    --c-blue:color-mix(in srgb,var(--k-act) 46%,var(--k-bg2)); --c-green:color-mix(in srgb,var(--k-money) 46%,var(--k-bg2));
+    --c-yellow:color-mix(in srgb,var(--k-qty) 46%,var(--k-bg2)); --c-orange:color-mix(in srgb,var(--k-warn) 46%,var(--k-bg2));
+    --c-red:color-mix(in srgb,var(--k-bad) 48%,var(--k-bg2)); --c-purple:color-mix(in srgb,var(--k-cat) 46%,var(--k-bg2));
+    --c-teal:color-mix(in srgb,var(--k-tier) 46%,var(--k-bg2)); --c-sky:color-mix(in srgb,var(--k-size) 46%,var(--k-bg2));
+    --c-blue-ink:color-mix(in srgb,var(--k-act) 36%,#fff); --c-green-ink:color-mix(in srgb,var(--k-money) 36%,#fff);
+    --c-yellow-ink:color-mix(in srgb,var(--k-qty) 36%,#fff); --c-orange-ink:color-mix(in srgb,var(--k-warn) 36%,#fff);
+    --c-red-ink:color-mix(in srgb,var(--k-bad) 40%,#fff); --c-purple-ink:color-mix(in srgb,var(--k-cat) 36%,#fff);
+    --c-teal-ink:color-mix(in srgb,var(--k-tier) 36%,#fff); --c-sky-ink:color-mix(in srgb,var(--k-size) 36%,#fff);
+    --c-blue-ball:var(--k-act); --c-green-ball:var(--k-money); --c-yellow-ball:var(--k-qty); --c-orange-ball:var(--k-warn);
+    --c-red-ball:var(--k-bad); --c-purple-ball:var(--k-cat); --c-teal-ball:var(--k-tier); --c-sky-ball:var(--k-size); }
   /* an event's words in its own dark shade (--accent, set per event by jrTint); the fill stays its light colour */
   #jr-cal-grid .jr-ev:not(.done), #jr-cal-grid .jr-ev.span:not(.done) { color:var(--accent); }
   #jr-cal-grid .jr-ev:not(.done) .jr-ev-t { color:var(--accent); }
@@ -866,7 +884,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     background:var(--ball); border:2px solid var(--k-bg2); box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 25%,transparent), 0 2px 6px -1px rgba(0,0,0,.25);
     transition:transform .25s var(--k-snappy), box-shadow .2s; }
   .jr-ball:active { transform:scale(.88); }
-  .jr-ball.auto { background:conic-gradient(var(--c-blue),var(--c-green),var(--c-yellow),var(--c-orange),var(--c-red),var(--c-purple),var(--c-teal),var(--c-sky),var(--c-blue)); }
+  .jr-ball.auto { background:conic-gradient(var(--c-blue-ball),var(--c-green-ball),var(--c-yellow-ball),var(--c-orange-ball),var(--c-red-ball),var(--c-purple-ball),var(--c-teal-ball),var(--c-sky-ball),var(--c-blue-ball)); }
   .jr-ball.on { box-shadow:0 0 0 2.5px var(--ink); transform:scale(1.08); }
   #ae-ball { width:2rem; height:2rem; }
   .jr-ae-colors { display:flex; flex-wrap:wrap; gap:.55rem; margin:-.2rem 0 .8rem; padding:.55rem .6rem; border-radius:14px;
@@ -1497,6 +1515,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-ae input:focus { border-color:color-mix(in srgb,var(--accent) 70%,transparent); box-shadow:var(--glass-edge),0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent); }
   .jr-ae button.act { background:var(--accent); box-shadow:inset 0 1px 0 rgb(255 255 255 / .35), 0 10px 20px -10px var(--accent); transition:background-color .35s, box-shadow .35s, transform .2s var(--k-bouncy); }
   .jr-ae button.act:active { transform:scale(.96); }
+  /* dark themes: the Add button is the colour at full strength (the text colour there is a pale tint, which made it cream) */
+  :root:not([data-theme="latte"]):not([data-theme="daylight"]) .jr-ae button.act { background:var(--ae-ball, var(--k-act)); color:var(--k-on-act); box-shadow:inset 0 1px 0 rgb(255 255 255 / .3), 0 10px 22px -10px var(--ae-ball, var(--k-act)); }
 
   /* ================= security ================= */
   .jr-pwrules { font-size:.78rem !important; line-height:1.4; }
@@ -3243,7 +3263,7 @@ async function openAddEvent(prefillDate, id, focus, day){
     <div class="jr-ae-preview" aria-hidden="true"><span class="jr-ae-chip" id="ae-chip"></span><span class="jr-ae-when" id="ae-when"></span></div>
     <div class="jr-ae-colors" id="ae-colors" role="group" aria-label="${esc(tx('colour'))}">
       <button type="button" class="jr-ball auto" data-c="" title="${esc(tx('auto'))}" aria-label="${esc(tx('auto'))}" style="--i:0"></button>
-      ${JR_COLOR_NAMES.map((c,i)=>`<button type="button" class="jr-ball" data-c="${c}" title="${esc(tx('c_'+c))}" aria-label="${esc(tx('c_'+c))}" style="--ball:var(${JR_COLORS[c]});--i:${i+1}"></button>`).join('')}
+      ${JR_COLOR_NAMES.map((c,i)=>`<button type="button" class="jr-ball" data-c="${c}" title="${esc(tx('c_'+c))}" aria-label="${esc(tx('c_'+c))}" style="--ball:var(${JR_COLORS[c]}-ball);--i:${i+1}"></button>`).join('')}
     </div>
     <div class="jr-ae-tabs" id="ae-tabs" hidden></div>
     <div id="ae-all">
@@ -3333,8 +3353,8 @@ async function openAddEvent(prefillDate, id, focus, day){
   };
   const drawBall=()=>{
     const k=color||(ev?jrColor({id:ev.id}):null);
-    if(k){ card.style.setProperty('--accent',`var(${JR_COLORS[k]}-ink)`); card.style.setProperty('--k-act',`var(${JR_COLORS[k]})`); }
-    else { card.style.removeProperty('--accent'); card.style.removeProperty('--k-act'); }
+    if(k){ card.style.setProperty('--accent',`var(${JR_COLORS[k]}-ink)`); card.style.setProperty('--k-act',`var(${JR_COLORS[k]})`); card.style.setProperty('--ae-ball',`var(${JR_COLORS[k]}-ball)`); }
+    else { card.style.removeProperty('--accent'); card.style.removeProperty('--k-act'); card.style.removeProperty('--ae-ball'); }
     card.querySelectorAll('#ae-colors .jr-ball').forEach(x=>{ const on=(x.dataset.c||null)===color; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); });
     drawPreview();
   };
