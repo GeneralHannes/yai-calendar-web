@@ -3584,7 +3584,12 @@ function calShiftDay(n,quiet=false){ const d=new Date((JR_SEL||jrToday())+'T00:0
 (function(){
   // A tap stays a tap: nothing is touched until the finger has clearly moved sideways (16px, mostly horizontal).
   // The swipe areas are touch-action:pan-y, so the browser never takes a sideways drag over and cancels it.
-  let s=null, swipedAt=0;
+  let s=null, swipedAt=0, gestureT=0;
+  const clearGesture=()=>{
+    clearTimeout(gestureT); gestureT=0;
+    if(s?.axis==='x' || s?.axis==='y') reset(s.el);
+    s=null;
+  };
   const reset=el=>{ if(!el) return; el.style.transition='transform .3s var(--k-smooth), opacity .3s ease'; el.style.transform=''; el.style.opacity='';
     setTimeout(()=>{ el.style.transition=''; },320); };
   // How fast the finger was going at the end (px per ms, over its last ~90 ms): a quick flick counts for more than distance
@@ -3609,13 +3614,15 @@ function calShiftDay(n,quiet=false){ const d=new Date((JR_SEL||jrToday())+'T00:0
     return true;
   };
   document.addEventListener('touchstart',e=>{
-    s=null; if(JR_VIEW!=='calendar' || e.touches.length!==1 || document.querySelector('.modal-ov')) return;
+    clearGesture();
+    if(JR_VIEW!=='calendar' || e.touches.length!==1 || document.querySelector('.modal-ov')) return;
     const t0=e.touches[0];
     if((t0.radiusX||0)>34 || (t0.radiusY||0)>34) return;   // a palm or a flat thumb resting on the glass isn't a swipe
     const top=e.target.closest?.('.jr-top'), day=!top && e.target.closest?.('.jr-bottom');
     if(!top && !day) return;
     s={x:t0.clientX, y:t0.clientY, dx:0, dy:0, day:!!day, axis:null, hist:[{x:t0.clientX,y:t0.clientY,t:e.timeStamp}],
        el:top?$('#jr-cal-grid'):day.querySelector('.jr-day-list,.jr-day-empty')};
+    gestureT=setTimeout(clearGesture,4000);
   },{passive:true});
   document.addEventListener('touchmove',e=>{
     if(!s) return;
@@ -3639,11 +3646,14 @@ function calShiftDay(n,quiet=false){ const d=new Date((JR_SEL||jrToday())+'T00:0
   },{passive:true});
   // not passive: cancelling the end of a swipe stops the phone making a tap out of it at all
   document.addEventListener('touchend',e=>{
-    if(!s) return; const t=e.changedTouches[0];
+    if(!s) return;
+    const t=e.changedTouches[0];
+    if(!t){ clearGesture(); return; }
+    clearTimeout(gestureT); gestureT=0;
     if(finish(t.clientX-s.x, t.clientY-s.y) && e.cancelable) e.preventDefault();
   },{passive:false});
   // if the browser does cancel the touch, judge the swipe by how far it had got
-  document.addEventListener('touchcancel',()=>{ if(s) finish(s.dx,s.dy); },{passive:true});
+  document.addEventListener('touchcancel',()=>{ if(s){ clearTimeout(gestureT); gestureT=0; finish(s.dx,s.dy); } },{passive:true});
   // Backstop for a tap that still comes after a swipe: it goes to the square the finger started on, which the
   // swipe has already redrawn away, and selecting that day would jump straight back to the old month.
   jrJustSwiped=()=>Date.now()-Math.max(swipedAt, JR_GESTURE_AT)<400;
