@@ -1869,6 +1869,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
    switcher. Runs in <head> so the chrome never flashes in. */
 if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.documentElement.classList.add('embedded');
 </script>
+<!-- Optional enhancement: the app keeps its CSS glass fallback if this CDN is unavailable. -->
+<script defer src="https://cdn.jsdelivr.net/npm/liquid-web/liquid-core.min.js"></script>
 </head>
 <body>
 <!-- no title: the bar is just the gold line along the top (and the space under the phone's status bar) -->
@@ -4205,6 +4207,19 @@ jrBead(document.getElementById('jr-monthnav'));
   place();
   for(const mq of [phone,desk]) mq.addEventListener ? mq.addEventListener('change', place) : mq.addListener(place);
 })();
+
+// Small, reversible Liquid Web trial: only the view switcher gets the shader effect.
+// The calendar, month bar and gesture hitboxes keep their existing CSS behavior.
+function jrTryLiquidWeb(){
+  const bar=document.getElementById('jr-viewtoggle');
+  if(!bar || !window.LiquidWeb || bar.dataset.liquidReady) return;
+  try{
+    const glass=new LiquidWeb(bar,{init:false,scale:8,blur:1.5,saturation:150,aberration:8,mode:'standard'});
+    glass.init();
+    bar.dataset.liquidReady='1';
+  }catch(e){ console.warn('liquid glass enhancement unavailable:',e); }
+}
+addEventListener('load',jrTryLiquidWeb,{once:true});
 
 // ---- trackpad swipe: the phone's swipe, on desktop ----
 // A two-finger sideways swipe over the month changes month, over the day panel steps a day. What's under the
