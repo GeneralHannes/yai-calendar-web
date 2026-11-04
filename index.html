@@ -4174,7 +4174,7 @@ jrBead(document.getElementById('jr-monthnav'));
 // A two-finger sideways swipe over the month changes month, over the day panel steps a day. What's under the
 // fingers follows them, the same pull as on a phone, then goes or springs back. Up/down scrolling is left alone.
 (function(){
-  let acc=0, el=null, day=false, idleT=0, quietUntil=0;
+  let acc=0, el=null, day=false, idleT=0, quietUntil=0, lastAt=0;
   const settle=(spring)=>{
     clearTimeout(idleT);
     if(el){
@@ -4190,13 +4190,16 @@ jrBead(document.getElementById('jr-monthnav'));
     if(Math.abs(e.deltaX)<=Math.abs(e.deltaY)) return;
     const top=e.target.closest?.('.jr-top'), bot=!top && e.target.closest?.('.jr-bottom'); if(!top && !bot) return;
     e.preventDefault();                                   // no browser back/forward swipe
-    if(Date.now()<quietUntil) return;                     // the momentum tail of a swipe that already went
+    const now=Date.now();
+    if(now<quietUntil){ quietUntil=now+320; return; }      // consume the whole momentum tail as one gesture
+    if(lastAt && now-lastAt>180) settle(false);           // a fresh swipe starts a fresh accumulator
+    lastAt=now;
     if(!el){ day=!!bot; el=top?$('#jr-cal-grid'):bot.querySelector('.jr-day-list,.jr-day-empty'); }
     acc-=e.deltaX*(e.deltaMode===1?16:1);                 // the content moves with the fingers
     if(el && !K_REDUCED.matches){ el.style.transition='none'; el.style.transform=`translateX(${(acc*.45).toFixed(1)}px)`;
       el.style.opacity=String(Math.max(.35,1-Math.abs(acc)/400)); }
     if(Math.abs(acc)>120){
-      const dir=acc<0?1:-1; settle(false); quietUntil=Date.now()+550;
+      const dir=acc<0?1:-1; settle(false); quietUntil=now+650;
       if(day) calShiftDay(dir,true); else calShiftMonth(dir,true);
       return;
     }
@@ -4211,7 +4214,7 @@ jrBead(document.getElementById('jr-monthnav'));
 // Like the sideways swipe, what's under the fingers follows them (up and down here) and springs back if it doesn't go;
 // when it does go, the new month or day slides in from the direction you scrolled.
 (function(){
-  let acc=0, resetT=0, quietUntil=0, el=null;
+  let acc=0, resetT=0, quietUntil=0, el=null, lastAt=0;
   const settle=spring=>{
     clearTimeout(resetT);
     if(el){ const x=el; x.style.transition=spring&&!K_REDUCED.matches?'transform .3s var(--k-smooth), opacity .3s ease':''; x.style.transform=''; x.style.opacity='';
@@ -4225,7 +4228,9 @@ jrBead(document.getElementById('jr-monthnav'));
     if(bot){ const l=bot.querySelector('.jr-day-list'); if(l && l.scrollHeight>l.clientHeight+1) return; }   // let a long list scroll
     e.preventDefault();
     const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1), now=Date.now();
-    if(now<quietUntil) return;
+    if(now<quietUntil){ quietUntil=now+320; return; }     // consume the whole momentum tail as one gesture
+    if(lastAt && now-lastAt>180) settle(false);           // a fresh wheel gesture starts from zero
+    lastAt=now;
     acc+=dy;
     const find=()=>top?$('#jr-cal-grid'):bot.querySelector('.jr-day-list,.jr-day-empty');
     if(Math.abs(acc)<70){
@@ -4235,7 +4240,7 @@ jrBead(document.getElementById('jr-monthnav'));
       return;
     }
     const dir=acc>0?1:-1, notch=Math.abs(dy)>=50;     // a mouse wheel gives big jumps, a trackpad many small ones
-    settle(false); quietUntil=now+(notch?240:520);
+    settle(false); quietUntil=now+(notch?650:800);
     if(top) calShiftMonth(dir,true); else calShiftDay(dir,true);
     if(!K_REDUCED.matches){                           // the new one comes in from below when going on, from above when going back
       const n=find(); n?.animate?.([{transform:`translateY(${dir*44}px)`,opacity:.2},{transform:'none',opacity:1}],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
