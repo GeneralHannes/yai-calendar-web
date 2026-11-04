@@ -1803,6 +1803,20 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   html.gl-solid :is(.jr-rail .jr-viewtoggle, .jr-monthnav, .jr-bottom, .jr-pop, #toast, .jr-lang, .jr-pick-box, .jr-table, .jr-pp, .modal-card) { background:var(--k-bg2); }
   html.gl-solid .modal-ov { -webkit-backdrop-filter:none; backdrop-filter:none; }
 
+  /* ================= phones: see-through frosted glass =================
+     On a phone the month fills the screen width, so (unlike on a computer) there is no page colour around it to see. So here the month
+     itself is the frosted pane: a translucent glass with a blur, and the colour field behind is spread across the whole height, so the
+     cells, the day panel and the bar all pick up tinted, softened colour from what is behind them. */
+  @media (max-width:760px) {
+    .jr-cal-grid { background:var(--gl-fill), color-mix(in srgb,var(--k-bg2) 34%,transparent); -webkit-backdrop-filter:blur(18px) saturate(190%); backdrop-filter:blur(18px) saturate(190%);
+      border:1px solid rgb(255 255 255 / calc(var(--gl-a) * .55)); box-shadow:var(--gl-rim), var(--gl-drop); }
+    .jr-cal-day { border-right-color:rgb(255 255 255 / calc(var(--gl-a) * .38)); border-bottom-color:rgb(255 255 255 / calc(var(--gl-a) * .38)); }
+    body::after { background:radial-gradient(60% 24% at 32% 25%, color-mix(in srgb,var(--k-act) 44%,transparent), transparent 72%),
+                             radial-gradient(52% 22% at 76% 36%, color-mix(in srgb,var(--k-gold) 40%,transparent), transparent 72%),
+                             radial-gradient(60% 24% at 28% 56%, color-mix(in srgb,var(--k-warn) 32%,transparent), transparent 72%),
+                             radial-gradient(56% 24% at 72% 66%, color-mix(in srgb,var(--k-cat) 36%,transparent), transparent 72%),
+                             radial-gradient(70% 22% at 50% 80%, color-mix(in srgb,var(--k-act) 38%,transparent), transparent 74%); }
+  }
   /* ================= Android (script in <head> adds html.android) =================
      Chrome on Android paints live background blur wrongly: a blurred panel leaves a stale strip over whatever
      is below it (the month name and weekdays vanished under the day panel). That was an older Chrome: from Chrome 115 on, the head script
