@@ -426,7 +426,7 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
   :root {
     --k-smooth:cubic-bezier(.2,.9,.25,1); --k-snappy:cubic-bezier(.25,1.1,.4,1); --k-bouncy:cubic-bezier(.3,1.35,.45,1);
     --k-ios:cubic-bezier(.32,.72,0,1); --k-exit:cubic-bezier(.4,0,.9,.6);
-    --k-t-press:.09s; --k-t-quick:.28s; --k-t:.45s; --k-t-slow:.6s;
+    --k-t-press:.1s; --k-t-quick:.32s; --k-t:.52s; --k-t-slow:.68s;
   }
   @supports (transition-timing-function:linear(0,1)) {
     :root {
@@ -439,11 +439,11 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
 
   @keyframes kFadeIn   { from { opacity:0; } }
   @keyframes kFadeOut  { to   { opacity:0; } }
-  @keyframes kRise     { from { opacity:0; transform:translateY(10px); } }
-  @keyframes kReveal   { from { opacity:0; transform:translateY(-6px); } }
-  @keyframes kSheetIn  { from { opacity:0; transform:translateY(14px) scale(.965); } }
-  @keyframes kSheetOut { to   { opacity:0; transform:translateY(8px) scale(.975); } }
-  @keyframes kToastIn  { from { opacity:0; transform:translateX(-50%) translateY(18px) scale(.94); } }
+  @keyframes kRise     { from { opacity:0; transform:translate3d(0,10px,0); } }
+  @keyframes kReveal   { from { opacity:0; transform:translate3d(0,-6px,0); } }
+  @keyframes kSheetIn  { from { opacity:0; transform:translate3d(0,14px,0) scale(.965); } }
+  @keyframes kSheetOut { to   { opacity:0; transform:translate3d(0,8px,0) scale(.975); } }
+  @keyframes kToastIn  { from { opacity:0; transform:translate3d(-50%,18px,0) scale(.94); } }
 
   /* ---- press: sink fast, spring back ----
      The "in" is near-instant so a tap feels acknowledged under the finger;
@@ -486,11 +486,11 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
   }
 
   /* ================= Journal motion ================= */
-  .modal-ov { animation:kFadeIn .25s ease-out both; }
-  .modal-card { animation:kSheetIn var(--k-t) var(--k-smooth) both; }
+  .modal-ov { animation:kFadeIn .28s ease-out both; }
+  .modal-card { animation:kSheetIn var(--k-t) var(--k-smooth) both; will-change:transform,opacity; }
   .modal-ov.k-leaving { animation:kFadeOut .22s var(--k-exit) forwards; }
   .modal-ov.k-leaving .modal-card { animation:kSheetOut .22s var(--k-exit) forwards; }
-  #jr-agenda, #jr-calendar { animation:kRise var(--k-t) var(--k-smooth) both; }
+  #jr-agenda, #jr-calendar { animation:kRise var(--k-t) var(--k-smooth) both; will-change:transform,opacity; }
   @keyframes kRiseR { from { opacity:0; transform:translateY(14px); } }
   @keyframes kRiseC { from { opacity:0; transform:translateX(-50%) translateY(14px); } }
   #jr-cal-nav, #jr-actions-bar { animation:kRiseC var(--k-t) var(--k-snappy) both; }
@@ -512,7 +512,7 @@ html.ios-app body { min-height:calc(100vh + env(safe-area-inset-top)); }
   .jr-day-group:nth-child(9){animation-delay:360ms}
   .jr-day-group:nth-child(10){animation-delay:405ms}
   .jr-day-group:nth-child(n+11){animation-delay:450ms}
-  .jr-cal-day { animation:jrCell .35s var(--k-smooth) backwards; }
+  .jr-cal-day { animation:jrCell .42s var(--k-smooth) backwards; will-change:transform,opacity; }
   .jr-cal-day:nth-child(1){animation-delay:0ms}
   .jr-cal-day:nth-child(2){animation-delay:9ms}
   .jr-cal-day:nth-child(3){animation-delay:18ms}
@@ -1165,8 +1165,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-add.k-shine::before { background:radial-gradient(120px circle at var(--mx,50%) var(--my,0%), rgba(255,255,255,.4), transparent 65%); }
 
   /* ================= views come in from the side you came from (Odin's Keep's tab motion) ================= */
-  @keyframes jrViewU { from { opacity:0; transform:translateY(22px); } }
-  @keyframes jrViewD { from { opacity:0; transform:translateY(-22px); } }
+  @keyframes jrViewU { from { opacity:0; transform:translate3d(0,22px,0); } }
+  @keyframes jrViewD { from { opacity:0; transform:translate3d(0,-22px,0); } }
   #jr-agenda.vin-u, #jr-calendar.vin-u { animation:jrViewU var(--k-t) var(--k-smooth) both; }
   #jr-agenda.vin-d, #jr-calendar.vin-d { animation:jrViewD var(--k-t) var(--k-smooth) both; }
 
