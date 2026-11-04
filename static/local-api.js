@@ -36,7 +36,7 @@
       if (event_time && !TIME_RE.test(event_time)) return fail(400, "event_time must be HH:MM");
       const ev = { id: db.next++, event_date, event_time: secs(event_time), end_date: null, end_time: null, day_info: null, color: COLOR(body.color),
         location: str(body.location) || null, title, notes: str(body.notes) || null,
-        category: str(body.category) || null, done: false, created_at: now(), updated_at: now() };
+        category: str(body.category) || null, status: ["tentative", "cancelled"].includes(body.status) ? body.status : null, done: false, created_at: now(), updated_at: now() };
       const why = setSpan(ev, body); if (why) return fail(400, why);
       db.events.push(ev); save(db); return reply(ev, 201);
     }
@@ -51,6 +51,7 @@
     if ("event_time" in body) { const t = str(body.event_time); if (t && !TIME_RE.test(t)) return fail(400, "event_time must be HH:MM"); ev.event_time = secs(t) || null; }
     if ("notes" in body) ev.notes = str(body.notes) || null;
     if ("category" in body) ev.category = str(body.category) || null;
+    if ("status" in body) ev.status = ["tentative", "cancelled"].includes(body.status) ? body.status : null;
     if ("location" in body) ev.location = str(body.location) || null;
     if ("color" in body) ev.color = COLOR(body.color);
     if ("event_time" in body && !ev.event_time) ev.end_time = null;   // all day now: no end time either
