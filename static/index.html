@@ -1187,7 +1187,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   @keyframes kGlint { from { background-position:0% 0; } to { background-position:100% 0; } }
 
   /* ================= dragging an event to another day (script: drag an event) ================= */
-  #jr-cal-grid .jr-ev[data-id] { touch-action:none; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  #jr-cal-grid .jr-ev[data-id] { touch-action:pan-y; cursor:grab; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
   #jr-cal-grid .jr-ev.dragging { opacity:.25; }
   .jr-ev-ghost { position:fixed !important; z-index:80; pointer-events:none; margin:0; max-height:none; overflow:visible;
     cursor:grabbing; white-space:nowrap !important; transform-origin:20% 50%;
@@ -3600,8 +3600,8 @@ function calShiftDay(n,quiet=false){ const d=new Date((JR_SEL||jrToday())+'T00:0
     if(s?.axis==='x' || s?.axis==='y') reset(s.el);
     s=null;
   };
-  const reset=el=>{ if(!el) return; el.style.transition='transform .3s var(--k-smooth), opacity .3s ease'; el.style.transform=''; el.style.opacity='';
-    setTimeout(()=>{ el.style.transition=''; },320); };
+  const reset=el=>{ if(!el) return; el.style.transition='transform .26s var(--k-smooth), opacity .26s ease'; el.style.transform=''; el.style.opacity='';
+    setTimeout(()=>{ el.style.transition=''; },280); };
   // How fast the finger was going at the end (px per ms, over its last ~90 ms): a quick flick counts for more than distance
   const speed=(a,b)=>{ const p=s.hist; if(!p||p.length<2) return 0; const last=p[p.length-1]; let first=p[0];
     for(const q of p) if(last.t-q.t<=90){ first=q; break; } const dt=Math.max(1,last.t-first.t); return {x:(last[a]-first[a])/dt, y:(last[b]-first[b])/dt}; };
@@ -3650,8 +3650,8 @@ function calShiftDay(n,quiet=false){ const d=new Date((JR_SEL||jrToday())+'T00:0
     if(s.axis && !K_REDUCED.matches && s.el){
       const horiz=s.axis==='x';
       if(horiz || s.axis==='y'){ s.el.style.transition='none';
-        s.el.style.transform=horiz?`translateX(${s.dx*.5}px)`:`translateY(${s.dy*.4}px)`;
-        s.el.style.opacity=String(Math.max(.35,1-Math.abs(horiz?s.dx:s.dy)/(horiz?380:300))); }
+        s.el.style.transform=horiz?`translateX(${s.dx*.72}px)`:`translateY(${s.dy*.55}px)`;
+        s.el.style.opacity=String(Math.max(.72,1-Math.abs(horiz?s.dx:s.dy)/(horiz?700:520))); }
     }
   },{passive:true});
   // not passive: cancelling the end of a swipe stops the phone making a tap out of it at all
