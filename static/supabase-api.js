@@ -60,7 +60,8 @@
     if (pe && method === "DELETE") return rpc(origin, "yai_remove_person", { p_token: token, p_code: decodeURIComponent(pe[1]) });
     const pp = path.match(/^\/api\/people\/([^/]+)\/nickname$/);
     if (pp && method === "POST") return rpc(origin, "yai_set_nickname", { p_token: token, p_code: decodeURIComponent(pp[1]), p_nickname: body.nickname ?? "" });
-    if (path === "/api/scan" && method === "POST") return functionCall(origin, "scan-event", { token, images: body.images, today: body.today });
+    if (path === "/api/scan" && method === "POST")
+      return functionCall(origin, "scan-event", { token, images: body.images, today: body.today, languages: body.languages });
     if (path === "/api/people") return rpc(origin, "yai_people", { p_token: token });
     if (path === "/api/journal/events" && method === "GET") return rpc(origin, "yai_events", { p_token: token });
     if (path === "/api/journal/events" && method === "POST") return rpc(origin, "yai_add", { p_token: token, p_event: body });

@@ -2776,10 +2776,11 @@ function setJournalView(v, skipSave){
 }
 function jrRender(){ if(JR_VIEW==='people') jrRenderPeople(); else if(JR_VIEW==='agenda') renderAgenda(); else renderCalendar(); }
 
-// ---- Add events from a photo, free and on this device ----
-// The photo is turned to text with Tesseract (open-source OCR, loaded the first time it's used), then patterns find the dates,
+// ---- Add events from a photo ----
+// With the shared backend, a stronger free online vision reader is tried first; Tesseract remains the private,
+// device-only fallback when there is no backend or the online reader is unavailable. Patterns find the dates,
 // times, place and title (jrParseEvents). The events are shown for checking and editing; nothing is saved until "Add".
-// Nothing is sent anywhere, and no account or key is needed. It reads clean, printed text best: a flat, well-lit photo.
+// The online reader never receives the account key; the page sends photos only through the signed-in backend.
 // lines: [{text, h}] top to bottom (h: how tall the letters are, so the biggest line can be the title); today: 'YYYY-MM-DD'
 function jrParseEvents(lines, today){
   const KD='០១២៣៤៥６７８９'; 
@@ -2925,7 +2926,7 @@ function jrScanStart(files){
     card.innerHTML=head+`<p class="jr-ae-hint">${esc(tx('scanTip'))}</p>
       <div class="jr-sc-thumbs">${files.map(f=>`<img src="${URL.createObjectURL(f)}" alt="">`).join('')}</div>
       <div class="jr-sc-langs" role="group" aria-label="${esc(tx('scanLangs'))}"><span>${esc(tx('scanLangs'))}</span>${Object.keys(NAMES).map(l=>`<button type="button" class="jr-chipbtn${langs.includes(l)?' on':''}" data-l="${l}" aria-pressed="${langs.includes(l)}">${NAMES[l]}</button>`).join('')}</div>
-      <p class="jr-ae-hint">${esc(tx('scanFirst'))}<br>${esc(tx('scanFree'))}</p>
+      <p class="jr-ae-hint">${esc(tx('scanFirst'))}<br>${esc(tx('scanTip'))}</p>
       <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('cancel'))}</button><button class="act" id="sc-go"${langs.length?'':' disabled'}>${esc(tx('scanRead'))}</button></div>`;
     card.querySelector('#sc-x').onclick=close;
     card.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{ const l=b.dataset.l; langs=langs.includes(l)?langs.filter(x=>x!==l):[...langs,l]; start(); });
@@ -2936,6 +2937,24 @@ function jrScanStart(files){
     card.querySelector('#sc-x').onclick=close; card.querySelector('#sc-back').onclick=start; };
   async function run(){
     try{ localStorage.setItem('yai_ocr_langs',JSON.stringify(langs)); }catch(_){}
+    wait(tx('scanLoadingReader'));
+    if(JR_API && !JR_FROZEN){
+      try{
+        const images=await Promise.all(files.map(async file=>{
+          const bytes=new Uint8Array(await file.arrayBuffer());
+          let binary=''; for(let i=0;i<bytes.length;i+=0x8000) binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+          return {type:file.type,data:btoa(binary)};
+        }));
+        const online=await api('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({images,today:jrToday(),languages:langs})});
+        if(!alive) return;
+        review((online.events||[]).map(e=>({...e,needs_check:!!e.needs_check})), '');
+        return;
+      }catch(e){
+        if(!alive) return;
+        if(!(e instanceof JrOffline)) console.warn('online photo reader:', e);
+      }
+    }
     wait(tx('scanLoadingReader'));
     let worker; const found=[], raws=[];
     try{
