@@ -1541,6 +1541,19 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-ae-chip.st-tent { outline:1.5px dashed var(--k-bad); outline-offset:-1.5px; background-image:repeating-linear-gradient(135deg, color-mix(in srgb,var(--k-bad) 28%,transparent) 0 5px, transparent 5px 10px); }
   .jr-ae-chip.st-cancel { opacity:.5; text-decoration:line-through; }
 
+  /* the form's Add / Cancel stay in view however tall the form is (a laptop window is often under 800px tall), and the form tightens up on a short window */
+  .modal-card.jr-ae .item-edit-actions { position:sticky; bottom:0; z-index:6; margin:.5rem calc(-1 * clamp(.85rem,3vw,1.2rem)) calc(-1 * clamp(.85rem,3vw,1.2rem));
+    padding:.75rem clamp(.85rem,3vw,1.2rem) clamp(.85rem,3vw,1.2rem); border-radius:0 0 inherit inherit;
+    background:linear-gradient(to top, color-mix(in srgb,var(--k-bg2) 97%,transparent) 68%, transparent); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+  @media (max-height:900px) {
+    .jr-ae .jr-ae-head { margin-bottom:.3rem; }
+    .jr-ae-preview { margin:0 0 .45rem; }
+    .jr-ae .jr-ae-colors { margin-bottom:.5rem; }
+    .modal-card.jr-ae input.jr-ae-hero { font-size:1.4rem !important; padding:.2rem .1rem .3rem !important; margin-bottom:.4rem; }
+    .jr-ae-quick, .jr-ae-status { margin-bottom:.45rem; }
+    .jr-ae .field { margin-bottom:.3rem; }
+    .jr-ae input:not([type=checkbox]), .jr-ae-pick, .jr-pick-btn { padding-top:.42rem; padding-bottom:.42rem; }
+  }
   /* ================= security ================= */
   .jr-pwrules { font-size:.78rem !important; line-height:1.4; }
   .jr-sec-row { display:flex; align-items:center; gap:.8rem; padding:.6rem 0; border-bottom:1px solid var(--glass-line); }
