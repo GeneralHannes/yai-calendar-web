@@ -1869,6 +1869,31 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-me { margin-left:auto; display:flex; align-items:center; gap:.5rem; font-size:.85rem; color:var(--muted); }
   .jr-me:empty { display:none; }
   .jr-me .mini { padding:.35rem .7rem; border-radius:999px; font-size:.8rem; }
+  /* Keep the calendar surfaces white after the shared grid theme rules above. */
+  #jr-calendar,
+  #jr-calendar .jr-top,
+  #jr-calendar .jr-bottom {
+    color:var(--calendar-ink);
+  }
+  #jr-calendar .jr-cal-grid {
+    background:rgba(255,255,255,.28);
+    border-color:rgba(15,23,42,.14);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 8px 22px -16px rgba(15,23,42,.4);
+  }
+  #jr-calendar .jr-cal-day,
+  #jr-calendar .jr-cal-day.other-month,
+  #jr-calendar .jr-cal-day.other-month.has-events {
+    background:rgba(255,255,255,.5);
+    border-color:rgba(15,23,42,.14);
+  }
+  #jr-calendar .jr-cal-day:hover,
+  #jr-calendar .jr-cal-day:active {
+    background:rgba(255,255,255,.78);
+  }
+  #jr-calendar .jr-cal-day.sel,
+  #jr-calendar .jr-cal-day.sel:hover {
+    background:color-mix(in srgb,var(--k-act) 12%,white);
+  }
 </style>
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
