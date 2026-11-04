@@ -3005,12 +3005,23 @@ function jrScanStart(files){
 
 // On iPhone, a tap on a button while a text field has the keyboard up is often swallowed: the touch is seen (the button shows pressed) but no
 // click follows, so it took two taps. If no click arrives shortly after the finger lifts, the button is clicked from here.
+const jrTouchClickIgnore=new WeakMap();
+document.addEventListener('click',e=>{
+  if(!e.isTrusted) return;
+  const b=e.target.closest?.('.modal-card button, .jr-signin-card button');
+  if(b && (jrTouchClickIgnore.get(b)||0)>Date.now()){
+    e.preventDefault(); e.stopImmediatePropagation(); jrTouchClickIgnore.delete(b);
+  }
+},true);
 document.addEventListener('pointerup',e=>{
   if(e.pointerType!=='touch') return;
   const b=e.target.closest?.('.modal-card button, .jr-signin-card button'); if(!b || b.disabled) return;
   const a=document.activeElement; if(!a || !/^(INPUT|TEXTAREA)$/.test(a.tagName)) return;   // only this case loses taps
   let got=false; const seen=()=>{ got=true; }; b.addEventListener('click',seen,{once:true,capture:true});
-  setTimeout(()=>{ b.removeEventListener('click',seen,true); if(!got && b.isConnected) b.click(); },140);
+  setTimeout(()=>{
+    b.removeEventListener('click',seen,true);
+    if(!got && b.isConnected){ b.click(); jrTouchClickIgnore.set(b,Date.now()+500); }
+  },350);
 },true);
 // ---- Settings ----
 // Everything a person can change about the app on this device, in one place: the account, how it looks (theme, glass, language,
