@@ -4190,7 +4190,7 @@ jrBead(document.getElementById('jr-monthnav'));
     const top=e.target.closest?.('.jr-top'), bot=!top && e.target.closest?.('.jr-bottom'); if(!top && !bot) return;
     e.preventDefault();                                   // no browser back/forward swipe
     const now=Date.now();
-    if(now<quietUntil){ quietUntil=now+320; return; }      // consume the whole momentum tail as one gesture
+    if(now<quietUntil) return;                            // consume the bounded momentum tail as one gesture
     if(lastAt && now-lastAt>180) settle(false);           // a fresh swipe starts a fresh accumulator
     lastAt=now;
     if(!el){ day=!!bot; el=top?$('#jr-cal-grid'):bot.querySelector('.jr-day-list,.jr-day-empty'); }
@@ -4227,7 +4227,7 @@ jrBead(document.getElementById('jr-monthnav'));
     if(bot){ const l=bot.querySelector('.jr-day-list'); if(l && l.scrollHeight>l.clientHeight+1) return; }   // let a long list scroll
     e.preventDefault();
     const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1), now=Date.now();
-    if(now<quietUntil){ quietUntil=now+320; return; }     // consume the whole momentum tail as one gesture
+    if(now<quietUntil) return;                            // consume the bounded momentum tail as one gesture
     if(lastAt && now-lastAt>180) settle(false);           // a fresh wheel gesture starts from zero
     lastAt=now;
     acc+=dy;
