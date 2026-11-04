@@ -3609,13 +3609,13 @@ let JR_EVDRAG=null, JR_GESTURE_AT=0;   // an event being dragged to another day;
 // Counted here rather than with dblclick: the first click redraws the month, so the browser never sees two
 // clicks on one element.
 let JR_LAST_DAYCLICK={iso:'', at:0};
-function calDayClick(iso){
+function calDayClick(iso, ev=window.event){
   if(jrJustSwiped()) return;
   // a tap on an event in the square opens its details instead (a drag or swipe never does, see above)
-  const chip=window.event?.target?.closest?.('#jr-cal-grid .jr-ev[data-id]');
+  const chip=ev?.target?.closest?.('#jr-cal-grid .jr-ev[data-id]');
   if(chip && !chip.hidden){
     // a multi-day bar spans several squares: the day is the one under the finger, not where the bar starts
-    const ev=window.event, under=chip.dataset.span && ev?.clientX!=null &&
+    const under=chip.dataset.span && ev?.clientX!=null &&
       [...document.querySelectorAll('#jr-cal-grid .jr-cal-day')].find(d=>{ const b=d.getBoundingClientRect(); return ev.clientX>=b.left&&ev.clientX<b.right&&ev.clientY>=b.top&&ev.clientY<b.bottom; });
     const day=under?.dataset.iso || iso;
     calSelect(day); requestAnimationFrame(()=>jrEventPop(+chip.dataset.id, day)); return; }
@@ -3766,7 +3766,7 @@ function renderCalendar(opt={}){
     const n = singles.length + covering.length;
     const label = `${jrFmtLong(d)}${n?`, ${tx('nEvents',n)}`:''}`;
     html += `<button type="button" class="jr-cal-day${inMonth?'':' other-month'}${iso===today?' today':''}${iso===JR_SEL?' sel':''}${n?' has-events':''}"
-      data-iso="${iso}" onclick="calDayClick('${iso}')" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
+      data-iso="${iso}" onclick="calDayClick('${iso}',event)" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${n?`<span class="jr-more" hidden></span><span class="jr-count">${n}</span>`:''}</span>
       ${bars.length||singles.length?`<span class="jr-preview">${
         bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}">${esc(e.title)}</span>`).join('')
