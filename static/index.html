@@ -3827,7 +3827,7 @@ function jrFitCells(){
       pv.style.setProperty('--room', room+'px');
       evs.forEach(e=>{ e.hidden=false; e.classList.remove('wrap'); });
       const gap=parseFloat(getComputedStyle(pv).rowGap)||0;
-      const laneH=evs[0].offsetHeight || 16, lanes=Math.max(0, Math.floor((pv.clientHeight+gap)/(laneH+gap)));
+      const laneH=evs[0].offsetHeight || 16, lanes=Math.max(1, Math.floor((pv.clientHeight+gap)/(laneH+gap)));
       let lane=0, shown=0;
       const firstFree=(from, n)=>{ let at=from; while(at<from+64 && [...Array(n).keys()].some(k=>(busy[at+k]||0)>c)) at++; return at; };
       for(const e of evs){
@@ -3859,7 +3859,7 @@ function jrFitCells(){
           if(fit>1){ e.classList.replace('wrap','clamp'); e.style.webkitLineClamp=fit; lines=fit; at=firstFree(lane, fit); }
           else { e.classList.replace('wrap','cut'); lines=1; }
         }
-        if(at+lines>lanes) break;
+        if(at+lines>lanes){ if(span){ at=Math.max(0,lanes-1); lines=1; } else break; }   // a multi-day bar is never dropped
         for(let k=lane; k<at; k++){ const g=document.createElement('span'); g.className='jr-ev-gap'; g.style.height=laneH+'px'; e.before(g); }
         // the first day it no longer reaches into (2px of breathing room before the next title)
         const free=Math.floor((cell.offsetLeft+e.offsetLeft+e.offsetWidth+2)/colW)+1;
@@ -3867,7 +3867,7 @@ function jrFitCells(){
         if(span) laneOf[e.dataset.id]=at;
         lane=at+lines; shown++;
       }
-      evs.forEach((e,i)=>e.hidden=i>=shown);
+      evs.forEach((e,i)=>e.hidden=i>=shown && !(+e.dataset.span));
       more.hidden=shown>=evs.length; more.textContent=more.hidden?'':'+'+(evs.length-shown);
     }
   }
