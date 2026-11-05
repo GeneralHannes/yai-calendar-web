@@ -1097,7 +1097,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   #jr-cal-grid .jr-ev.span.cont-r { border-top-right-radius:0; border-bottom-right-radius:0; padding-right:10px;
     clip-path:polygon(0 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 0 100%); }
   #jr-cal-grid .jr-ev.span.cont-l { border-top-left-radius:0; border-bottom-left-radius:0; border-left-color:transparent; padding-left:10px;
-    clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%, 6px 50%); text-indent:-9999px; }
+    clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%, 6px 50%); text-indent:0; opacity:.82; }
   #jr-cal-grid .jr-ev.span.cont-l.cont-r { clip-path:polygon(0 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 0 100%, 6px 50%); }
   #jr-cal-grid .jr-ev.span.linked { background:color-mix(in srgb,var(--k-act) 72%,var(--k-bg2)); }
   /* the days a multi-day event covers: a soft tint for the ones through the selected day, stronger while its bar is
@@ -3772,7 +3772,7 @@ function renderCalendar(opt={}){
       data-iso="${iso}" onclick="calDayClick('${iso}',event)" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${n?`<span class="jr-more" hidden></span><span class="jr-count">${n}</span>`:''}</span>
       ${bars.length||singles.length?`<span class="jr-preview">${
-        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}" aria-label="${esc(e.title)}" title="${esc(e.title)}">${l?'':esc(e.title)}</span>`).join('')
+        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}" aria-label="${esc(e.title)}" title="${esc(e.title)}">${l?'↳ '+esc(jrAbbr(e.title)):esc(e.title)}</span>`).join('')
       }${singles.map(e=>`<span class="jr-ev${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-t="${esc(e.title)}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
     </button>`;
   }
@@ -3835,7 +3835,7 @@ function jrFitCells(){
         const span=+e.dataset.span||0;
         // lays the event out with its full title or its short form ("PPTF 2026", see jrAbbr)
         const fitAs=short=>{
-          jrSetTitle(e, short?jrAbbr(e.dataset.t):e.dataset.t);
+          jrSetTitle(e, span && e.classList.contains('cont-l') ? '↳ '+jrAbbr(e.dataset.t) : (short?jrAbbr(e.dataset.t):e.dataset.t));
           e.classList.remove('cut','clamp','wrap','abbr'); e.style.webkitLineClamp=''; if(short) e.classList.add('abbr');
           if(!span){ jrFitWords(e, room); if(short) e.classList.remove('hy'); }
           // a multi-day bar is locked to its days: exactly from this square to its last one in the row, one line
