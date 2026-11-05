@@ -1815,6 +1815,9 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-set-btns { display:flex; flex-wrap:wrap; gap:.4rem; margin:.2rem 0; }
   .jr-set-btns a.mini { text-decoration:none; display:inline-flex; align-items:center; }
   .jr-set-about { display:flex; flex-direction:column; gap:.5rem; font-size:.9rem; }
+  .jr-version { display:inline-flex; align-items:center; min-height:1.55rem; margin-left:.3rem; padding:0 .55rem; border-radius:999px;
+    color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent); border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+    font-variant-numeric:tabular-nums; }
   .jr-set-rem small { color:var(--muted); line-height:1.4; }
   /* Glass strength (Settings): Soft is half as bright with a lighter blur; Solid has no blur, no drifting colour, and opaque panels */
   html.gl-soft { --gl-k:.55; --gl-blur:blur(14px) saturate(150%); }
@@ -3155,7 +3158,7 @@ function jrSettings(){
       <div class="jr-set-btns"><button class="mini" data-act="ics">${esc(tx('exportIcs'))}</button><button class="mini" data-act="json">${esc(tx('exportJson'))}</button></div>
       <p class="jr-ae-hint">${esc(tx('exportHint'))}</p></section>
     <section class="jr-set-sec"><h3>${esc(tx('setAbout'))}</h3>
-      <div class="jr-set-about"><span>${esc(tx('version'))} <b id="set-ver">…</b></span>
+      <div class="jr-set-about"><span>${esc(tx('version'))} <b id="set-ver" class="jr-version">…</b></span>
         <div class="jr-set-btns"><button class="mini" data-act="update">${esc(tx('checkUpdates'))}</button><button class="mini" data-act="clear">${esc(tx('clearCache'))}</button>
         ${android?`<a class="mini" href="Yai-Calendar.apk" download>${esc(tx('installAndroid'))}</a>`:''}</div>
         ${iosBrowser?`<p class="jr-ae-hint">${esc(tx('installIos'))}</p>`:''}</div></section>
@@ -3832,7 +3835,12 @@ function jrFitCells(){
         const span=+e.dataset.span||0;
         // lays the event out with its full title or its short form ("PPTF 2026", see jrAbbr)
         const fitAs=short=>{
-          jrSetTitle(e, short?jrAbbr(e.dataset.t):e.dataset.t);
+          if(span && e.classList.contains('cont-l')){
+            [...e.childNodes].filter(n=>n.nodeType===3).forEach(n=>n.remove());
+            e.title=e.dataset.t;
+          } else {
+            jrSetTitle(e, short?jrAbbr(e.dataset.t):e.dataset.t);
+          }
           e.classList.remove('cut','clamp','wrap','abbr'); e.style.webkitLineClamp=''; if(short) e.classList.add('abbr');
           if(!span){ jrFitWords(e, room); if(short) e.classList.remove('hy'); }
           // a multi-day bar is locked to its days: exactly from this square to its last one in the row, one line
