@@ -1089,6 +1089,8 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   #jr-cal-grid .jr-ev.clamp { white-space:normal; overflow-wrap:break-word; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
   /* a multi-day event: a bar locked from its first day to its last (width set by jrFitCells), one line, "…" if the
      title is longer; a stronger fill so it reads as a span, square ends where it carries on into the next row */
+  /* a bar reaches into the days after its own: lift its day above them, or the selected/tinted next day paints over half of it */
+  #jr-cal-grid .jr-cal-day:has(.jr-ev.span) { z-index:2; }
   #jr-cal-grid .jr-ev.span { max-width:none; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis;
     display:block; -webkit-line-clamp:unset; color:var(--ink);   /* dark text, like the one-day events */
     background:color-mix(in srgb,var(--k-act) 55%,var(--k-bg2)); border-left-color:color-mix(in srgb,var(--k-act) 75%,#000); }
@@ -3835,7 +3837,7 @@ function jrFitCells(){
         const span=+e.dataset.span||0;
         // lays the event out with its full title or its short form ("PPTF 2026", see jrAbbr)
         const fitAs=short=>{
-          jrSetTitle(e, span && e.classList.contains('cont-l') ? '↳ '+jrAbbr(e.dataset.t) : (short?jrAbbr(e.dataset.t):e.dataset.t));
+          jrSetTitle(e, (span && e.classList.contains('cont-l') ? '↳ ' : '')+(short?jrAbbr(e.dataset.t):e.dataset.t));
           e.classList.remove('cut','clamp','wrap','abbr'); e.style.webkitLineClamp=''; if(short) e.classList.add('abbr');
           if(!span){ jrFitWords(e, room); if(short) e.classList.remove('hy'); }
           // a multi-day bar is locked to its days: exactly from this square to its last one in the row, one line
