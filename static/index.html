@@ -705,11 +705,16 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   #jr-agenda { flex:1; min-height:0; overflow:auto; width:100%; max-width:760px; margin:0 auto; padding-bottom:1rem; }
   .jr-agenda-head { margin-bottom:.7rem; }
   .jr-agenda-head .view-title { margin:0; }
-  #jr-calendar { --calendar-ink:#1f2937; --calendar-muted:#64748b; --calendar-line:rgba(15,23,42,.14);
+  /* the calendar card: white glass on the light themes (Latte, Daylight); on dark themes the same card in the
+     theme's own dark glass (white there made the day numbers and the day panel text unreadable) */
+  #jr-calendar { --calendar-ink:var(--ink); --calendar-muted:var(--muted); --calendar-line:var(--glass-line);
     flex:1; min-height:0; display:flex; flex-direction:column; gap:.6rem; width:100%; max-width:1800px; margin:0 auto;
-    color:var(--calendar-ink); border:1px solid rgba(255,255,255,.7); border-radius:20px; padding:.7rem;
-    background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(255,255,255,.62));
+    color:var(--calendar-ink); border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:.7rem;
+    background:linear-gradient(145deg,color-mix(in srgb,var(--k-bg2) 70%,transparent),color-mix(in srgb,var(--k-bg2) 45%,transparent));
     -webkit-backdrop-filter:saturate(150%) blur(18px); backdrop-filter:saturate(150%) blur(18px);
+    box-shadow:0 18px 42px -24px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08); }   /* big monitors: the month uses the screen */
+  :root:is([data-theme="latte"],[data-theme="daylight"]) #jr-calendar { --calendar-ink:#1f2937; --calendar-muted:#64748b; --calendar-line:rgba(15,23,42,.14);
+    border-color:rgba(255,255,255,.7); background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(255,255,255,.62));
     box-shadow:0 18px 42px -24px rgba(15,23,42,.5),inset 0 1px 0 rgba(255,255,255,.9); }   /* big monitors: the month uses the screen */
   .jr-split { flex:1; min-height:0; display:flex; flex-direction:column; gap:.75rem; }
 
@@ -1563,6 +1568,28 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     .jr-ae .field { margin-bottom:.3rem; }
     .jr-ae input:not([type=checkbox]), .jr-ae-pick, .jr-pick-btn { padding-top:.42rem; padding-bottom:.42rem; }
   }
+  /* ---- month hand-off (renderCalendar): the old month's copy, content only, fading out over the new one ---- */
+  .jr-cal-grid.jr-ghost { position:absolute !important; margin:0 !important; z-index:3; pointer-events:none;
+    background:transparent !important; border-color:transparent !important; box-shadow:none !important;
+    -webkit-backdrop-filter:none !important; backdrop-filter:none !important; will-change:transform,opacity; }
+  .jr-cal-grid.jr-ghost::before, .jr-cal-grid.jr-ghost::after { display:none !important; }
+  .jr-cal-grid.jr-ghost .jr-cal-day { animation:none !important; background:transparent !important; box-shadow:none !important; }
+  .jr-dragging { will-change:transform; }                         /* its own layer while a finger moves it */
+
+  /* ---- today stands out: a warm gold square with a ring and a bigger, glowing date, in every theme ---- */
+  #jr-calendar #jr-cal-grid .jr-cal-day.today,
+  #jr-calendar #jr-cal-grid .jr-cal-day.today:hover {
+    background:color-mix(in srgb,var(--gold) 17%,transparent);
+    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--gold) 80%,transparent), inset 0 0 18px -6px color-mix(in srgb,var(--gold) 55%,transparent);
+    border-radius:10px; }
+  #jr-calendar #jr-cal-grid .jr-cal-day.today.sel {
+    background:color-mix(in srgb,var(--gold) 22%,color-mix(in srgb,var(--k-act) 10%,transparent));
+    box-shadow:inset 0 0 0 2.5px var(--gold), 0 6px 18px -8px color-mix(in srgb,var(--gold) 80%,transparent); }
+  #jr-calendar #jr-cal-grid .jr-cal-day.today .jr-daynum {
+    background:var(--gold); color:#1a1608; font-weight:800; transform:scale(1.12); transform-origin:left center;
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 30%,transparent), 0 3px 10px -2px color-mix(in srgb,var(--gold) 85%,transparent); }
+  @media (max-width:560px) { #jr-calendar #jr-cal-grid .jr-cal-day.today { border-radius:8px; } }
+
   /* ================= security ================= */
   .jr-pwrules { font-size:.78rem !important; line-height:1.4; }
   .jr-sec-row { display:flex; align-items:center; gap:.8rem; padding:.6rem 0; border-bottom:1px solid var(--glass-line); }
@@ -1874,29 +1901,29 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-me { margin-left:auto; display:flex; align-items:center; gap:.5rem; font-size:.85rem; color:var(--muted); }
   .jr-me:empty { display:none; }
   .jr-me .mini { padding:.35rem .7rem; border-radius:999px; font-size:.8rem; }
-  /* Keep the calendar surfaces white after the shared grid theme rules above. */
+  /* Keep the calendar surfaces white after the shared grid theme rules above (light themes only, see #jr-calendar). */
   #jr-calendar,
   #jr-calendar .jr-top,
   #jr-calendar .jr-bottom {
     color:var(--calendar-ink);
   }
-  #jr-calendar .jr-cal-grid {
+  :root:is([data-theme="latte"],[data-theme="daylight"]) #jr-calendar .jr-cal-grid {
     background:rgba(255,255,255,.28);
     border-color:rgba(15,23,42,.14);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 8px 22px -16px rgba(15,23,42,.4);
   }
-  #jr-calendar .jr-cal-day,
-  #jr-calendar .jr-cal-day.other-month,
-  #jr-calendar .jr-cal-day.other-month.has-events {
+  :root:is([data-theme="latte"],[data-theme="daylight"]) #jr-calendar .jr-cal-day,
+  :root:is([data-theme="latte"],[data-theme="daylight"]) #jr-calendar .jr-cal-day.other-month,
+  :root:is([data-theme="latte"],[data-theme="daylight"]) #jr-calendar .jr-cal-day.other-month.has-events {
     background:rgba(255,255,255,.5);
     border-color:rgba(15,23,42,.14);
   }
-  #jr-calendar .jr-cal-day:hover,
-  #jr-calendar .jr-cal-day:active {
+  :root:is([data-theme="latte"],[data-theme="daylight"]) #jr-calendar .jr-cal-day:hover,
+  :root:is([data-theme="latte"],[data-theme="daylight"]) #jr-calendar .jr-cal-day:active {
     background:rgba(255,255,255,.78);
   }
-  #jr-calendar .jr-cal-day.sel,
-  #jr-calendar .jr-cal-day.sel:hover {
+  :root:is([data-theme="latte"],[data-theme="daylight"]) #jr-calendar .jr-cal-day.sel,
+  :root:is([data-theme="latte"],[data-theme="daylight"]) #jr-calendar .jr-cal-day.sel:hover {
     background:color-mix(in srgb,var(--k-act) 12%,white);
   }
 </style>
@@ -3656,7 +3683,7 @@ function calShiftDay(n,quiet=false,axis='x'){ const d=new Date((JR_SEL||jrToday(
     if(s?.axis==='x' || s?.axis==='y') reset(s.el);
     s=null;
   };
-  const reset=el=>{ if(!el) return; el.style.transition='transform .32s cubic-bezier(.22,1.2,.36,1), opacity .25s ease'; el.style.transform=''; el.style.opacity='';
+  const reset=el=>{ if(!el) return; el.classList.remove('jr-dragging'); el.style.transition='transform .32s cubic-bezier(.22,1.2,.36,1), opacity .25s ease'; el.style.transform=''; el.style.opacity='';
     setTimeout(()=>{ el.style.transition=''; },280); };
   // How fast the finger was going at the end (px per ms, over its last ~90 ms): a quick flick counts for more than distance
   const speed=(a,b)=>{ const p=s.hist; if(!p||p.length<2) return 0; const last=p[p.length-1]; let first=p[0];
@@ -3671,9 +3698,10 @@ function calShiftDay(n,quiet=false,axis='x'){ const d=new Date((JR_SEL||jrToday(
     return {day:isDay, el:isDay?bot.querySelector('.jr-day-list,.jr-day-empty'):$('#jr-cal-grid')};
   };
   const finish=(dx,dy)=>{
-    const {day,el,axis}=s, v=speed('x','y'); s=null;
+    const s0=s, {day,el,axis}=s, v=speed('x','y'); s=null;
     if(axis!=='x' && axis!=='y') return false;
-    if(el){ el.style.transform=''; el.style.opacity=''; }
+    if(s0?.raf) cancelAnimationFrame(s0.raf);
+    el?.classList.remove('jr-dragging');
     if(axis==='y'){                                   // up/down on the month: the same as scrolling the wheel on a computer
       const go=Math.abs(dy)>58 && Math.abs(dy)>Math.abs(dx)*1.3 || (Math.abs(dy)>26 && Math.abs(v.y||0)>.28 && Math.abs(dy)>Math.abs(dx));
       if(!go){ reset(el); return false; }
@@ -3683,6 +3711,7 @@ function calShiftDay(n,quiet=false,axis='x'){ const d=new Date((JR_SEL||jrToday(
     const go=Math.abs(dx)>48 && Math.abs(dx)>Math.abs(dy)*1.3 || (Math.abs(dx)>22 && Math.abs(v.x||0)>.28 && Math.abs(dx)>Math.abs(dy));
     if(!go){ reset(el); return false; }
     swipedAt=Date.now(); buzz();
+    if(day && el){ el.style.transform=''; }
     if(day) calShiftDay(dx<0?1:-1,true,'x'); else calShiftMonth(dx<0?1:-1,true,'x');
     return true;
   };
@@ -3711,13 +3740,13 @@ function calShiftDay(n,quiet=false,axis='x'){ const d=new Date((JR_SEL||jrToday(
         if(s.axis==='x' || s.axis==='y') s.el?.getAnimations?.().forEach(a=>a.finish());
       }
     }
-    if(s.axis && !K_REDUCED.matches && s.el){
-      const horiz=s.axis==='x';
-      if(horiz || s.axis==='y'){ s.el.style.transition='none';
-        const d=horiz?s.dx:s.dy, lim=(horiz?s.el.offsetWidth:s.el.offsetHeight)*.33||120;
+    if(s.axis && !K_REDUCED.matches && s.el && (s.axis==='x' || s.axis==='y') && !s.raf){
+      const st=s;
+      st.raf=requestAnimationFrame(()=>{ st.raf=0; if(s!==st || !st.el) return;
+        const horiz=st.axis==='x', d=horiz?st.dx:st.dy, lim=(horiz?st.el.offsetWidth:st.el.offsetHeight)*.33||120;
         const v=Math.abs(d)<=lim ? d : Math.sign(d)*(lim+(Math.abs(d)-lim)*.3);     // past a third: it resists
-        s.el.style.transform=horiz?`translate3d(${v.toFixed(1)}px,0,0)`:`translate3d(0,${(v*.8).toFixed(1)}px,0)`;
-        s.el.style.opacity=String(Math.max(.55,1-Math.abs(d)/(horiz?600:480))); }
+        st.el.classList.add('jr-dragging'); st.el.style.transition='none';
+        st.el.style.transform=horiz?`translate3d(${v.toFixed(1)}px,0,0)`:`translate3d(0,${(v*.8).toFixed(1)}px,0)`; });
     }
   },{passive:true});
   // not passive: cancelling the end of a swipe stops the phone making a tap out of it at all
@@ -3782,6 +3811,20 @@ function renderCalendar(opt={}){
     </button>`;
   }
   const grid=$('#jr-cal-grid');
+  // Changing month with motion: the old month (a copy, content only) carries on from where the finger/scroll left it
+  // and fades out, while the new one glides in from the other side, so the hand-off is one continuous movement
+  document.querySelectorAll('.jr-ghost').forEach(g=>g.remove());
+  let ghost=null, off=0;
+  if(opt.dir && grid.animate && !K_REDUCED.matches && grid.offsetParent){
+    const m=new DOMMatrixReadOnly(getComputedStyle(grid).transform==='none'?undefined:getComputedStyle(grid).transform);
+    off=opt.axis==='y'?m.m42:m.m41;
+    ghost=grid.cloneNode(true); ghost.removeAttribute('id'); ghost.classList.remove('wave'); ghost.classList.add('jr-ghost');
+    ghost.setAttribute('aria-hidden','true'); ghost.inert=true;
+    Object.assign(ghost.style,{left:grid.offsetLeft+'px', top:grid.offsetTop+'px', width:grid.offsetWidth+'px', height:grid.offsetHeight+'px', transform:'', opacity:''});
+    grid.offsetParent.appendChild(ghost);
+    grid.getAnimations?.().forEach(a=>{ if(a.id==='jr-slide') a.cancel(); });
+    grid.style.transition='none'; grid.style.transform=''; grid.style.opacity='';
+  }
   const was=grid.querySelector('.jr-cal-day.sel'), from=was&&{x:was.offsetLeft,y:was.offsetTop,w:was.offsetWidth,h:was.offsetHeight};
   grid.classList.toggle('wave', !!opt.wave && !opt.quiet && !K_REDUCED.matches);
   grid.innerHTML=html;
@@ -3802,10 +3845,16 @@ function renderCalendar(opt={}){
   if(opt.dir && grid.animate && !K_REDUCED.matches){
     // the new month glides in from where the swipe/scroll is heading: from the right going on (sideways), from below
     // (up/down); a step that interrupts a running slide replaces it instead of stacking on it
-    const y=opt.axis==='y', far=y?Math.min(56,grid.offsetHeight*.1):Math.min(64,grid.offsetWidth*.12);
-    const mv=v=>y?`translate3d(0,${v}px,0)`:`translate3d(${v}px,0,0)`;
+    const y=opt.axis==='y', size=y?grid.offsetHeight:grid.offsetWidth, far=Math.min(y?110:120, size*.24);
+    const mv=v=>y?`translate3d(0,${v.toFixed(1)}px,0)`:`translate3d(${v.toFixed(1)}px,0,0)`;
+    const ease='cubic-bezier(.2,.85,.25,1)', dur=360;
     grid.getAnimations?.().forEach(a=>{ if(a.id==='jr-slide') a.cancel(); });
-    const a=grid.animate([{transform:mv(opt.dir*far),opacity:.2},{transform:'none',opacity:1}],{duration:340,easing:'cubic-bezier(.22,1,.36,1)'}); a.id='jr-slide';
+    const a=grid.animate([{transform:mv(opt.dir*far*.85),opacity:0},{opacity:.85,offset:.45},{transform:'none',opacity:1}],{duration:dur,easing:ease}); a.id='jr-slide';
+    if(ghost){
+      const out=-opt.dir*Math.max(far, Math.abs(off)+far*.5);
+      const g=ghost.animate([{transform:mv(off),opacity:1},{opacity:.25,offset:.4},{transform:mv(out),opacity:0}],{duration:dur*.85,easing:ease,fill:'forwards'});
+      g.id='jr-slide'; g.finished.then(()=>ghost.remove(),()=>ghost.remove());
+    }
     $('.jr-month')?.animate([{transform:mv(opt.dir*(y?8:16)),opacity:0},{transform:'none',opacity:1}],{duration:360,easing:'cubic-bezier(.22,1,.36,1)'});
   }
   // the day just picked springs a little, like it was pressed into place
@@ -3960,6 +4009,8 @@ function jrEventPop(id, iso){
     const t=e.touches[0], card=e.target.closest?.('.modal-card'), pop=!card && e.target.closest?.('.jr-pop');
     const ov=card?.closest('.modal-ov'); if(card && (!ov || ov.dataset.kLeaving)) return;
     const box=card||pop; if(!box || scrolled(e.target,box)) return;
+    // a finger on a text field is selecting or moving the caret, not pulling the sheet down
+    if(e.target.closest?.('input,textarea,select,[contenteditable="true"]')) return;
     s={box,ov,pop:!!pop,x:t.clientX,y:t.clientY,at:Date.now(),dy:0,on:false};
   },{passive:true});
   document.addEventListener('touchmove',e=>{
@@ -4273,80 +4324,65 @@ addEventListener('load',jrTryLiquidWeb,{once:true});
 const JR_LIQUID_TRIAL=false;
 const JR_SCAN_PREFER_ONLINE=true;
 
-// ---- trackpad swipe: the phone's swipe, on desktop ----
-// A two-finger sideways swipe over the month changes month, over the day panel steps a day. What's under the
-// fingers follows them, the same pull as on a phone, then goes or springs back. Up/down scrolling is left alone.
+// ---- trackpad and mouse wheel: the phone's swipes, on a computer ----
+// Two fingers sideways over the month change month, over the day panel step a day; up/down (wheel or two fingers)
+// does the same (down = next). One flick = one step; one mouse-wheel notch = one step. One handler for both
+// directions, so:
+// - a gesture's direction is decided by its first events and kept until the fingers lift (a slightly diagonal swipe
+//   used to be split between two handlers and often did nothing)
+// - it goes as soon as it has moved far enough (60px sideways, 55px up/down — it used to need 120px, which felt
+//   slow), and a swipe that stops short but got over half way still counts (it used to spring back and do nothing)
+// - after a step, the rest of the same flick (macOS keeps sending smaller and smaller "momentum" events) is let go
+//   by; the fingers coming down again (a pause, or the deltas growing again) is a new gesture straight away
+// - while it hasn't gone yet, what's under the fingers leans with them and springs back if they stop short
 (function(){
-  let acc=0, el=null, day=false, idleT=0, quietUntil=0, lastAt=0;
-  const settle=(spring)=>{
-    clearTimeout(idleT);
-    if(el){
-      const x=el;
-      x.style.transition=spring&&!K_REDUCED.matches?'transform .3s var(--k-smooth), opacity .3s ease':'';
-      x.style.transform=''; x.style.opacity='';
-      if(spring) setTimeout(()=>{ x.style.transition=''; },320);
-    }
-    el=null; acc=0;
+  const GAP=120;                               // ms without wheel events = the fingers lifted
+  let g=null, idleT=0;
+  const findEl=(day)=>day?$('#jr-day')?.querySelector('.jr-day-list,.jr-day-empty'):$('#jr-cal-grid');
+  const lean=(v)=>{ if(K_REDUCED.matches || g.notch) return; g.el=g.el||findEl(g.day); const el=g.el; if(!el) return;
+    el.style.transition='none'; el.style.transform=g.axis==='x'?`translate3d(${v.toFixed(1)}px,0,0)`:`translate3d(0,${v.toFixed(1)}px,0)`; };
+  const springBack=el=>{ if(!el) return; if(K_REDUCED.matches){ el.style.transform=''; return; }
+    el.style.transition='transform .3s cubic-bezier(.22,1.2,.36,1)'; el.style.transform=''; setTimeout(()=>{ el.style.transition=''; },320); };
+  const step=(dir)=>{                          // 1 = next, -1 = previous
+    const {day,axis,el}=g; g.acc=0; g.stepped=true; g.floor=g.lastMag||1e9; g.lastStep=performance.now(); g.el=null;
+    if(day && el){ el.style.transition='none'; el.style.transform=''; }   // the month instead hands its lean to the slide (renderCalendar)
+    if(day) calShiftDay(dir,true,axis); else calShiftMonth(dir,true,axis);
+  };
+  const settle=()=>{                           // the fingers lifted
+    clearTimeout(idleT); if(!g) return;
+    const x=g; 
+    if(!x.stepped && !x.notch && Math.abs(x.acc)>=x.th*(x.axis==='x'?.5:.65)) step(x.acc>0?1:-1);   // short but deliberate: it counts
+    else if(!x.stepped) springBack(x.el);
+    g=null;
   };
   addEventListener('wheel',e=>{
-    if(JR_VIEW!=='calendar' || e.ctrlKey || document.querySelector('.modal-ov')) return;   // ctrl+wheel is pinch-zoom
-    if(Math.abs(e.deltaX)<=Math.abs(e.deltaY)) return;
+    if(JR_VIEW!=='calendar' || e.ctrlKey || e.metaKey || document.querySelector('.modal-ov,#pin-ov,#pw-ov')) return;   // ctrl+wheel = pinch zoom
     const top=e.target.closest?.('.jr-top'), bot=!top && e.target.closest?.('.jr-bottom'); if(!top && !bot) return;
-    e.preventDefault();                                   // no browser back/forward swipe
-    const now=Date.now(), gap=lastAt?now-lastAt:1e9; lastAt=now;
-    // after a step, the rest of that flick (its momentum keeps sending events) is swallowed; a pause means the
-    // fingers lifted, so a new swipe straight after works at once
-    if(gap>140){ quietUntil=0; if(el) settle(false); }
-    if(now<quietUntil) return;
-    if(!el){ day=!!bot; el=top?$('#jr-cal-grid'):bot.querySelector('.jr-day-list,.jr-day-empty'); el?.getAnimations?.().forEach(a=>a.finish()); }
-    acc-=e.deltaX*(e.deltaMode===1?16:1);                 // the content moves with the fingers
-    if(el && !K_REDUCED.matches){ el.style.transition='none'; el.style.transform=`translate3d(${(acc*.5).toFixed(1)}px,0,0)`;
-      el.style.opacity=String(Math.max(.55,1-Math.abs(acc)/360)); }
-    if(Math.abs(acc)>120){
-      const dir=acc<0?1:-1; settle(false); quietUntil=now+1500;
-      if(day) calShiftDay(dir,true,'x'); else calShiftMonth(dir,true,'x');
-      return;
+    const k=e.deltaMode===1?16:e.deltaMode===2?400:1, dx=e.deltaX*k, dy=e.deltaY*k, now=performance.now();
+    const mag=Math.max(Math.abs(dx),Math.abs(dy));
+    if(g){
+      // momentum only shrinks: well above the smallest delta since the step = the fingers came back down for a new swipe
+      const rising=g.stepped && !g.notch && mag>Math.max(8,g.floor*3);
+      if(now-g.lastAt>GAP || rising || g.day!==!!bot)settle();
     }
-    clearTimeout(idleT); idleT=setTimeout(()=>settle(true), 160);   // fingers lifted short of it: spring back
-  },{passive:false});
-})();
-
-// ---- mouse wheel and trackpad up/down: step through the calendar ----
-// Over the month, scrolling down goes to the next month and up to the previous; over the day panel it steps a day
-// (unless that panel has more events than fit, then the wheel scrolls them as usual). One wheel notch is one step; a
-// trackpad's small movements add up to one, and the tail of its momentum is let go by so a flick is one step, not five.
-// Like the sideways swipe, what's under the fingers follows them (up and down here) and springs back if it doesn't go;
-// when it does go, the new month or day slides in from the direction you scrolled.
-(function(){
-  let acc=0, resetT=0, quietUntil=0, el=null, lastAt=0;
-  const settle=spring=>{
-    clearTimeout(resetT);
-    if(el){ const x=el; x.style.transition=spring&&!K_REDUCED.matches?'transform .3s var(--k-smooth), opacity .3s ease':''; x.style.transform=''; x.style.opacity='';
-      if(spring) setTimeout(()=>{ x.style.transition=''; },320); }
-    el=null; acc=0;
-  };
-  addEventListener('wheel',e=>{
-    if(JR_VIEW!=='calendar' || e.ctrlKey || e.metaKey || document.querySelector('.modal-ov,#pin-ov,#pw-ov')) return;
-    if(Math.abs(e.deltaY)<=Math.abs(e.deltaX)) return;                       // sideways swipes are the handler above's
-    const top=e.target.closest?.('.jr-top'), bot=!top && e.target.closest?.('.jr-bottom'); if(!top && !bot) return;
-    if(bot){ const l=bot.querySelector('.jr-day-list'); if(l && l.scrollHeight>l.clientHeight+1) return; }   // let a long list scroll
-    e.preventDefault();
-    const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1), now=Date.now(), gap=lastAt?now-lastAt:1e9;
-    lastAt=now;
-    if(gap>140){ quietUntil=0; if(el||acc) settle(false); }   // a pause: the fingers lifted, a fresh gesture starts from zero
-    if(now<quietUntil) return;                            // the rest of the same flick (momentum) is let go by
-    acc+=dy;
-    const find=()=>top?$('#jr-cal-grid'):bot.querySelector('.jr-day-list,.jr-day-empty');
-    if(Math.abs(acc)<70){
-      // not far enough yet: the content leans with the scroll, then settles
-      if(!K_REDUCED.matches){ if(!el){ el=find(); el?.getAnimations?.().forEach(a=>a.finish()); } if(el){ el.style.transition='none'; el.style.transform=`translate3d(0,${(-acc*.45).toFixed(1)}px,0)`; el.style.opacity=String(Math.max(.6,1-Math.abs(acc)/220)); } }
-      clearTimeout(resetT); resetT=setTimeout(()=>settle(true),180);
-      return;
+    if(!g){
+      if(!mag) return;
+      const axis=Math.abs(dx)>Math.abs(dy)?'x':'y';
+      if(axis==='y' && bot){ const l=bot.querySelector('.jr-day-list'); if(l && l.scrollHeight>l.clientHeight+1) return; }   // a long day list scrolls
+      const wd=Math.abs(e.wheelDeltaY||0);
+      const notch=axis==='y' && (e.deltaMode!==0 || Math.abs(dy)>=50 || (wd>=120 && wd%120===0));
+      g={axis, day:!!bot, el:null, acc:0, stepped:false, notch, th:axis==='x'?60:55, lastAt:now, lastMag:mag, lastStep:0, floor:1e9};
+      findEl(g.day)?.getAnimations?.().forEach(a=>a.finish());   // a slide still playing ends now, so the lean starts clean
     }
-    const dir=acc>0?1:-1, notch=Math.abs(dy)>=50;     // a mouse wheel gives big jumps, a trackpad many small ones
-    settle(false); quietUntil=now+(notch?170:1500);
-    // the new one comes in from below when going on, from above when going back (see renderCalendar / renderDay)
-    if(top) calShiftMonth(dir,true,'y'); else calShiftDay(dir,true,'y');
+    e.preventDefault();                        // no browser back/forward swipe, no page scroll
+    g.lastAt=now; g.lastMag=mag; if(g.stepped) g.floor=Math.min(g.floor,mag);
+    clearTimeout(idleT); idleT=setTimeout(settle,GAP);
+    const p=g.axis==='x'?dx:dy;                // > 0 = towards next
+    if(g.notch){ if(p && now-g.lastStep>=70) step(p>0?1:-1); return; }   // every notch is a step (a quick spin goes quickly)
+    if(g.stepped) return;                      // the momentum tail of a flick that already went
+    g.acc+=p;
+    if(Math.abs(g.acc)>=g.th){ step(g.acc>0?1:-1); return; }
+    lean(-g.acc*.55);
   },{passive:false});
 })();
 
@@ -4387,18 +4423,21 @@ const JR_SCAN_PREFER_ONLINE=true;
     document.body.appendChild(ghost);
     chip.classList.add('dragging'); document.body.classList.add('jr-dragging');
     // a multi-day bar moves by however many days it's dragged, from the day it was picked up on
-    drag={ev, chip, ghost, gx:x-r.left, gy:y-r.top, from:chip.dataset.span?(isoOf(dayAt(x,y))||ev.event_date):ev.event_date, over:null};
+    drag={ev, chip, ghost, sx:x, sy:y, far:0, gx:x-r.left, gy:y-r.top, from:chip.dataset.span?(isoOf(dayAt(x,y))||ev.event_date):ev.event_date, over:null};
     JR_EVDRAG=drag;
     if(navigator.vibrate) try{ navigator.vibrate(10); }catch(_){}
     move(x,y);
   }
   function move(x,y){
+    drag.far=Math.max(drag.far, Math.hypot(x-drag.sx, y-drag.sy));
     drag.ghost.style.translate=`${(x-drag.gx-parseFloat(drag.ghost.style.left)).toFixed(1)}px ${(y-drag.gy-parseFloat(drag.ghost.style.top)).toFixed(1)}px`;
     const cell=dayAt(x,y);
     if(cell!==drag.over){ drag.over?.classList.remove('drop-target'); drag.over=cell; cell?.classList.add('drop-target'); }
   }
   async function end(cancel){
-    const d=drag; drag=null; JR_EVDRAG=null; JR_GESTURE_AT=Date.now();
+    const d=drag; drag=null; JR_EVDRAG=null;
+    // only a real drag swallows the click that follows; a wobbly click or a long press that never moved still opens the event
+    if(d.far>14 || cancel) JR_GESTURE_AT=Date.now();
     document.body.classList.remove('jr-dragging'); d.over?.classList.remove('drop-target');
     const to=cancel?null:isoOf(d.over);
     if(!to || to===d.from){                                        // nowhere new: the title flies back home
@@ -4428,7 +4467,7 @@ const JR_SCAN_PREFER_ONLINE=true;
     }
   }
   addEventListener('pointerdown',e=>{
-    if(e.button>0 || JR_VIEW!=='calendar' || drag) return;
+    if(e.button>0 || JR_VIEW!=='calendar' || drag || (typeof jrCanEdit==='function' && !jrCanEdit())) return;   // viewers can't move events
     const chip=e.target.closest?.('#jr-cal-grid .jr-ev[data-id]'); if(!chip || chip.hidden) return;
     pend={chip, id:+chip.dataset.id, x:e.clientX, y:e.clientY, touch:e.pointerType!=='mouse'};
     clearTimeout(holdT);
