@@ -1263,6 +1263,9 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     #jr-frozen-bar { max-width:calc(100vw - 1rem); }
   }
 
+  /* lite mode (a phone that couldn't keep up): no blur on the month pane, so moving it costs the graphics chip far less */
+  html.jr-lite .jr-cal-grid { -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+  html.jr-lite body::after { animation:none !important; }
   /* ================= v136: touch + motion polish (phones and the installed web app) ================= */
   /* every part of the month — cells, gaps, event chips — belongs to the app's own swipes at any screen size
      (before, chips and the wide layouts let the browser claim vertical drags, so those swipes never arrived) */
@@ -3661,6 +3664,18 @@ async function openAddEvent(prefillDate, id, focus, day){
 // tapping an event's time, dates or place opens the form at that field
 const editEventWhen=(id, field)=>openAddEvent(null, id, field);
 
+// A phone that can't keep the month slide at a steady frame rate switches to a lighter slide (no copy of the old month,
+// no fade, no blur while it moves) for good; see jrWatchFrames.
+let JR_LITE=false;
+try{ JR_LITE=localStorage.getItem('yai_lite')==='1'; document.documentElement.classList.toggle('jr-lite',JR_LITE); }catch(_){}
+function jrWatchFrames(){
+  if(JR_LITE) return;
+  let last=0, n=0, slow=0;
+  const tick=t=>{ if(last){ n++; if(t-last>48) slow++; } last=t;
+    if(n<9){ requestAnimationFrame(tick); return; }
+    if(slow>=5){ JR_LITE=true; document.documentElement.classList.add('jr-lite'); try{ localStorage.setItem('yai_lite','1'); }catch(_){} } };
+  requestAnimationFrame(tick);
+}
 function calShiftMonth(n,quiet=false,axis='x'){
   JR_CAL_MONTH += n;
   if(JR_CAL_MONTH<0){ JR_CAL_MONTH=11; JR_CAL_YEAR--; }
@@ -3806,6 +3821,7 @@ function calShiftDay(n,quiet=false,axis='x'){ const d=new Date((JR_SEL||jrToday(
     n.removeEventListener('touchmove',onMove); n.removeEventListener('touchend',onEnd); n.removeEventListener('touchcancel',onCancel); };
   document.addEventListener('touchstart',e=>{
     unbind(); clearGesture();
+    document.querySelectorAll('.jr-ghost').forEach(g=>{ g.getAnimations?.().forEach(a=>a.cancel()); g.remove(); });
     JR_TOUCHING=Date.now();
     if(JR_VIEW!=='calendar' || e.touches.length!==1 || document.querySelector('.modal-ov')) return;
     const t0=e.touches[0];
@@ -3873,9 +3889,10 @@ function renderCalendar(opt={}){
   const grid=$('#jr-cal-grid');
   // Changing month with motion: the old month (a copy, content only) carries on from where the finger/scroll left it
   // and fades out, while the new one glides in from the other side, so the hand-off is one continuous movement
-  document.querySelectorAll('.jr-ghost').forEach(g=>g.remove());
+  const rapid=!!document.querySelector('.jr-ghost');          // another step while the last one is still sliding out
+  document.querySelectorAll('.jr-ghost').forEach(g=>{ g.getAnimations?.().forEach(a=>a.cancel()); g.remove(); });
   let ghost=null, off=0;
-  if(opt.dir && grid.animate && !K_REDUCED.matches && grid.offsetParent){
+  if(opt.dir && grid.animate && !K_REDUCED.matches && grid.offsetParent && !JR_LITE && !rapid){
     const m=new DOMMatrixReadOnly(getComputedStyle(grid).transform==='none'?undefined:getComputedStyle(grid).transform);
     off=opt.axis==='y'?m.m42:m.m41;
     ghost=grid.cloneNode(true); ghost.removeAttribute('id'); ghost.classList.remove('wave'); ghost.classList.add('jr-ghost');
@@ -3907,15 +3924,18 @@ function renderCalendar(opt={}){
     // (up/down); a step that interrupts a running slide replaces it instead of stacking on it
     const y=opt.axis==='y', size=y?grid.offsetHeight:grid.offsetWidth, far=Math.min(y?110:120, size*.24);
     const mv=v=>y?`translate3d(0,${v.toFixed(1)}px,0)`:`translate3d(${v.toFixed(1)}px,0,0)`;
-    const ease='cubic-bezier(.2,.85,.25,1)', dur=360;
+    const ease='cubic-bezier(.2,.85,.25,1)', dur=JR_LITE||rapid?240:360;
     grid.getAnimations?.().forEach(a=>{ if(a.id==='jr-slide') a.cancel(); });
-    const a=grid.animate([{transform:mv(opt.dir*far*.85),opacity:0},{opacity:.85,offset:.45},{transform:'none',opacity:1}],{duration:dur,easing:ease}); a.id='jr-slide';
+    // lighter slide (no fade): only movement, which the phone's graphics chip does on its own
+    const a=grid.animate(JR_LITE||rapid?[{transform:mv(opt.dir*far*.85)},{transform:'none'}]
+      :[{transform:mv(opt.dir*far*.85),opacity:0},{opacity:.85,offset:.45},{transform:'none',opacity:1}],{duration:dur,easing:ease}); a.id='jr-slide';
+    jrWatchFrames();
     if(ghost){
       const out=-opt.dir*Math.max(far, Math.abs(off)+far*.5);
       const g=ghost.animate([{transform:mv(off),opacity:1},{opacity:.25,offset:.4},{transform:mv(out),opacity:0}],{duration:dur*.85,easing:ease,fill:'forwards'});
       g.id='jr-slide'; g.finished.then(()=>ghost.remove(),()=>ghost.remove());
     }
-    $('.jr-month')?.animate([{transform:mv(opt.dir*(y?8:16)),opacity:0},{transform:'none',opacity:1}],{duration:360,easing:'cubic-bezier(.22,1,.36,1)'});
+    if(!JR_LITE) $('.jr-month')?.animate([{transform:mv(opt.dir*(y?8:16)),opacity:0},{transform:'none',opacity:1}],{duration:360,easing:'cubic-bezier(.22,1,.36,1)'});
   }
   // the day just picked springs a little, like it was pressed into place
   if(opt.enter && !opt.dir && !K_REDUCED.matches) grid.querySelector('.jr-cal-day.sel')?.classList.add('pick');
