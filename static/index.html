@@ -2605,7 +2605,7 @@ function jrSecurity(){
     card.onclick=async e=>{ const a=e.target.closest('[data-a]')?.dataset.a; if(a==='cancel') home(); if(a!=='ok') return;
       try{ const d=await call('/api/totp/confirm',{code:inp.value.trim()}); jrSetSession(TOKEN,{...JR_USER,totp_on:true}); codes(d.codes); }
       catch(err){ er.textContent=jrErr(err.message); } };
-    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); card.querySelector('[data-a=ok]').click(); } });
+    inp.addEventListener('keydown',e=>{ if(jrEnter(e)){ e.preventDefault(); card.querySelector('[data-a=ok]').click(); } });
     setTimeout(()=>inp.focus(),40);
   };
   const codes=list=>{
@@ -2706,7 +2706,7 @@ async function askToken(){
     }catch(e){ err.textContent=tx('pinConn'); go.disabled=false; }
   };
   go.onclick=submit;
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
+  inp.addEventListener('keydown',e=>{ if(jrEnter(e)){ e.preventDefault(); submit(); } });
   setTimeout(()=>{ try{ inp.focus(); }catch(_){} }, 60);
 }
 async function checkAuth(){
@@ -3293,7 +3293,7 @@ document.addEventListener('change',async e=>{
     JR_UPNEXT_SIG=''; toast(nick?tx('nickSaved'):tx('nickCleared')); }
   catch(err){ inp.value=p.nickname||''; toast(tx('errPrefix')+jrErr(err.message)); }
 });
-document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.classList?.contains('jr-pp-nick')) e.target.blur(); });
+document.addEventListener('keydown',e=>{ if(jrEnter(e) && e.target.classList?.contains('jr-pp-nick')) e.target.blur(); });
 // admins: add a person to the team list, change one, or remove one
 function jrPersonForm(code){
   if(jrRole()!=='admin') return;
@@ -3451,7 +3451,14 @@ async function deleteEventRow(id){
 // "To" is optional in both: no end date is a one-day event, no end time is a moment.
 // A multi-day event also gets a tab for each of its days: a day's own times, place and notes (empty = the event's).
 // Opened from a day of the calendar it starts on that day's tab, unless the title, dates or category were tapped.
+// Return/Enter that really means "done": not the Return that commits a word still being typed (Khmer, Chinese and
+// Japanese keyboards, iPhone word suggestions) — that one used to save the form before the title was in it.
+function jrEnter(e){ return e.key==='Enter' && !e.isComposing && e.keyCode!==229; }
 async function openAddEvent(prefillDate, id, focus, day){
+  // one form at a time: a double tap on + (or a slow first tap) used to open two, and the empty one left behind
+  // answered "Title is required"
+  const already=[...document.querySelectorAll('.modal-ov')].find(o=>!o.dataset.kLeaving && o.querySelector('.jr-ae'));
+  if(already){ if(!matchMedia('(pointer:coarse)').matches) already.querySelector('#ae-title')?.focus(); return; }
   if(!jrCanEdit()){ toast(tx('viewOnly')); return; }
   if(JR_FROZEN){ toast(tx('offlinePaused')); return; }
   const ev=id?jrEvent(id):null; if(id && !ev) return;
@@ -3621,7 +3628,7 @@ async function openAddEvent(prefillDate, id, focus, day){
   q('#ae-cancel').onclick=()=>dismiss(ov);
   if(ev) q('#ae-del').onclick=()=>{ dismiss(ov); deleteEventRow(ev.id); };   // asks to confirm first
   // Enter in any field saves, like pressing the button
-  card.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); if(e.target.id!=='ae-people-q') q('#ae-save').click(); } });
+  card.addEventListener('keydown',e=>{ if(jrEnter(e) && e.target.tagName==='INPUT'){ e.preventDefault(); if(e.target.id!=='ae-people-q') q('#ae-save').click(); } });
   q('#ae-save').onclick=async()=>{
     stash();
     const title=q('#ae-title').value.trim(), event_date=q('#ae-date').value;
