@@ -1262,6 +1262,20 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     #toast { bottom:calc(5rem + env(safe-area-inset-bottom)); }
     #jr-frozen-bar { max-width:calc(100vw - 1rem); }
   }
+
+  /* ================= v136: touch + motion polish (phones and the installed web app) ================= */
+  /* every part of the month — cells, gaps, event chips — belongs to the app's own swipes at any screen size
+     (before, chips and the wide layouts let the browser claim vertical drags, so those swipes never arrived) */
+  #jr-cal-grid, #jr-cal-grid * { touch-action:none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  #jr-cal-grid .jr-ev[data-id] { touch-action:none; }
+  .jr-cal-grid, .jr-day-list { overscroll-behavior:contain; }
+  /* no permanent compositor layers: 42 squares + the panels each kept their own (slow to scroll/animate on phones);
+     layers are made only while something is actually moving */
+  .jr-cal-day, #jr-agenda, #jr-calendar, .modal-card { will-change:auto; }
+  .jr-cal-grid.jr-dragging, .jr-bottom .jr-dragging { will-change:transform; }
+  /* a press dips softly and comes back quickly (it used to take .68s with a bounce, which looked laggy after a tap) */
+  .jr-cal-day { transition:background-color .18s ease, border-color .18s ease, box-shadow .22s ease, transform .26s var(--k-smooth); }
+  .jr-cal-day:active { transform:scale(.97); transition-duration:.08s; }
   @keyframes jrBarRise { from { opacity:0; transform:translateY(18px) scale(.96); } }
   /* ‹ Today › + : Add event inside the month bar (jrPhoneBar puts it there on phones held upright and on desktop) */
   .jr-monthnav .jr-add { margin:0 0 0 .15rem; width:2.6rem; height:2.6rem; padding:0; border-radius:999px; flex:none;
@@ -3634,7 +3648,8 @@ function calSelect(iso,quiet=false,axis='x'){
   renderCalendar({wave:!!dir, dir:Math.sign(dir), enter:changed, dayDir, quiet, axis});
 }
 let jrJustSwiped=()=>false;
-let JR_EVDRAG=null, JR_GESTURE_AT=0;   // an event being dragged to another day; when a drag last ended
+let JR_EVDRAG=null, JR_GESTURE_AT=0, JR_TOUCHING=0;   // JR_TOUCHING: when a finger last went down (0 = none)
+//   // an event being dragged to another day; when a drag last ended
 // a removed square's click never reaches the document-level guard, so the day handler checks too.
 // A second click on the same day within 400ms (double-click, or double-tap on a phone) adds an event on it.
 // Counted here rather than with dblclick: the first click redraws the month, so the browser never sees two
@@ -3693,7 +3708,8 @@ function calShiftDay(n,quiet=false,axis='x'){ const d=new Date((JR_SEL||jrToday(
     const cal=$('#jr-calendar'), bot=$('.jr-bottom');
     if(!cal || !bot) return null;
     const cr=cal.getBoundingClientRect();
-    if(x<cr.left || x>=cr.right || y<cr.top || y>=cr.bottom) return null;
+    const slack=10;
+    if(x<cr.left-slack || x>=cr.right+slack || y<cr.top-slack || y>=cr.bottom+slack) return null;
     const br=bot.getBoundingClientRect(), isDay=y>=br.top && y<br.bottom && x>=br.left && x<br.right;
     return {day:isDay, el:isDay?bot.querySelector('.jr-day-list,.jr-day-empty'):$('#jr-cal-grid')};
   };
@@ -3715,31 +3731,25 @@ function calShiftDay(n,quiet=false,axis='x'){ const d=new Date((JR_SEL||jrToday(
     if(day) calShiftDay(dx<0?1:-1,true,'x'); else calShiftMonth(dx<0?1:-1,true,'x');
     return true;
   };
-  document.addEventListener('touchstart',e=>{
-    clearGesture();
-    if(JR_VIEW!=='calendar' || e.touches.length!==1 || document.querySelector('.modal-ov')) return;
-    const t0=e.touches[0];
-    if((t0.radiusX||0)>34 || (t0.radiusY||0)>34) return;   // a palm or a flat thumb resting on the glass isn't a swipe
-    const surface=surfaceAt(t0.clientX,t0.clientY); if(!surface) return;
-    s={x:t0.clientX, y:t0.clientY, dx:0, dy:0, day:surface.day, axis:null, hist:[{x:t0.clientX,y:t0.clientY,t:e.timeStamp}],
-       el:surface.el};
-    gestureT=setTimeout(clearGesture,4000);
-  },{passive:true});
-  document.addEventListener('touchmove',e=>{
+  // The move/end listeners go on the element the finger landed on, not on the document: the month is redrawn
+  // (a sync, a tap) and a removed element's touch events never bubble up to the document, which left the swipe dead.
+  const onMove=e=>{
     if(!s) return;
+    const t=[...e.touches].find(x=>x.identifier===s.id) || (e.touches.length===1?e.touches[0]:null);
     // a second finger, or an event picked up to drag to another day: not a swipe
-    if(e.touches.length!==1 || JR_EVDRAG){ if(s.axis==='x' || s.axis==='y') reset(s.el); s=null; return; }
-    const t=e.touches[0]; s.dx=t.clientX-s.x; s.dy=t.clientY-s.y;
+    if(e.touches.length!==1 || JR_EVDRAG || !t){ if(s.axis==='x' || s.axis==='y') reset(s.el); unbind(); s=null; return; }
+    s.dx=t.clientX-s.x; s.dy=t.clientY-s.y;
     s.hist.push({x:t.clientX,y:t.clientY,t:e.timeStamp}); if(s.hist.length>12) s.hist.shift();
-    // decide the direction early (10px) so it feels immediate, and then stay with it: sideways always, up/down on the month only
+    // decide the direction early (8px) so it feels immediate, and then stay with it: sideways always, up/down on the month only
     if(!s.axis){
       const ax=Math.abs(s.dx), ay=Math.abs(s.dy);
-      if(Math.hypot(ax,ay)>10){
-        if(ax>ay*1.3) s.axis='x'; else if(ay>ax*1.3) s.axis=s.day?'v':'y'; else if(Math.hypot(ax,ay)>26) s.axis=ax>ay?'x':(s.day?'v':'y');
+      if(Math.hypot(ax,ay)>8){
+        if(ax>ay*1.2) s.axis='x'; else if(ay>ax*1.2) s.axis=s.day?'v':'y'; else if(Math.hypot(ax,ay)>22) s.axis=ax>ay?'x':(s.day?'v':'y');
         // a quick second swipe while the last slide is still playing: finish that slide now so the finger takes over
         if(s.axis==='x' || s.axis==='y') s.el?.getAnimations?.().forEach(a=>a.finish());
       }
     }
+    if(s.axis==='x' || s.axis==='y'){ if(e.cancelable) e.preventDefault(); }   // ours now: the browser must not scroll or bounce
     if(s.axis && !K_REDUCED.matches && s.el && (s.axis==='x' || s.axis==='y') && !s.raf){
       const st=s;
       st.raf=requestAnimationFrame(()=>{ st.raf=0; if(s!==st || !st.el) return;
@@ -3748,17 +3758,36 @@ function calShiftDay(n,quiet=false,axis='x'){ const d=new Date((JR_SEL||jrToday(
         st.el.classList.add('jr-dragging'); st.el.style.transition='none';
         st.el.style.transform=horiz?`translate3d(${v.toFixed(1)}px,0,0)`:`translate3d(0,${(v*.8).toFixed(1)}px,0)`; });
     }
-  },{passive:true});
+  };
   // not passive: cancelling the end of a swipe stops the phone making a tap out of it at all
-  document.addEventListener('touchend',e=>{
-    if(!s) return;
-    const t=e.changedTouches[0];
+  const onEnd=e=>{
+    if(!s) { unbind(); return; }
+    const t=[...e.changedTouches].find(x=>x.identifier===s.id) || e.changedTouches[0];
+    clearTimeout(gestureT); gestureT=0; unbind();
     if(!t){ clearGesture(); return; }
-    clearTimeout(gestureT); gestureT=0;
     if(finish(t.clientX-s.x, t.clientY-s.y) && e.cancelable) e.preventDefault();
-  },{passive:false});
+    s=null;
+  };
   // if the browser does cancel the touch, judge the swipe by how far it had got
-  document.addEventListener('touchcancel',()=>{ if(s){ clearTimeout(gestureT); gestureT=0; finish(s.dx,s.dy); } },{passive:true});
+  const onCancel=()=>{ unbind(); if(s){ clearTimeout(gestureT); gestureT=0; finish(s.dx,s.dy); } };
+  let bound=null;
+  const unbind=()=>{ if(!bound) return; const n=bound; bound=null;
+    n.removeEventListener('touchmove',onMove); n.removeEventListener('touchend',onEnd); n.removeEventListener('touchcancel',onCancel); };
+  document.addEventListener('touchstart',e=>{
+    unbind(); clearGesture();
+    JR_TOUCHING=Date.now();
+    if(JR_VIEW!=='calendar' || e.touches.length!==1 || document.querySelector('.modal-ov')) return;
+    const t0=e.touches[0];
+    if((t0.radiusX||0)>70 || (t0.radiusY||0)>70) return;   // a palm resting on the glass isn't a swipe (a thumb is fine)
+    const surface=surfaceAt(t0.clientX,t0.clientY); if(!surface) return;
+    s={id:t0.identifier, x:t0.clientX, y:t0.clientY, dx:0, dy:0, day:surface.day, axis:null, hist:[{x:t0.clientX,y:t0.clientY,t:e.timeStamp}],
+       el:surface.el};
+    gestureT=setTimeout(clearGesture,6000);
+    const n=e.target.nodeType===1?e.target:document;
+    bound=n; n.addEventListener('touchmove',onMove,{passive:false}); n.addEventListener('touchend',onEnd,{passive:false}); n.addEventListener('touchcancel',onCancel,{passive:true});
+  },{passive:true,capture:true});
+  const touchDone=e=>{ if(!e.touches.length) JR_TOUCHING=0; };
+  document.addEventListener('touchend',touchDone,{passive:true,capture:true}); document.addEventListener('touchcancel',touchDone,{passive:true,capture:true});
   // Backstop for a tap that still comes after a swipe: it goes to the square the finger started on, which the
   // swipe has already redrawn away, and selecting that day would jump straight back to the old month.
   jrJustSwiped=()=>Date.now()-Math.max(swipedAt, JR_GESTURE_AT)<400;
@@ -3826,7 +3855,7 @@ function renderCalendar(opt={}){
     grid.style.transition='none'; grid.style.transform=''; grid.style.opacity='';
   }
   const was=grid.querySelector('.jr-cal-day.sel'), from=was&&{x:was.offsetLeft,y:was.offsetTop,w:was.offsetWidth,h:was.offsetHeight};
-  grid.classList.toggle('wave', !!opt.wave && !opt.quiet && !K_REDUCED.matches);
+  grid.classList.toggle('wave', !!opt.wave && !opt.quiet && !K_REDUCED.matches && !(opt.dir && grid.animate && grid.offsetParent));
   grid.innerHTML=html;
   // Today glows softly while you're looking at some other month: it's the way back
   const now=new Date(), away=JR_CAL_YEAR!==now.getFullYear()||JR_CAL_MONTH!==now.getMonth();
@@ -4350,7 +4379,7 @@ const JR_SCAN_PREFER_ONLINE=true;
   };
   const settle=()=>{                           // the fingers lifted
     clearTimeout(idleT); if(!g) return;
-    const x=g; 
+    const x=g;
     if(!x.stepped && !x.notch && Math.abs(x.acc)>=x.th*(x.axis==='x'?.5:.65)) step(x.acc>0?1:-1);   // short but deliberate: it counts
     else if(!x.stepped) springBack(x.el);
     g=null;
@@ -4580,7 +4609,7 @@ async function jrOfferReminders(){
 (function(){
   let busy=false;
   async function sync(){
-    if(busy || JR_EVDRAG || document.hidden || document.querySelector('.modal-ov,#pin-ov')) return;
+    if(busy || JR_EVDRAG || (JR_TOUCHING && Date.now()-JR_TOUCHING<6000) || document.hidden || document.querySelector('.modal-ov,#pin-ov')) return;
     busy=true;
     try{
       const fresh=await jrFetchEvents();
