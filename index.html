@@ -1605,6 +1605,30 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 30%,transparent), 0 3px 10px -2px color-mix(in srgb,var(--gold) 85%,transparent); }
   @media (max-width:560px) { #jr-calendar #jr-cal-grid .jr-cal-day.today { border-radius:8px; } }
 
+  /* ================= fits the device (v136) =================
+     One side margin (--jr-gx, grows with the screen, never inside the notch) shared by the page and the floating
+     bottom bar, so their edges line up on every phone; the day panel's height follows the screen's height; small
+     phones get a tighter bar; portrait tablets a narrower side panel so the month gets the room. Placed last and
+     written with :root so it wins over the older, scattered rules without !important. */
+  :root { --jr-gx:clamp(.4rem, 2.2vw, .8rem); }
+  @media (max-width:760px) and (orientation:portrait) {
+    :root body main { padding-left:max(var(--jr-gx), env(safe-area-inset-left)); padding-right:max(var(--jr-gx), env(safe-area-inset-right)); }
+    :root body .jr-rail { left:max(var(--jr-gx), env(safe-area-inset-left)); right:max(var(--jr-gx), env(safe-area-inset-right)); }
+    /* taller phones give the selected day more room, smaller ones keep the month big enough to tap */
+    :root body .jr-bottom { --day-h:clamp(7.2rem, 19dvh, 12.5rem); }
+    /* the offline notice sits above the bottom bar instead of over the month's name */
+    :root body #jr-frozen-bar { top:auto; bottom:calc(var(--bar-b, max(.6rem, env(safe-area-inset-bottom))) + 4.3rem); max-width:calc(100% - 2 * var(--jr-gx) - 1rem); }
+  }
+  @media (max-width:359px) and (orientation:portrait) {
+    :root body .jr-rail .jr-viewtoggle { flex:2.4 1 0; }
+    :root body .jr-rail .jr-monthnav { flex:5.6 1 0; }
+    :root body .jr-rail .jr-mn-today { font-size:.82rem; padding-left:.35rem; padding-right:.35rem; letter-spacing:-.01em; }
+    :root body .jr-rail .jr-monthnav .jr-scan { padding-left:.2rem; padding-right:.2rem; }
+  }
+  @media (min-width:761px) and (max-width:1100px) and (orientation:portrait) {
+    :root body .jr-rail { width:clamp(11rem, 24vw, 16rem); }
+  }
+
   /* ================= security ================= */
   .jr-pwrules { font-size:.78rem !important; line-height:1.4; }
   .jr-sec-row { display:flex; align-items:center; gap:.8rem; padding:.6rem 0; border-bottom:1px solid var(--glass-line); }
