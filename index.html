@@ -4757,20 +4757,50 @@ async function jrOfferReminders(){
   addEventListener('focus', sync);
 })();
 </script>
-<script>/* offline app shell (static/sw.js): registers only on a trusted certificate; a new version shows a tap-to-reload pill */
+<script>/* offline app shell (static/sw.js) and staying current. The installed app (home screen, Android wrapper) is often brought back to the
+   front rather than opened anew, so: look for a new version on every open and every return to the front; and when one is ready,
+   apply it WITHOUT being asked at a moment where nothing can be lost — just opened or returned and not touched yet, or while the app
+   is in the background — otherwise show a tap-to-reload pill (and still apply it when the app next goes to the background). */
 if("serviceWorker" in navigator&&window.isSecureContext&&!/[?&]nosw\b/.test(location.search)){
-  addEventListener("load",function(){navigator.serviceWorker.register("sw.js").then(function(r){r.update().catch(function(){});}).catch(function(){});});
-  /* an installed app is often brought back rather than opened anew (Android especially), and then the browser
-     doesn't look for a new version for a day: look each time it comes back to the front */
-  document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible") navigator.serviceWorker.getRegistration().then(function(r){r&&r.update().catch(function(){});}); });
-  /* a new version that lands in the first seconds after opening, before anything was touched, just loads: a home-screen app
-   would otherwise open the previous copy every time after an update */
-  ["pointerdown","keydown"].forEach(function(t){addEventListener(t,function(){window.__kTouched=1;},{once:true,capture:true});});
-  navigator.serviceWorker.addEventListener("message",function(e){ if(!e.data||e.data.type!=="odin:updated"||document.getElementById("k-upd"))return;
-    if(performance.now()<6000&&!window.__kTouched){location.reload();return;}
+  var kHadSW=!!navigator.serviceWorker.controller,   /* false on the very first visit: that first "controllerchange" is the install, not an update */
+      kFront=0, kInput=-1, kPending=false, kReloading=false;
+  ["pointerdown","keydown","touchstart","wheel"].forEach(function(t){addEventListener(t,function(){kInput=performance.now();},{capture:true,passive:true});});
+  function kCheck(){ navigator.serviceWorker.getRegistration().then(function(r){r&&r.update().catch(function(){});}); }
+  addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){r.update().catch(function(){});}).catch(function(){});});
+  /* nothing the person could lose by the page reloading right now */
+  function kSafe(){
+    if(document.querySelector(".modal-ov:not([data-k-leaving]),#pin-ov,#pw-ov,.jr-pop")) return false;          /* a form, sheet or pop-up is open */
+    if(typeof JR_EVDRAG!=="undefined"&&JR_EVDRAG) return false;                                              /* an event is being dragged */
+    if(performance.now()-kInput<1500) return false;                                                          /* a tap or key a moment ago */
+    var f=document.querySelectorAll("input:not([type=checkbox]):not([type=radio]):not([type=search]):not([type=hidden]),textarea");
+    for(var i=0;i<f.length;i++) if(f[i].value&&f[i].offsetParent) return false;                              /* typed and not sent (sign-in...) */
+    return true;
+  }
+  /* at most one automatic reload per 30 s, so a problem can never become a reload loop */
+  function kReload(){
+    if(kReloading) return true;
+    try{ var t=+sessionStorage.getItem("yai_autoreload")||0; if(Date.now()-t<30000) return false; sessionStorage.setItem("yai_autoreload",String(Date.now())); }catch(e){}
+    kReloading=true; location.reload(); return true;
+  }
+  function kPill(){
+    if(document.getElementById("k-upd")) return;
     var b=document.createElement("button");b.id="k-upd";b.type="button";b.textContent=typeof tx==="function"?tx("newVersion"):"New version — tap to reload";
     b.style.cssText="position:fixed;left:50%;top:calc(.7rem + env(safe-area-inset-top));transform:translateX(-50%);z-index:99;border:0;border-radius:999px;padding:.55rem 1rem;font:600 .85rem system-ui,sans-serif;background:#82aaff;color:#16182a;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer";
-    b.onclick=function(){location.reload();};document.body.appendChild(b);});
+    b.onclick=function(){location.reload();};document.body.appendChild(b);
+  }
+  function kUpdated(){
+    kPending=true;
+    var calm=performance.now()-kFront<6000&&kInput<kFront;      /* just opened or brought back, and not touched since */
+    if((document.hidden||calm)&&kSafe()&&kReload()) return;
+    if(!document.hidden) kPill();
+  }
+  /* two signals: the page itself changed under the same worker (message), or a new worker took over (a new version was deployed) */
+  navigator.serviceWorker.addEventListener("message",function(e){ if(e.data&&e.data.type==="odin:updated") kUpdated(); });
+  navigator.serviceWorker.addEventListener("controllerchange",function(){ if(kHadSW) kUpdated(); kHadSW=true; });
+  document.addEventListener("visibilitychange",function(){
+    if(document.visibilityState==="visible"){ kFront=performance.now(); kCheck(); }
+    else if(kPending&&kSafe()) kReload();                                    /* going to the background with a new version waiting: swap it in unseen */
+  });
 }</script>
 </body>
 </html>
