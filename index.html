@@ -1096,6 +1096,10 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
      title is longer; a stronger fill so it reads as a span, square ends where it carries on into the next row */
   /* a bar reaches into the days after its own: lift its day above them, or the selected/tinted next day paints over half of it */
   #jr-cal-grid .jr-cal-day:has(.jr-ev.span) { z-index:2; }
+  /* a multi-day bar shows its whole title: onto more lines when it is longer than its days (it used to be one line ending "…") */
+  #jr-cal-grid .jr-ev.span.wrap, #jr-cal-grid .jr-ev.span.clamp { white-space:normal !important; overflow-wrap:normal; text-overflow:clip; }
+  #jr-cal-grid .jr-ev.span.hy { overflow-wrap:break-word; -webkit-hyphens:auto; hyphens:auto; }
+  #jr-cal-grid .jr-ev.span.clamp { display:-webkit-box; -webkit-box-orient:vertical; }
   #jr-cal-grid .jr-ev.span { max-width:none; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis;
     display:block; -webkit-line-clamp:unset; color:var(--ink);   /* dark text, like the one-day events */
     background:color-mix(in srgb,var(--k-act) 55%,var(--k-bg2)); border-left-color:color-mix(in srgb,var(--k-act) 75%,#000); }
@@ -3966,7 +3970,7 @@ function renderCalendar(opt={}){
       data-iso="${iso}" onclick="calDayClick('${iso}',event)" aria-label="${label}" aria-pressed="${iso===JR_SEL}">
       <span class="jr-dhead"><span class="jr-daynum">${d.getDate()}</span>${n?`<span class="jr-more" hidden></span><span class="jr-count">${n}</span>`:''}</span>
       ${bars.length||singles.length?`<span class="jr-preview">${
-        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}" aria-label="${esc(e.title)}" title="${esc(e.title)}">${l?'↳ '+esc(jrAbbr(e.title)):esc(e.title)}</span>`).join('')
+        bars.map(({e,span,l,r})=>`<span class="jr-ev span${l?' cont-l':''}${r?' cont-r':''}${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-span="${span}" data-t="${esc(e.title)}" aria-label="${esc(e.title)}" title="${esc(e.title)}">${l?'↳ '+esc(e.title):esc(e.title)}</span>`).join('')
       }${singles.map(e=>`<span class="jr-ev${e.done?' done':''}${jrStClass(e)}" style="${jrTint(e)}" data-id="${e.id}" data-t="${esc(e.title)}">${e.event_time?`<b class="jr-ev-t">${jrShortTime(e.event_time)}</b>`:''}${esc(e.title)}</span>`).join('')}</span>`:''}
     </button>`;
   }
@@ -4062,27 +4066,34 @@ function jrFitCells(){
       const firstFree=(from, n)=>{ let at=from; while(at<from+64 && [...Array(n).keys()].some(k=>(busy[at+k]||0)>c)) at++; return at; };
       for(const e of evs){
         const span=+e.dataset.span||0;
-        // lays the event out with its full title or its short form ("PPTF 2026", see jrAbbr)
-        const fitAs=short=>{
-          jrSetTitle(e, (span && e.classList.contains('cont-l') ? '↳ ' : '')+(short?jrAbbr(e.dataset.t):e.dataset.t));
-          e.classList.remove('cut','clamp','wrap','abbr'); e.style.webkitLineClamp=''; if(short) e.classList.add('abbr');
-          if(!span){ jrFitWords(e, room); if(short) e.classList.remove('hy'); }
-          // a multi-day bar is locked to its days: exactly from this square to its last one in the row, one line
-          if(span){ const last=cells[r+c+span-1]||cell; e.style.width=(last.offsetLeft+colW-pad-(cell.offsetLeft+pad))+'px'; }
-          else if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
-          return span?1:Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
+        // lays the event out with its WHOLE title (never initials): a title longer than its room goes onto more lines, a one-day
+        // event as well as a multi-day bar
+        const fitAs=()=>{
+          jrSetTitle(e, (span && e.classList.contains('cont-l') ? '↳ ' : '')+e.dataset.t);
+          e.classList.remove('cut','clamp','wrap'); e.style.webkitLineClamp='';
+          let w=room;
+          // a multi-day bar is locked to its days: exactly from this square to its last one in the row
+          if(span){ const last=cells[r+c+span-1]||cell; w=last.offsetLeft+colW-pad-(cell.offsetLeft+pad); e.style.width=w+'px'; }
+          jrFitWords(e, w);
+          if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
+          return Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
         };
-        let lines=fitAs(false);
-        // squeezed past the point of reading: a word too long even at the smallest size, over twice the lines the
-        // square has, or a bar showing under half its title → the short form (initials, and the year if it has one)
-        const room1=Math.max(1, lanes-firstFree(lane,1));
-        // (only when it's really squeezed: a title cut a little, "Supplier vis…", still reads better than "SV")
-        if(jrAbbr(e.dataset.t)!==e.dataset.t && (e.classList.contains('hy') || (span ? e.clientWidth<e.scrollWidth*.5 : lines>room1*2))) lines=fitAs(true);
+        let lines=fitAs();
         // a bar carrying on from the row above goes on the same line it had there (if that line is near the top)
         const want=span && e.classList.contains('cont-l') ? laneOf[e.dataset.id] : undefined;
-        let at=want!=null && want<=2 ? firstFree(Math.max(lane,want), 1) : firstFree(lane, lines);
-        // no room for all its wrapped lines: as many lines as there are, the last ending "…"; or, with room for
-        // only one, a single line — title first, the time dropped (the day panel has both in full)
+        const place=()=>want!=null && want<=2 ? firstFree(Math.max(lane,want), 1) : firstFree(lane, lines);
+        // not enough rows for all its lines: make the text a little smaller, step by step (down to 7px), so the whole title
+        // still shows — before anything is cut
+        if(lines>1 && place()+lines>lanes){
+          let fs=parseFloat(getComputedStyle(e).fontSize);
+          while(fs>7 && place()+lines>lanes && lines>1){
+            fs=Math.max(7, fs-.5); e.style.fontSize=fs+'px';
+            lines=Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
+          }
+        }
+        let at=place();
+        // still no room for all its lines (a tiny square, a very long title): as many lines as there are, the last ending "…";
+        // or, with room for only one, a single line — title first, the time dropped (the day panel has both in full)
         if(at+lines>lanes && lines>1){
           at=firstFree(lane, 1);
           const fit=Math.max(1, lanes-at);
@@ -4091,8 +4102,9 @@ function jrFitCells(){
         }
         if(at+lines>lanes){ if(span){ at=Math.max(0,lanes-1); lines=1; } else break; }   // a multi-day bar is never dropped
         for(let k=lane; k<at; k++){ const g=document.createElement('span'); g.className='jr-ev-gap'; g.style.height=laneH+'px'; e.before(g); }
-        // the first day it no longer reaches into (2px of breathing room before the next title)
-        const free=Math.floor((cell.offsetLeft+e.offsetLeft+e.offsetWidth+2)/colW)+1;
+        // the first day it no longer reaches into: a bar covers `span` days from this one, a one-day event only its own (it was
+        // worked out from pixels and came out a day too far, so a bar or a full-width title also blocked its row on the next day)
+        const free=c+(span||1);
         for(let k=0; k<lines; k++) busy[at+k]=free;
         if(span) laneOf[e.dataset.id]=at;
         lane=at+lines; shown++;
@@ -4226,23 +4238,9 @@ function jrPopClose(now){
     setTimeout(()=>f.scrollIntoView({block:'nearest', behavior:'smooth'}), 300);   // after the keyboard has come up
   });
 })();
-// A title's short form, for when there's no room for it: the first letter of each word, then the year if it has
-// one — "Phnom Penh trade fair 2026" → "PPTF 2026". The day panel (and a hover) still has the full title.
 // Chinese, Khmer and Japanese have no spaces between words
 const JR_NOSPACE=/[\u1780-\u17FF\u3040-\u30FF\u3400-\u9FFF\uF900-\uFAFF]/;
 const jrSeg=(t,g)=>window.Intl&&Intl.Segmenter ? [...new Intl.Segmenter(undefined,{granularity:g}).segment(t)] : null;
-function jrAbbr(t){
-  const year=(t.match(/\b(19|20)\d{2}\b/)||[])[0], rest=t.replace(/\b(19|20)\d{2}\b/g,' ');
-  // where there are no spaces the browser knows where the words end (it has dictionaries for them)
-  const seg=JR_NOSPACE.test(rest) && jrSeg(rest,'word');
-  let words=seg ? seg.filter(x=>x.isWordLike).map(x=>x.segment) : rest.split(/[\s\-–—/&,.:;()]+/).filter(Boolean);
-  // long titles leave out the little words ("Quarterly review with the accountant about taxes" → "QRAT")
-  if(words.length>4) words=words.filter(w=>!/^(a|an|the|of|to|in|on|at|for|with|and|or|about|by|from)$/i.test(w));
-  // the first letter of each: for Khmer a whole letter with its signs, not half of one
-  const first=w=>((jrSeg(w,'grapheme')||[])[0]?.segment || w[0]).toUpperCase();
-  const out=[words.map(first).join(''), year].filter(Boolean).join(' ');
-  return out.length && out.length<t.length ? out : t;
-}
 // the title text of an event chip (after its time, if it has one)
 function jrSetTitle(e, text){
   const n=[...e.childNodes].reverse().find(x=>x.nodeType===3);
