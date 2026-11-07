@@ -3975,15 +3975,19 @@ function renderCalendar(opt={}){
   const rapid=!!document.querySelector('.jr-ghost');          // another step while the last one is still sliding out
   document.querySelectorAll('.jr-ghost').forEach(g=>{ g.getAnimations?.().forEach(a=>a.cancel()); g.remove(); });
   let ghost=null, off=0;
-  if(opt.dir && grid.animate && !K_REDUCED.matches && grid.offsetParent && !JR_LITE && !rapid){
+  if(opt.dir && grid.animate && !K_REDUCED.matches && grid.offsetParent){
     const m=new DOMMatrixReadOnly(getComputedStyle(grid).transform==='none'?undefined:getComputedStyle(grid).transform);
-    off=opt.axis==='y'?m.m42:m.m41;
-    ghost=grid.cloneNode(true); ghost.removeAttribute('id'); ghost.classList.remove('wave'); ghost.classList.add('jr-ghost');
-    ghost.setAttribute('aria-hidden','true'); ghost.inert=true;
-    Object.assign(ghost.style,{left:grid.offsetLeft+'px', top:grid.offsetTop+'px', width:grid.offsetWidth+'px', height:grid.offsetHeight+'px', transform:'', opacity:''});
-    grid.offsetParent.appendChild(ghost);
+    off=opt.axis==='y'?m.m42:m.m41;                                   // where the finger left the month
     grid.getAnimations?.().forEach(a=>{ if(a.id==='jr-slide') a.cancel(); });
-    grid.style.transition='none'; grid.style.transform=''; grid.style.opacity='';
+    if(!JR_LITE && !rapid){                                           // the old month carries on from there as a copy
+      ghost=grid.cloneNode(true); ghost.removeAttribute('id'); ghost.classList.remove('wave'); ghost.classList.add('jr-ghost');
+      ghost.setAttribute('aria-hidden','true'); ghost.inert=true;
+      Object.assign(ghost.style,{left:grid.offsetLeft+'px', top:grid.offsetTop+'px', width:grid.offsetWidth+'px', height:grid.offsetHeight+'px', transform:'', opacity:''});
+      grid.offsetParent.appendChild(ghost);
+    }
+    // ALWAYS drop the finger's leftover drag offset, lite mode and rapid steps included: when this was skipped there, the month stayed
+    // parked 100px off-centre in the direction of the swipe once its slide had finished ("stuck a bit in that direction")
+    grid.style.transition='none'; grid.style.transform=''; grid.style.opacity=''; grid.classList.remove('jr-dragging');
   }
   const was=grid.querySelector('.jr-cal-day.sel'), from=was&&{x:was.offsetLeft,y:was.offsetTop,w:was.offsetWidth,h:was.offsetHeight};
   grid.classList.toggle('wave', !!opt.wave && !opt.quiet && !K_REDUCED.matches && !(opt.dir && grid.animate && grid.offsetParent));
@@ -4012,6 +4016,8 @@ function renderCalendar(opt={}){
     // lighter slide (no fade): only movement, which the phone's graphics chip does on its own
     const a=grid.animate(JR_LITE||rapid?[{transform:mv(opt.dir*far*.85)},{transform:'none'}]
       :[{transform:mv(opt.dir*far*.85),opacity:0},{opacity:.85,offset:.45},{transform:'none',opacity:1}],{duration:dur,easing:ease}); a.id='jr-slide';
+    // safety net: when the slide has finished no drag offset may survive on the month (unless a new drag has already taken it over)
+    a.finished.then(()=>{ if(!grid.classList.contains('jr-dragging')){ grid.style.transform=''; grid.style.opacity=''; } },()=>{});
     jrWatchFrames();
     if(ghost){
       const out=-opt.dir*Math.max(far, Math.abs(off)+far*.5);
