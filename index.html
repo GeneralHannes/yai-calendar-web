@@ -1632,6 +1632,68 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
     :root body .jr-rail { width:clamp(11rem, 24vw, 16rem); }
   }
 
+  /* ================= add / edit event, redesigned ================= */
+  /* labels: the "(optional)" / "(time)" hint is the label's own size (it used to be bigger, which pushed "To (optional)" above "Date"
+     and "From (time)" above "To" in the two-column rows); every label one line, all the same height */
+  .jr-ae .field > span:first-child { line-height:1.25; min-height:1.25em; white-space:nowrap; }
+  .jr-ae .field > span:first-child .muted { font-size:inherit; font-weight:500; line-height:inherit; letter-spacing:inherit; }
+  /* header: title on the left, one round colour button on the right (its swatches open in a small popover) */
+  .jr-ae-head { position:relative; }
+  .jr-ae-colwrap { position:relative; flex:none; }
+  .jr-ae-colbtn { all:unset; box-sizing:border-box; cursor:pointer; display:inline-flex; align-items:center; gap:.25rem; height:2.2rem; padding:0 .55rem 0 .4rem; border-radius:999px;
+    border:1px solid var(--glass-line); background:color-mix(in srgb,var(--ink) 6%,transparent); color:var(--muted); transition:background-color .15s ease, transform .15s ease; }
+  .jr-ae-colbtn:hover, .jr-ae-colbtn:focus-visible, .jr-ae-colbtn[aria-expanded="true"] { background:color-mix(in srgb,var(--accent) 12%,transparent); outline:none; }
+  .jr-ae-colbtn:active { transform:scale(.94); }
+  .jr-ae-colbtn svg { width:.85rem; height:.85rem; transition:transform .2s ease; } .jr-ae-colbtn[aria-expanded="true"] svg { transform:rotate(180deg); }
+  .jr-ae-coldot { width:1.35rem; height:1.35rem; border-radius:50%; box-shadow:inset 0 0 0 1.5px rgb(255 255 255 / .55), 0 1px 4px rgb(0 0 0 / .25); }
+  .jr-ae-colpop { position:absolute; z-index:9; top:calc(100% + .4rem); right:0; display:grid; grid-template-columns:repeat(5,2.1rem); gap:.5rem; padding:.65rem;
+    border-radius:16px; border:1px solid var(--glass-line); background:color-mix(in srgb,var(--k-bg2) 94%,transparent);
+    -webkit-backdrop-filter:blur(14px) saturate(160%); backdrop-filter:blur(14px) saturate(160%); box-shadow:0 14px 34px -12px rgb(0 0 0 / .45); animation:fadeIn .14s ease both; }
+  .jr-ae-colpop[hidden] { display:none; }
+  .jr-ae-colpop .jr-ball { width:2.1rem; height:2.1rem; }
+  .jr-ae-colpop .jr-ball.on { transform:scale(1.1); }
+  /* segmented controls: Today | Tomorrow, and the three statuses */
+  .jr-seg { display:flex; gap:2px; padding:3px; border-radius:13px; border:1px solid var(--glass-line); background:color-mix(in srgb,var(--ink) 6%,transparent); min-width:0; }
+  .jr-seg > button { all:unset; box-sizing:border-box; cursor:pointer; flex:1 1 0; min-width:0; display:inline-flex; align-items:center; justify-content:center; gap:.35rem;
+    padding:.4rem .75rem; border-radius:10px; font:600 .84rem/1.2 var(--k-font,inherit); color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    transition:background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s ease; }
+  .jr-seg > button:hover { color:var(--ink); }
+  .jr-seg > button:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  .jr-seg > button:active { transform:scale(.96); }
+  .jr-seg > button.on, .jr-seg > button[aria-pressed="true"] { color:var(--accent); background:color-mix(in srgb,var(--accent) 15%,var(--k-bg2)); box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent), 0 2px 6px -3px rgb(0 0 0 / .3); }
+  .jr-seg .jr-st-l { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .jr-st-ico { flex:none; display:grid; place-items:center; width:1.15rem; height:1.15rem; border-radius:50%; font-size:.7rem; font-weight:800; line-height:1; border:1.5px solid currentColor; }
+  .jr-seg .st-tentative .jr-st-ico { border-style:dashed; }
+  .jr-seg .st-tentative { color:color-mix(in srgb,var(--k-bad) 85%,var(--muted)); }
+  .jr-seg .st-tentative.on { color:var(--k-bad); background:color-mix(in srgb,var(--k-bad) 13%,var(--k-bg2)); box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--k-bad) 60%,transparent); }
+  .jr-seg .st-cancelled.on { color:var(--muted); background:color-mix(in srgb,var(--muted) 16%,var(--k-bg2)); box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--muted) 60%,transparent); }
+  .jr-seg .st-confirmed.on .jr-st-ico { background:var(--accent); color:var(--k-bg2); border-color:var(--accent); }
+  /* the quick-date row: segmented Today/Tomorrow on the left, an All day switch on the right */
+  .jr-ae-whenrow { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin:0 0 .5rem; }
+  .jr-ae-whenrow .jr-seg { flex:0 1 auto; } .jr-ae-whenrow .jr-seg > button { flex:0 1 auto; padding-left:.85rem; padding-right:.85rem; }
+  .jr-ae .jr-ae-status { margin:0 0 .75rem; }
+  .jr-ae-status > button { flex:1 1 auto; padding-left:.45rem; padding-right:.45rem; gap:.3rem; font-size:.8rem; }
+  .jr-ae-status .jr-st-ico { width:1rem; height:1rem; font-size:.62rem; }
+  .jr-switch { all:unset; box-sizing:border-box; cursor:pointer; flex:none; display:inline-flex; align-items:center; gap:.45rem; min-height:2.2rem; padding:0 .15rem; border-radius:999px;
+    font:600 .84rem/1.2 var(--k-font,inherit); color:var(--muted); }
+  .jr-switch:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .jr-switch-track { position:relative; flex:none; width:2.35rem; height:1.35rem; border-radius:999px; background:color-mix(in srgb,var(--ink) 20%,transparent); transition:background-color .2s ease; }
+  .jr-switch-knob { position:absolute; top:.15rem; left:.15rem; width:1.05rem; height:1.05rem; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgb(0 0 0 / .35); transition:transform .22s cubic-bezier(.3,1.4,.5,1); }
+  .jr-switch.on { color:var(--ink); }
+  .jr-switch.on .jr-switch-track { background:var(--accent); }
+  .jr-switch.on .jr-switch-knob { transform:translateX(1rem); }
+  /* alignment: every field is a column of label + box, all labels one height, all boxes one height, same gaps */
+  .jr-ae .field { display:flex; flex-direction:column; gap:.2rem; }
+  .jr-ae .field > span:first-child:not(.jr-ae-loc > span) { display:block; overflow:hidden; text-overflow:ellipsis; }
+  .jr-ae-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:.5rem; align-items:end; margin:0; }
+  .jr-ae-row .field { margin:0 0 .5rem; }
+  .jr-ae .jr-ae-row input, .jr-ae .field > input { height:2.6rem; box-sizing:border-box; }
+  @container (min-width:34.01rem) { .jr-ae-row3 { grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr); } }   /* wide form: From, To and Location on one line; narrow: Location below */
+  .jr-ae .jr-ae-loc > span { display:flex; align-items:center; gap:.3rem; min-height:1.25rem; }
+  .jr-ae .jr-ae-map { margin-left:auto; }
+  @media (max-height:900px) { .jr-ae-whenrow { margin-bottom:.4rem; } .jr-ae .jr-ae-status { margin-bottom:.5rem; } .jr-ae .jr-ae-row input, .jr-ae .field > input { height:2.4rem; } }
+  @media (max-width:340px) { .jr-seg > button { padding-left:.45rem; padding-right:.45rem; font-size:.78rem; } .jr-seg .jr-st-ico { display:none; } .jr-ae-whenrow { gap:.4rem; } }
+
   /* ================= security ================= */
   .jr-pwrules { font-size:.78rem !important; line-height:1.4; }
   .jr-sec-row { display:flex; align-items:center; gap:.8rem; padding:.6rem 0; border-bottom:1px solid var(--glass-line); }
@@ -3474,18 +3536,23 @@ async function openAddEvent(prefillDate, id, focus, day){
   const card=document.createElement('div'); card.className='modal-card jr-ae'; card.style.cssText='max-width:26rem;width:100%';
   const v=(x)=>esc(x||''), t5=t=>t?t.slice(0,5):'';
   card.innerHTML=`<div class="jr-grab" aria-hidden="true"></div>
-    <div class="jr-ae-head"><h2>${ev?esc(tx('editEvent')):'＋ '+esc(tx('addEvent'))}</h2></div>
-    <div class="jr-ae-preview" aria-hidden="true"><span class="jr-ae-chip" id="ae-chip"></span><span class="jr-ae-when" id="ae-when"></span></div>
-    <div class="jr-ae-colors" id="ae-colors" role="group" aria-label="${esc(tx('colour'))}">
+    <div class="jr-ae-head"><h2>${ev?esc(tx('editEvent')):'＋ '+esc(tx('addEvent'))}</h2>
+      <div class="jr-ae-colwrap">
+        <button type="button" class="jr-ae-colbtn" id="ae-colbtn" aria-haspopup="true" aria-expanded="false" title="${esc(tx('colour'))}" aria-label="${esc(tx('colour'))}"><span class="jr-ae-coldot"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="jr-ae-colpop" id="ae-colors" role="group" aria-label="${esc(tx('colour'))}" hidden>
       <button type="button" class="jr-ball auto" data-c="" title="${esc(tx('auto'))}" aria-label="${esc(tx('auto'))}" style="--i:0"></button>
       ${JR_COLOR_NAMES.map((c,i)=>`<button type="button" class="jr-ball" data-c="${c}" title="${esc(tx('c_'+c))}" aria-label="${esc(tx('c_'+c))}" style="--ball:var(${JR_COLORS[c]}-ball);--i:${i+1}"></button>`).join('')}
-    </div>
+    </div></div></div>
+    <div class="jr-ae-preview" aria-hidden="true"><span class="jr-ae-chip" id="ae-chip"></span><span class="jr-ae-when" id="ae-when"></span></div>
     <div class="jr-ae-tabs" id="ae-tabs" hidden></div>
     <div id="ae-all">
       <input id="ae-title" class="jr-ae-hero" autocomplete="off" placeholder="${esc(tx('evHero'))}" aria-label="${esc(tx('lblTitle'))}" value="${v(ev?.title)}">
-      <div class="jr-ae-quick"><button type="button" class="jr-chipbtn" data-q="today">${esc(tx('today'))}</button><button type="button" class="jr-chipbtn" data-q="tomorrow">${esc(tx('tomorrow'))}</button><button type="button" class="jr-chipbtn" data-q="allday">${esc(tx('allDay'))}</button></div>
-      <div class="jr-ae-status" id="ae-status" role="group" aria-label="${esc(tx('stLabel'))}">
-        ${[['confirmed','stConfirmed'],['tentative','stTent'],['cancelled','stCancel']].map(([k,t])=>`<button type="button" class="jr-chipbtn st-${k}" data-st="${k}" aria-pressed="false">${esc(tx(t))}</button>`).join('')}
+      <div class="jr-ae-whenrow">
+        <div class="jr-seg" id="ae-quick" role="group" aria-label="${esc(tx('lblDate'))}"><button type="button" data-q="today" aria-pressed="false">${esc(tx('today'))}</button><button type="button" data-q="tomorrow" aria-pressed="false">${esc(tx('tomorrow'))}</button></div>
+        <button type="button" class="jr-switch" id="ae-allday-sw" role="switch" aria-checked="false"><span class="jr-switch-track"><span class="jr-switch-knob"></span></span><span class="jr-switch-l">${esc(tx('allDay'))}</span></button>
+      </div>
+      <div class="jr-seg jr-ae-status" id="ae-status" role="group" aria-label="${esc(tx('stLabel'))}">
+        ${[['confirmed','stConfirmed','✓'],['tentative','stTent','?'],['cancelled','stCancel','✕']].map(([k,t,g])=>`<button type="button" class="st-${k}" data-st="${k}" aria-pressed="false"><span class="jr-st-ico" aria-hidden="true">${g}</span><span class="jr-st-l">${esc(tx(t))}</span></button>`).join('')}
       </div>
       <div class="jr-ae-row">
         <label class="field">${jrLbl('lblDate')}<input id="ae-date" type="date" value="${ev?.event_date||prefillDate||jrToday()}"></label>
@@ -3568,21 +3635,37 @@ async function openAddEvent(prefillDate, id, focus, day){
     chip.classList.toggle('ghost', !t); chip.classList.toggle('st-tent', status==='tentative'); chip.classList.toggle('st-cancel', status==='cancelled');
     let when=''; if(d){ const dd=new Date(d+'T00:00:00'); when=e2&&e2>d?jrDateRange({event_date:d,end_date:e2}):jrFmtShort(dd); }
     q('#ae-when').textContent=when;
+    if(typeof drawQuick==='function') drawQuick();
   };
   const drawBall=()=>{
     const k=color||(ev?jrColor({id:ev.id}):'blue');   // a new event on automatic previews as blue (the theme colour as a fill AND text colour was invisible)
     if(k){ card.style.setProperty('--accent',`var(${JR_COLORS[k]}-ink)`); card.style.setProperty('--k-act',`var(${JR_COLORS[k]})`); card.style.setProperty('--ae-ball',`var(${JR_COLORS[k]}-ball)`); }
     else { card.style.removeProperty('--accent'); card.style.removeProperty('--k-act'); card.style.removeProperty('--ae-ball'); }
+    q('#ae-colbtn .jr-ae-coldot').style.background=color?`var(${JR_COLORS[color]}-ball)`:'conic-gradient(var(--c-blue-ball),var(--c-green-ball),var(--c-yellow-ball),var(--c-orange-ball),var(--c-red-ball),var(--c-purple-ball),var(--c-teal-ball),var(--c-sky-ball),var(--c-blue-ball))';
     card.querySelectorAll('#ae-colors .jr-ball').forEach(x=>{ const on=(x.dataset.c||null)===color; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); });
     drawPreview();
   };
-  q('#ae-colors').onclick=e=>{ const b=e.target.closest('[data-c]'); if(!b) return; color=b.dataset.c||null; drawBall();
+  // the colour popover: one round button in the header shows the colour; it opens a small grid of swatches
+  const colPop=q('#ae-colors'), colBtn=q('#ae-colbtn');
+  const setPop=on=>{ colPop.hidden=!on; colBtn.setAttribute('aria-expanded',String(on)); };
+  colBtn.onclick=e=>{ e.stopPropagation(); setPop(colPop.hidden); };
+  card.addEventListener('click',e=>{ if(!colPop.hidden && !e.target.closest('.jr-ae-colwrap')) setPop(false); });
+  card.addEventListener('keydown',e=>{ if(e.key==='Escape' && !colPop.hidden){ e.stopPropagation(); setPop(false); colBtn.focus(); } },true);
+  colPop.onclick=e=>{ const b=e.target.closest('[data-c]'); if(!b) return; color=b.dataset.c||null; drawBall(); setPop(false);
     card.classList.remove('wash'); void card.offsetWidth; card.classList.add('wash'); };   // the colour washes in
   ['#ae-title','#ae-time','#ae-date','#ae-end-date'].forEach(sel=>q(sel).addEventListener('input',drawPreview));
-  q('.jr-ae-quick').onclick=e=>{ const b=e.target.closest('[data-q]'); if(!b) return; const k=b.dataset.q;
-    if(k==='allday'){ q('#ae-time').value=''; q('#ae-end-time').value=''; }
-    else { q('#ae-date').value=jrAddDays(jrToday(),k==='tomorrow'?1:0); q('#ae-date').dispatchEvent(new Event('change',{bubbles:true})); }
-    drawPreview(); };
+  // Today / Tomorrow show which one the date is; the All day switch is on while there are no times (typing a time turns it off)
+  const drawQuick=()=>{
+    const d=q('#ae-date').value, t0=jrToday(), t1=jrAddDays(t0,1);
+    card.querySelectorAll('#ae-quick [data-q]').forEach(b=>{ const on=d===(b.dataset.q==='today'?t0:t1); b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); });
+    const all=!q('#ae-time').value && !q('#ae-end-time').value, sw=q('#ae-allday-sw'); sw.classList.toggle('on',all); sw.setAttribute('aria-checked',String(all));
+  };
+  q('#ae-quick').onclick=e=>{ const b=e.target.closest('[data-q]'); if(!b) return;
+    q('#ae-date').value=jrAddDays(jrToday(),b.dataset.q==='tomorrow'?1:0); q('#ae-date').dispatchEvent(new Event('change',{bubbles:true})); drawPreview(); };
+  q('#ae-allday-sw').onclick=()=>{
+    if(!q('#ae-time').value && !q('#ae-end-time').value){ q('#ae-time').focus(); return; }   // already all day: this is "set a time"
+    q('#ae-time').value=''; q('#ae-end-time').value=''; drawPreview(); };
+  ['#ae-date','#ae-end-date','#ae-time','#ae-end-time'].forEach(sel=>['input','change'].forEach(ev2=>q(sel).addEventListener(ev2,drawQuick)));
   // the categories already in use, one tap to reuse
   (()=>{ const n={}; for(const x of JOURNAL_EVENTS) if(x.category) n[x.category]=(n[x.category]||0)+1;
     const top=Object.entries(n).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([c])=>c); const box=q('#ae-cats');
