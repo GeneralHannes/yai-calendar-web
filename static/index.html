@@ -1503,7 +1503,22 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-spin { width:1.2rem; height:1.2rem; border-radius:50%; border:2.5px solid color-mix(in srgb,var(--accent) 25%,transparent); border-top-color:var(--accent); animation:jrSpin .8s linear infinite; }
   @keyframes jrSpin { to { transform:rotate(360deg); } }
   .jr-scan-msg { margin:.6rem 0; line-height:1.4; }
-  .jr-scan-list { display:grid; gap:.55rem; margin:.4rem 0 .9rem; max-height:min(52vh,26rem); overflow:auto; overscroll-behavior:contain; padding:.1rem; }
+  .jr-scan-list { display:flex; flex-direction:column; gap:.55rem; margin:.4rem 0 .9rem; max-height:calc(var(--vvh,100dvh) - 14.5rem); overflow:auto; overscroll-behavior:contain; padding:.1rem; }
+  .jr-scan-list > .jr-sc { flex:none; }
+  .jr-sc-sum { display:flex; align-items:flex-start; gap:.6rem; }
+  .jr-sc-sum input[type=checkbox] { width:1.25rem; height:1.25rem; flex:none; margin:.15rem 0 0; }
+  .jr-sc-txt { flex:1; min-width:0; display:flex; flex-direction:column; gap:.18rem; padding-left:.6rem; border-left:3px solid var(--c); }
+  .jr-sc-txt b { font-size:1rem; line-height:1.3; color:var(--k-hi); overflow-wrap:anywhere; }
+  .jr-sc-txt b i { font-weight:600; color:var(--muted); }
+  .jr-sc-txt > span { font-size:.86rem; line-height:1.35; color:var(--muted); overflow-wrap:anywhere; }
+  .jr-sc-txt > .when { color:var(--k-text,var(--k-hi)); font-weight:600; }
+  .jr-sc-txt > .note { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .jr-sc-txt > .tags { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.15rem; }
+  .jr-sc-editbtn { flex:none; padding:.3rem .7rem; font-size:.8rem; }
+  .jr-sc-form { display:grid; gap:.5rem; margin-top:.6rem; padding-top:.6rem; border-top:1px solid var(--glass-line); }
+  .jr-sc-f { display:grid; gap:.2rem; min-width:0; }
+  .jr-sc-f > span { font-size:.74rem; font-weight:600; color:var(--muted); }
+  .jr-sc textarea { width:100%; min-width:0; resize:vertical; padding:.4rem .55rem; font:inherit; font-size:.92rem; line-height:1.35; }
   .jr-sc { display:grid; gap:.35rem; padding:.55rem .6rem; border-radius:12px; border:1px solid var(--glass-line); background:color-mix(in srgb,var(--k-bg3) 40%,transparent); opacity:.65; }
   .jr-sc.on { opacity:1; background:color-mix(in srgb,var(--accent) 7%,var(--k-bg3)); border-color:color-mix(in srgb,var(--accent) 35%,transparent); }
   .jr-sc input:not([type=checkbox]) { width:100%; min-width:0; padding:.4rem .55rem; font-size:.92rem; }
@@ -3251,19 +3266,31 @@ function jrScanStart(files){
       card.querySelector('#sc-x').onclick=close; card.querySelector('#sc-back').onclick=start; return; }
     // already there? (same day and same title): offered but unticked
     const dup=e=>!!e.event_date && JOURNAL_EVENTS.some(x=>x.event_date===e.event_date && x.title.trim().toLowerCase()===e.title.trim().toLowerCase());
-    const list=found.map(e=>({...e, on:!dup(e) && !!e.event_date && !!e.title, dup:dup(e)}));
+    const list=found.map(e=>({...e, on:!dup(e) && !!e.event_date && !!e.title, dup:dup(e), open:!e.event_date}));
+    const jrStrip=h=>String(h).replace(/<[^>]*>/g,'');
     const draw=()=>{
       const n=list.filter(e=>e.on).length;
       card.innerHTML=head+`<p class="jr-ae-hint">${esc(tx('scanFound',{n:list.length}))}</p>
-        <div class="jr-scan-list">${list.map((e,i)=>`<div class="jr-sc${e.on?' on':''}" data-i="${i}">
-          <label class="jr-sc-top"><input type="checkbox" data-f="on"${e.on?' checked':''}><input class="jr-sc-title" data-f="title" value="${esc(e.title)}" maxlength="120" aria-label="${esc(tx('lblTitle'))}"></label>
-          ${e.dup?`<em class="jr-role">${esc(tx('scanDup'))}</em>`:''}${e.needs_check&&!e.dup?`<em class="jr-role warn">${esc(tx('scanCheck'))}</em>`:''}
-          <div class="jr-sc-row"><input type="date" data-f="event_date" value="${esc(e.event_date)}" aria-label="${esc(tx('lblDate'))}"><input type="date" data-f="end_date" value="${esc(e.end_date)}" aria-label="${esc(tx('lblDateTo'))}"></div>
-          <div class="jr-sc-row"><input type="time" data-f="event_time" value="${esc(e.event_time)}" aria-label="${esc(tx('lblFrom'))}"><input type="time" data-f="end_time" value="${esc(e.end_time)}" aria-label="${esc(tx('lblToTime'))}"></div>
-          <input data-f="location" value="${esc(e.location)}" placeholder="${esc(tx('lblLoc'))}" maxlength="200" aria-label="${esc(tx('lblLoc'))}">
-          <input data-f="notes" value="${esc(e.notes)}" placeholder="${esc(tx('lblNotes'))}" maxlength="500" aria-label="${esc(tx('lblNotes'))}">
-          <div class="jr-sc-meta"><span class="jr-ae-status">${[['confirmed','stConfirmed','✓'],['tentative','stTent','?'],['cancelled','stCancel','✕']].map(([k,t,g])=>`<button type="button" class="jr-chipbtn st-${k}${(e.status||'confirmed')===k?' on':''}" data-st="${k}" aria-pressed="${(e.status||'confirmed')===k}" title="${esc(tx(t))}"><span class="jr-st-ico" aria-hidden="true">${g}</span><span class="jr-st-l">${esc(tx(t))}</span></button>`).join('')}</span>
+        <div class="jr-scan-list">${list.map((e,i)=>`<div class="jr-sc${e.on?' on':''}${e.open?' open':''}" data-i="${i}">
+          <div class="jr-sc-sum">
+            <input type="checkbox" data-f="on"${e.on?' checked':''} aria-label="${esc(e.title||tx('lblTitle'))}">
+            <div class="jr-sc-txt" style="--c:var(${JR_COLORS[e.color]||'--accent'}-ball,var(--accent))">
+              <b>${esc(e.title)||`<i>${esc(tx('lblTitle'))}?</i>`}</b>
+              <span class="when">${e.event_date?esc(jrStrip(jrMulti(e)?jrDateRange(e):jrDayLabel(e.event_date)))+(e.event_time?' · '+esc(jrTimeRange(e)):''):`<em class="jr-role warn">${esc(tx('scanNoDate'))}</em>`}</span>
+              ${e.location?`<span>${esc(e.location)}</span>`:''}${e.notes?`<span class="note">${esc(e.notes)}</span>`:''}
+              ${e.dup||e.needs_check||(e.status&&e.status!=='confirmed')?`<span class="tags">${e.dup?`<em class="jr-role">${esc(tx('scanDup'))}</em>`:''}${e.needs_check&&!e.dup?`<em class="jr-role warn">${esc(tx('scanCheck'))}</em>`:''}${e.status==='tentative'?`<em class="jr-role warn">${esc(tx('stTent'))}</em>`:''}${e.status==='cancelled'?`<em class="jr-role">${esc(tx('stCancel'))}</em>`:''}</span>`:''}
+            </div>
+            <button type="button" class="mini jr-sc-editbtn" data-open aria-expanded="${!!e.open}">${esc(e.open?tx('done').replace(/\s*✓$/,''):tx('edit'))}</button>
+          </div>
+          ${e.open?`<div class="jr-sc-form">
+            <label class="jr-sc-f"><span>${esc(tx('lblTitle'))}</span><textarea data-f="title" rows="2" maxlength="120">${esc(e.title)}</textarea></label>
+            <div class="jr-sc-row"><label class="jr-sc-f"><span>${esc(tx('lblDate'))}</span><input type="date" data-f="event_date" value="${esc(e.event_date)}"></label><label class="jr-sc-f"><span>${esc(tx('lblDateTo'))}</span><input type="date" data-f="end_date" value="${esc(e.end_date)}"></label></div>
+            <div class="jr-sc-row"><label class="jr-sc-f"><span>${esc(tx('lblFrom'))}</span><input type="time" data-f="event_time" value="${esc(e.event_time)}"></label><label class="jr-sc-f"><span>${esc(tx('lblToTime'))}</span><input type="time" data-f="end_time" value="${esc(e.end_time)}"></label></div>
+            <label class="jr-sc-f"><span>${esc(tx('lblLoc'))}</span><input data-f="location" value="${esc(e.location)}" maxlength="200"></label>
+            <label class="jr-sc-f"><span>${esc(tx('lblNotes'))}</span><textarea data-f="notes" rows="3" maxlength="500">${esc(e.notes)}</textarea></label>
+            <div class="jr-sc-meta"><span class="jr-ae-status">${[['confirmed','stConfirmed','✓'],['tentative','stTent','?'],['cancelled','stCancel','✕']].map(([k,t,g])=>`<button type="button" class="jr-chipbtn st-${k}${(e.status||'confirmed')===k?' on':''}" data-st="${k}" aria-pressed="${(e.status||'confirmed')===k}" title="${esc(tx(t))}"><span class="jr-st-ico" aria-hidden="true">${g}</span><span class="jr-st-l">${esc(tx(t))}</span></button>`).join('')}</span>
             <span class="jr-sc-cols" role="group" aria-label="${esc(tx('colour'))}"><button type="button" class="jr-ball auto${e.color?'':' on'}" data-c="" title="${esc(tx('auto'))}" aria-label="${esc(tx('auto'))}"></button>${JR_COLOR_NAMES.map(c=>`<button type="button" class="jr-ball${e.color===c?' on':''}" data-c="${c}" title="${esc(tx('c_'+c))}" aria-label="${esc(tx('c_'+c))}" style="--ball:var(${JR_COLORS[c]}-ball)"></button>`).join('')}</span></div>
+          </div>`:''}
         </div>`).join('')}</div>
         ${raw?`<details class="jr-audit"><summary>${esc(tx('scanRaw'))}</summary><pre class="jr-sc-raw">${esc(raw)}</pre></details>`:''}
         <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('cancel'))}</button><button class="act" id="sc-ok"${n?'':' disabled'}>${esc(tx('scanAdd',{n}))}</button></div>`;
@@ -3273,8 +3300,9 @@ function jrScanStart(files){
     card.oninput=e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const f=e.target.dataset.f; if(!f||f==='on') return; list[+row.dataset.i][f]=e.target.value; };
     card.onchange=e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const it=list[+row.dataset.i], f=e.target.dataset.f;
       if(f==='on'){ it.on=e.target.checked; draw(); } };
-    card.onclick=e=>{ const b=e.target.closest('.jr-sc [data-st], .jr-sc [data-c]'); if(!b) return; const it=list[+b.closest('.jr-sc').dataset.i];
-      if(b.dataset.st) it.status=b.dataset.st; else it.color=b.dataset.c; draw(); };
+    card.onclick=e=>{ const b=e.target.closest('.jr-sc [data-st], .jr-sc [data-c], .jr-sc [data-open]'); if(!b) return; const it=list[+b.closest('.jr-sc').dataset.i];
+      if(b.dataset.st) it.status=b.dataset.st; else if(b.hasAttribute('data-open')) it.open=!it.open; else it.color=b.dataset.c;
+      const sc=card.querySelector('.jr-scan-list')?.scrollTop||0; draw(); const l=card.querySelector('.jr-scan-list'); if(l) l.scrollTop=sc; };
     async function save(){
       const todo=list.filter(e=>e.on); const bad=todo.find(e=>!e.event_date||!e.title.trim());
       if(bad){ toast(!bad.title.trim()?tx('titleReq'):tx('scanNoDate')); return; }
