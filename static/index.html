@@ -1033,7 +1033,7 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   /* Today, while another month is showing: a slow soft glow saying "back to now" */
   @keyframes jrAway { 0%,100% { box-shadow:var(--glass-edge),0 0 0 0 rgba(212,175,55,0); color:var(--ink); }
     50% { box-shadow:var(--glass-edge),0 0 0 3px rgba(212,175,55,.22),0 0 16px 2px rgba(212,175,55,.3); color:var(--gold); } }
-  .jr-mn-today.away { animation:jrAway 2.4s ease-in-out infinite; }
+  .jr-mn-today.away { animation:jrAway 2.4s ease-in-out 3; }   /* a few pulses, then rest: a glow that never stops repaints the glass every frame */
 
   /* ---- frozen: the backend can't be reached, the last saved copy is showing, read-only ---- */
   #jr-frozen-bar { position:fixed; z-index:30; left:50%; top:calc(.5rem + env(safe-area-inset-top)); transform:translateX(-50%);
@@ -1502,6 +1502,11 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-sc-title { font-weight:700; font-size:1rem !important; }
   .jr-sc-row { display:grid; grid-template-columns:1fr 1fr; gap:.4rem; }
   .jr-sc .jr-role { justify-self:start; }
+  .jr-sc-meta { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.4rem .6rem; }
+  .jr-sc-meta .jr-ae-status { margin:0; flex:0 1 auto; }
+  .jr-sc-meta .jr-ae-status > button { flex:none; display:inline-flex; flex-direction:row; align-items:center; gap:.25rem; padding:.2rem .55rem; font-size:.74rem; }
+  .jr-sc-cols { display:flex; gap:.28rem; }
+  .jr-sc-cols .jr-ball { width:1.2rem; height:1.2rem; border-width:1.5px; }
 
   /* ================= the add / edit event form ================= */
   /* the form becomes the event: a live preview of its calendar chip, the colour choices always in view, and the chosen colour
@@ -1714,6 +1719,15 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
   .jr-link { all:unset; cursor:pointer; color:var(--accent); font-size:.78rem; font-weight:600; }
   .jr-link:hover, .jr-link:focus-visible { text-decoration:underline; }
   .jr-audit { margin:.2rem 0 .9rem; font-size:.82rem; }
+  .jr-ov-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem; margin:.2rem 0 .6rem; }
+  .jr-ov { display:flex; flex-direction:column; gap:.1rem; padding:.5rem .55rem; border-radius:.8rem; background:color-mix(in srgb,var(--k-text,currentColor) 6%,transparent); min-width:0; }
+  .jr-ov b { font-size:1.15rem; font-variant-numeric:tabular-nums; line-height:1.1; }
+  .jr-ov small { color:var(--muted); font-size:.68rem; line-height:1.2; }
+  .jr-ov.warn b { color:var(--warn); }
+  .jr-dev-h { margin:.6rem 0 .3rem; font-size:.8rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .jr-dev-when { margin-left:auto; color:var(--muted); font-size:.78rem; white-space:nowrap; }
+  .jr-dev-meta { flex:1 0 100%; color:var(--muted); font-variant-numeric:tabular-nums; }
+  @media (max-width:420px){ .jr-ov-grid { grid-template-columns:repeat(3,1fr); } }
   .jr-audit summary { cursor:pointer; color:var(--muted); font-weight:600; }
   .jr-audit-list { max-height:10rem; overflow:auto; margin-top:.4rem; display:grid; gap:.2rem; }
   .jr-audit-list time { color:var(--muted); font-variant-numeric:tabular-nums; }
@@ -1886,6 +1900,9 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
                radial-gradient(30% 28% at 12% 85%, color-mix(in srgb,var(--k-warn) 16%,transparent), transparent 70%); }
   @media (prefers-reduced-motion:no-preference) {
     body::after { animation:glDrift 52s ease-in-out infinite alternate; }
+    /* phones: the colour field stays still. It sits under the frosted month, so while it drifts the phone has to re-blur the
+       whole screen every frame, which halved the frame rate of every swipe and kept the GPU busy while idle */
+    @media (pointer:coarse) { body::after { animation:none; } }
     @keyframes glDrift { 0% { transform:translate3d(0,0,0) rotate(0deg) scale(1); } 50% { transform:translate3d(3%,-2%,0) rotate(6deg) scale(1.07); } 100% { transform:translate3d(-3%,3%,0) rotate(-5deg) scale(1.03); } }
     /* a pressed control gives way under the finger and springs back */
     .jr-mn-btn:active, .jr-vt-btn:active, .jr-scan:active, .jr-mn-today:active, .jr-pp-btn:active, .jr-chipbtn:active { transform:scale(.9); transition:transform var(--k-t-press) ease-out; }
@@ -1966,7 +1983,9 @@ html.embedded .keep-brand, html.embedded .keep-switch { display:none !important;
      itself is the frosted pane: a translucent glass with a blur, and the colour field behind is spread across the whole height, so the
      cells, the day panel and the bar all pick up tinted, softened colour from what is behind them. */
   @media (max-width:760px) {
-    .jr-cal-grid { background:var(--gl-fill), color-mix(in srgb,var(--k-bg2) 34%,transparent); -webkit-backdrop-filter:blur(18px) saturate(190%); backdrop-filter:blur(18px) saturate(190%);
+    /* colour boost only, no blur: behind the month is just the soft colour field, which a blur leaves the same (measured: at most 8/255
+       per channel), while blurring the moving month made every swipe redraw the blur each frame and halved the frame rate */
+    .jr-cal-grid { background:var(--gl-fill), color-mix(in srgb,var(--k-bg2) 34%,transparent); -webkit-backdrop-filter:saturate(190%); backdrop-filter:saturate(190%);
       border:1px solid rgb(255 255 255 / calc(var(--gl-a) * .55)); box-shadow:var(--gl-rim), var(--gl-drop); }
     .jr-cal-day { border-right-color:rgb(255 255 255 / calc(var(--gl-a) * .38)); border-bottom-color:rgb(255 255 255 / calc(var(--gl-a) * .38)); }
     body::after { background:radial-gradient(60% 24% at 32% 25%, color-mix(in srgb,var(--k-act) 44%,transparent), transparent 72%),
@@ -2248,6 +2267,7 @@ en:{
   whyPushAndroid:'This phone couldn’t reach its push service. It needs Google Play services and internet (some Wi-Fi networks block it): try again on mobile data.',
   whyState:'Close the app completely, open it again, and try once more.', whyOther:v=>`Could not turn on reminders (${v.what}).`,
   newVersion:'New version — tap to reload',
+  devices:'Devices', devList:'Signed-in devices', devThis:'this device', devApp:'app', devBrowser:'browser', devNow:'now', devUnknown:'Unknown device', devSince:'signed in {date}', ovActiveDay:'devices active today', ovPeopleWeek:'people active this week', ovDevices:'signed-in devices', ovPush:'devices with reminders', ovUpcoming:'upcoming events', ovTentative:'not sure yet', ovAddedWeek:'added this week', ovEvents:'events in total', ovSignins:'sign-ins this week', ovFailed:'failed sign-ins today', ovLocked:'locked accounts', ovScans:'photo scans this week', ovAccounts:'{n} accounts: {a} admin, {e} editors, {v} viewers · {t} people on the team',
   addedBy:'Added by {name}', byName:'by {name}', lblPeople:'Attending', addPeople:'＋ Add people', findPeople:'Search the team', noPeopleFound:'No one found', nPicked:'{n} selected', lblPeopleDay:'Attending this day', sameAsEvent:'Same as the whole event', close:'Close', errNick:'Nicknames can be at most 30 characters.', roleAdmin:'Admin', roleEditor:'Editor', roleViewer:'Viewer', roleViewerNote:'View only', accounts:'Accounts', accountsHint:'Admins manage accounts and can do everything. Editors add, change and delete events. Viewers can only look.', removeAcct:'Remove', removeAcctAsk:'Remove the account “{name}”? They will be signed out and can no longer sign in.', acctRemoved:'Account removed', roleSaved:'Role changed', you:'you', viewOnly:'This account can only view events.', adminOnly:'Only an admin can do that.', lastAdmin:'There must be at least one admin.', ownAcct:'You can’t remove your own account.', peopleTab:'People', peopleHint:'Give people short names to use in the calendar. Everyone sees the nickname instead of the full name.', nickPh:'Nickname', nickSaved:'Nickname saved', nickCleared:'Nickname removed', noTeam:'No team has been added yet.', pwRules:'At least 10 characters. Not a common password, and not containing your username.', errWrongCode:'That code is wrong.', errAgain:'Please sign in again.', errWrongPw:'That password is wrong.', errTotpOn:'Two-step sign-in is already on.',
   codeTitle:'Two-step sign-in', codeHint:'Enter the 6-digit code from your authenticator app, or one of your recovery codes.', verify:'Verify', back:'Back',
   newPwTitle:'Choose a new password', newPwWhy:'Your password has to be changed before you continue.', curPw:'Current password', newPw:'New password', newPw2:'Repeat new password',
@@ -2307,6 +2327,7 @@ zh:{
   whyPushAndroid:'此手机无法连接推送服务。需要 Google Play 服务和网络（有些 Wi-Fi 会屏蔽）：请改用移动数据重试。',
   whyState:'请完全关闭应用，重新打开后再试一次。', whyOther:v=>`无法开启提醒（${v.what}）。`,
   newVersion:'有新版本，点按刷新',
+  devices:'设备', devList:'已登录的设备', devThis:'本设备', devApp:'应用', devBrowser:'浏览器', devNow:'刚刚', devUnknown:'未知设备', devSince:'{date} 登录', ovActiveDay:'今天活跃的设备', ovPeopleWeek:'本周活跃的人', ovDevices:'已登录的设备', ovPush:'开启提醒的设备', ovUpcoming:'即将到来的活动', ovTentative:'待确定', ovAddedWeek:'本周新增', ovEvents:'活动总数', ovSignins:'本周登录次数', ovFailed:'今天登录失败', ovLocked:'已锁定的账号', ovScans:'本周照片识别', ovAccounts:'{n} 个账号：{a} 位管理员，{e} 位编辑者，{v} 位查看者 · 团队 {t} 人',
   addedBy:'添加者：{name}', byName:'添加者：{name}', lblPeople:'参加人员', addPeople:'＋ 添加人员', findPeople:'搜索团队', noPeopleFound:'没有找到', nPicked:'已选 {n} 人', lblPeopleDay:'当天参加人员', sameAsEvent:'与整个活动相同', close:'关闭', errNick:'昵称最多 30 个字符。', roleAdmin:'管理员', roleEditor:'编辑者', roleViewer:'查看者', roleViewerNote:'仅查看', accounts:'账号', accountsHint:'管理员可管理账号并执行所有操作。编辑者可添加、修改和删除活动。查看者只能查看。', removeAcct:'移除', removeAcctAsk:'移除账号“{name}”？该用户将被退出登录，并且无法再登录。', acctRemoved:'账号已移除', roleSaved:'角色已更改', you:'你', viewOnly:'此账号只能查看活动。', adminOnly:'只有管理员可以这样做。', lastAdmin:'至少需要一位管理员。', ownAcct:'你不能移除自己的账号。', peopleTab:'人员', peopleHint:'给成员起一个简短的昵称，日历中会显示昵称而不是全名，所有人可见。', nickPh:'昵称', nickSaved:'昵称已保存', nickCleared:'昵称已移除', noTeam:'还没有添加团队成员。', pwRules:'至少 10 个字符。不能是常见密码，也不能包含你的用户名。', errWrongCode:'验证码不正确。', errAgain:'请重新登录。', errWrongPw:'密码不正确。', errTotpOn:'两步验证已开启。',
   codeTitle:'两步验证', codeHint:'请输入验证器应用中的 6 位验证码，或一个恢复码。', verify:'验证', back:'返回',
   newPwTitle:'设置新密码', newPwWhy:'继续之前，需要先更改你的密码。', curPw:'当前密码', newPw:'新密码', newPw2:'再次输入新密码',
@@ -2366,6 +2387,7 @@ km:{
   whyPushAndroid:'ទូរស័ព្ទនេះមិនអាចភ្ជាប់ទៅសេវាជូនដំណឹងបានទេ។ វាត្រូវការ Google Play services និងអ៊ីនធឺណិត (បណ្តាញ Wi-Fi មួយចំនួនរារាំង)៖ សូមសាកល្បងម្តងទៀតជាមួយទិន្នន័យទូរស័ព្ទ។',
   whyState:'សូមបិទកម្មវិធីទាំងស្រុង បើកម្តងទៀត រួចព្យាយាមម្តងទៀត។', whyOther:v=>`មិនអាចបើកការរំលឹកបានទេ (${v.what})។`,
   newVersion:'មានកំណែថ្មី ចុចដើម្បីផ្ទុកឡើងវិញ',
+  devices:'ឧបករណ៍', devList:'ឧបករណ៍ដែលបានចូល', devThis:'ឧបករណ៍នេះ', devApp:'កម្មវិធី', devBrowser:'កម្មវិធីរុករក', devNow:'ឥឡូវនេះ', devUnknown:'ឧបករណ៍មិនស្គាល់', devSince:'បានចូល {date}', ovActiveDay:'ឧបករណ៍សកម្មថ្ងៃនេះ', ovPeopleWeek:'មនុស្សសកម្មសប្តាហ៍នេះ', ovDevices:'ឧបករណ៍ដែលបានចូល', ovPush:'ឧបករណ៍បើកការរំលឹក', ovUpcoming:'ព្រឹត្តិការណ៍ខាងមុខ', ovTentative:'មិនទាន់ប្រាកដ', ovAddedWeek:'បន្ថែមសប្តាហ៍នេះ', ovEvents:'ព្រឹត្តិការណ៍សរុប', ovSignins:'ការចូលសប្តាហ៍នេះ', ovFailed:'ការចូលបរាជ័យថ្ងៃនេះ', ovLocked:'គណនីដែលត្រូវចាក់សោ', ovScans:'ការស្កេនរូបថតសប្តាហ៍នេះ', ovAccounts:'{n} គណនី៖ អ្នកគ្រប់គ្រង {a} អ្នកកែសម្រួល {e} អ្នកមើល {v} · បុគ្គលិក {t} នាក់',
   addedBy:'បន្ថែមដោយ {name}', byName:'ដោយ {name}', lblPeople:'អ្នកចូលរួម', addPeople:'＋ បន្ថែមអ្នកចូលរួម', findPeople:'ស្វែងរកក្នុងក្រុម', noPeopleFound:'រកមិនឃើញ', nPicked:'បានជ្រើស {n}', lblPeopleDay:'អ្នកចូលរួមថ្ងៃនេះ', sameAsEvent:'ដូចព្រឹត្តិការណ៍ទាំងមូល', close:'បិទ', errNick:'ឈ្មោះហៅអតិបរមា ៣០ តួអក្សរ។', roleAdmin:'អ្នកគ្រប់គ្រង', roleEditor:'អ្នកកែសម្រួល', roleViewer:'អ្នកមើល', roleViewerNote:'មើលតែប៉ុណ្ណោះ', accounts:'គណនី', accountsHint:'អ្នកគ្រប់គ្រងអាចគ្រប់គ្រងគណនី និងធ្វើបានទាំងអស់។ អ្នកកែសម្រួលអាចបន្ថែម កែ និងលុបព្រឹត្តិការណ៍។ អ្នកមើលអាចមើលបានតែប៉ុណ្ណោះ។', removeAcct:'ដកចេញ', removeAcctAsk:'ដកគណនី “{name}” ចេញ? ពួកគេនឹងត្រូវចាកចេញ ហើយមិនអាចចូលបានទៀតទេ។', acctRemoved:'បានដកគណនីចេញ', roleSaved:'បានប្តូរតួនាទី', you:'អ្នក', viewOnly:'គណនីនេះអាចមើលព្រឹត្តិការណ៍បានតែប៉ុណ្ណោះ។', adminOnly:'មានតែអ្នកគ្រប់គ្រងទេដែលអាចធ្វើបាន។', lastAdmin:'ត្រូវមានអ្នកគ្រប់គ្រងយ៉ាងតិចម្នាក់។', ownAcct:'អ្នកមិនអាចដកគណនីខ្លួនឯងបានទេ។', peopleTab:'បុគ្គលិក', peopleHint:'ដាក់ឈ្មោះហៅខ្លីឲ្យបុគ្គលិក ដើម្បីប្រើក្នុងប្រតិទិន។ អ្នកទាំងអស់នឹងឃើញឈ្មោះហៅជំនួសឈ្មោះពេញ។', nickPh:'ឈ្មោះហៅ', nickSaved:'បានរក្សាទុកឈ្មោះហៅ', nickCleared:'បានលុបឈ្មោះហៅ', noTeam:'មិនទាន់មានបុគ្គលិកទេ។', pwRules:'យ៉ាងតិច ១០ តួអក្សរ។ មិនមែនជាពាក្យសម្ងាត់ដែលគេប្រើទូទៅ ហើយមិនមានឈ្មោះអ្នកប្រើទេ។', errWrongCode:'លេខកូដមិនត្រឹមត្រូវទេ។', errAgain:'សូមចូលគណនីម្តងទៀត។', errWrongPw:'ពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ។', errTotpOn:'ការចូលពីរជំហានបានបើករួចហើយ។',
   codeTitle:'ការចូលពីរជំហាន', codeHint:'បញ្ចូលលេខកូដ ៦ ខ្ទង់ពីកម្មវិធីផ្ទៀងផ្ទាត់ ឬលេខកូដស្តារមួយ។', verify:'ផ្ទៀងផ្ទាត់', back:'ត្រឡប់',
   newPwTitle:'ជ្រើសរើសពាក្យសម្ងាត់ថ្មី', newPwWhy:'ត្រូវប្តូរពាក្យសម្ងាត់របស់អ្នកមុនពេលបន្ត។', curPw:'ពាក្យសម្ងាត់បច្ចុប្បន្ន', newPw:'ពាក្យសម្ងាត់ថ្មី', newPw2:'បញ្ចូលពាក្យសម្ងាត់ថ្មីម្តងទៀត',
@@ -2580,6 +2602,50 @@ async function jrAccounts(){
       catch(e){ toast(tx('errPrefix')+jrErr(e.message)); } });
   };
   draw(); ov.appendChild(card); document.body.appendChild(ov); ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
+}
+// admin: every signed-in device and a short overview (Settings → Devices). Read-only; signing a device out is not offered here.
+function jrDevName(ua, info){
+  ua=ua||''; const tp=info&&info.screen;
+  const os=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Android/.test(ua)?'Android':/Macintosh/.test(ua)?'Mac':/Windows/.test(ua)?'Windows':/CrOS/.test(ua)?'Chromebook':/Linux/.test(ua)?'Linux':'';
+  const br=/EdgA?\/|EdgiOS/.test(ua)?'Edge':/SamsungBrowser/.test(ua)?'Samsung':/Firefox|FxiOS/.test(ua)?'Firefox':/CriOS|Chrome\//.test(ua)?'Chrome':/Safari/.test(ua)?'Safari':'';
+  return [os||tx('devUnknown'), br].filter(Boolean).join(' · ')+(tp?` · ${tp}`:'');
+}
+function jrAgo(t){
+  const s=(Date.now()-new Date(t))/1000, rtf=new Intl.RelativeTimeFormat(JR_LANG==='zh'?'zh-CN':JR_LANG==='km'?'km-KH':'en',{numeric:'auto'});
+  return s<90?tx('devNow'):s<5400?rtf.format(-Math.round(s/60),'minute'):s<129600?rtf.format(-Math.round(s/3600),'hour'):rtf.format(-Math.round(s/86400),'day');
+}
+async function jrDevices(){
+  let d; try{ d=await api('/api/devices'); }catch(e){ toast(tx('errPrefix')+jrErr(e.message)); return; }
+  const o=d.overview||{}, r=o.roles||{}, vn=x=>+(((x.info||{}).v||'').replace(/\D/g,''))||0, newest=Math.max(0,...d.devices.map(vn));
+  const tile=(n,k,warn)=>`<div class="jr-ov${warn&&n?' warn':''}"><b>${esc(String(n??0))}</b><small>${esc(tx(k))}</small></div>`;
+  const ov=document.createElement('div'); ov.className='modal-ov';
+  const card=document.createElement('div'); card.className='modal-card jr-accts jr-devs'; card.style.cssText='max-width:32rem;width:100%';
+  card.innerHTML=`<div class="jr-ae-head"><h2>${esc(tx('devices'))}</h2></div>
+    <div class="jr-ov-grid">
+      ${tile(o.active_day,'ovActiveDay')}${tile(o.people_week,'ovPeopleWeek')}${tile(o.devices,'ovDevices')}${tile(o.push,'ovPush')}
+      ${tile(o.upcoming,'ovUpcoming')}${tile(o.tentative,'ovTentative')}${tile(o.added_week,'ovAddedWeek')}${tile(o.events,'ovEvents')}
+      ${tile(o.signins_week,'ovSignins')}${tile(o.failed_day,'ovFailed',1)}${tile(o.locked,'ovLocked',1)}${tile(o.scans_week,'ovScans')}
+    </div>
+    <p class="jr-ae-hint">${esc(tx('ovAccounts',{n:o.accounts??0,a:r.admin||0,e:r.editor||0,v:r.viewer||0,t:o.team??0}))}</p>
+    <h3 class="jr-dev-h">${esc(tx('devList'))}</h3>
+    <div class="jr-acct-list">${d.devices.map(x=>{ const i=x.info||{}; return `<div class="jr-acct jr-dev">
+      <span class="jr-acct-who"><b>${esc(x.name)}${x.this?` <em class="jr-role">${esc(tx('devThis'))}</em>`:''}</b><small>@${esc(x.user)} · ${esc(tx('role'+x.role[0].toUpperCase()+x.role.slice(1)))}</small></span>
+      <span class="jr-dev-when">${esc(jrAgo(x.last_seen))}</span>
+      <div class="jr-acct-sec"><span>${esc(jrDevName(x.agent,i))}</span>
+        ${i.app?`<em class="jr-role">${esc(tx(i.app==='app'?'devApp':'devBrowser'))}</em>`:''}${i.v?`<em class="jr-role${vn(x)<newest?' warn':''}">${esc(i.v)}</em>`:''}${i.lite?`<em class="jr-role">lite</em>`:''}
+        <small class="jr-dev-meta">${esc(tx('devSince',{date:new Date(x.signed_in).toLocaleDateString(JR_LANG==='zh'?'zh-CN':JR_LANG==='km'?'km-KH':[],{dateStyle:'medium'})}))}${x.ip&&x.ip!=='unknown'?' · '+esc(x.ip):''}</small></div></div>`; }).join('')||'—'}</div>
+    <div class="item-edit-actions"><button class="mini" id="dv-close">${esc(tx('close'))}</button></div>`;
+  card.querySelector('#dv-close').onclick=()=>dismiss(ov);
+  ov.appendChild(card); document.body.appendChild(ov); ov.onclick=e=>{ if(e.target===ov) dismiss(ov); };
+}
+// once per opening, the app tells the server what it is (version, installed or browser, screen) for the admin's Devices screen
+let JR_PINGED=false;
+function jrPing(){
+  if(JR_PINGED || !TOKEN) return; JR_PINGED=true;
+  fetch('sw.js').then(r=>r.text()).catch(()=>'').then(t=>{ const m=String(t).match(/yai-shell-v(\d+)/);
+    const app=(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?'app':'browser';
+    return fetch(jrUrl('/api/ping'),{method:'POST',headers:{'X-Token':TOKEN,'Content-Type':'application/json'},
+      body:JSON.stringify({v:m?'v'+m[1]:'',app,lang:JR_LANG,screen:screen.width+'×'+screen.height,lite:typeof JR_LITE!=='undefined'&&JR_LITE})}); }).catch(()=>{});
 }
 async function jrSignOut(){
   if(!await askConfirm(tx('signOutAsk'))) return;
@@ -2919,7 +2985,7 @@ async function loadJournal(){
   const first=!document.querySelector('#jr-cal-grid').children.length && !document.querySelector('#jr-agenda-list .jr-day-group');
   if(first) setJournalView(JR_VIEW, true);
   let live=false;
-  try{ JOURNAL_EVENTS = await jrFetchEvents(); live=!JR_FROZEN; if(live){ await jrLoadPeople(); jrRefreshMe(); } }
+  try{ JOURNAL_EVENTS = await jrFetchEvents(); live=!JR_FROZEN; if(live){ await jrLoadPeople(); jrRefreshMe(); jrPing(); } }
   catch(e){ if(e.message!=='please sign in') toast(tx('loadErr')+jrErr(e.message)); JOURNAL_EVENTS=jrSnapshot()?.events || []; }
   if(!first) setJournalView(JR_VIEW, true);
   else if(JR_VIEW==='calendar') renderCalendar({enter:true});   // the day's cards deal in as they arrive
@@ -3163,6 +3229,8 @@ function jrScanStart(files){
           <div class="jr-sc-row"><input type="time" data-f="event_time" value="${esc(e.event_time)}" aria-label="${esc(tx('lblFrom'))}"><input type="time" data-f="end_time" value="${esc(e.end_time)}" aria-label="${esc(tx('lblToTime'))}"></div>
           <input data-f="location" value="${esc(e.location)}" placeholder="${esc(tx('lblLoc'))}" maxlength="200" aria-label="${esc(tx('lblLoc'))}">
           <input data-f="notes" value="${esc(e.notes)}" placeholder="${esc(tx('lblNotes'))}" maxlength="500" aria-label="${esc(tx('lblNotes'))}">
+          <div class="jr-sc-meta"><span class="jr-ae-status">${[['confirmed','stConfirmed','✓'],['tentative','stTent','?'],['cancelled','stCancel','✕']].map(([k,t,g])=>`<button type="button" class="jr-chipbtn st-${k}${(e.status||'confirmed')===k?' on':''}" data-st="${k}" aria-pressed="${(e.status||'confirmed')===k}" title="${esc(tx(t))}"><span class="jr-st-ico" aria-hidden="true">${g}</span><span class="jr-st-l">${esc(tx(t))}</span></button>`).join('')}</span>
+            <span class="jr-sc-cols" role="group" aria-label="${esc(tx('colour'))}"><button type="button" class="jr-ball auto${e.color?'':' on'}" data-c="" title="${esc(tx('auto'))}" aria-label="${esc(tx('auto'))}"></button>${JR_COLOR_NAMES.map(c=>`<button type="button" class="jr-ball${e.color===c?' on':''}" data-c="${c}" title="${esc(tx('c_'+c))}" aria-label="${esc(tx('c_'+c))}" style="--ball:var(${JR_COLORS[c]}-ball)"></button>`).join('')}</span></div>
         </div>`).join('')}</div>
         ${raw?`<details class="jr-audit"><summary>${esc(tx('scanRaw'))}</summary><pre class="jr-sc-raw">${esc(raw)}</pre></details>`:''}
         <div class="item-edit-actions"><button class="mini" id="sc-x">${esc(tx('cancel'))}</button><button class="act" id="sc-ok"${n?'':' disabled'}>${esc(tx('scanAdd',{n}))}</button></div>`;
@@ -3172,6 +3240,8 @@ function jrScanStart(files){
     card.oninput=e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const f=e.target.dataset.f; if(!f||f==='on') return; list[+row.dataset.i][f]=e.target.value; };
     card.onchange=e=>{ const row=e.target.closest('.jr-sc'); if(!row) return; const it=list[+row.dataset.i], f=e.target.dataset.f;
       if(f==='on'){ it.on=e.target.checked; draw(); } };
+    card.onclick=e=>{ const b=e.target.closest('.jr-sc [data-st], .jr-sc [data-c]'); if(!b) return; const it=list[+b.closest('.jr-sc').dataset.i];
+      if(b.dataset.st) it.status=b.dataset.st; else it.color=b.dataset.c; draw(); };
     async function save(){
       const todo=list.filter(e=>e.on); const bad=todo.find(e=>!e.event_date||!e.title.trim());
       if(bad){ toast(!bad.title.trim()?tx('titleReq'):tx('scanNoDate')); return; }
@@ -3181,7 +3251,8 @@ function jrScanStart(files){
         let t2=e.end_time||null; if(t2 && (!e.event_time || (!end && t2<=e.event_time))) t2=null;
         try{
           const saved=await api('/api/journal/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:e.title.trim(),event_date:e.event_date,end_date:end,event_time:e.event_time||null,end_time:t2,
-            location:(e.location||'').trim()||null,notes:(e.notes||'').trim()||null,category:(e.category||'').trim()||null})});
+            location:(e.location||'').trim()||null,notes:(e.notes||'').trim()||null,category:(e.category||'').trim()||null,
+            status:e.status&&e.status!=='confirmed'?e.status:null,color:JR_COLORS[e.color]?e.color:null})});
           JOURNAL_EVENTS.push(saved); added++; last=saved;
         }catch(err){ toast(tx('errPrefix')+jrErr(err.message)); }
       }
@@ -3276,7 +3347,7 @@ function jrSettings(){
     ${JR_USER?`<section class="jr-set-sec"><h3>${esc(tx('setAccount'))}</h3>
       <div class="jr-set-acct"><span class="jr-av jr-set-av" style="--h:${(JR_USER.id*137)%360}"><b>${esc(jrInitials(JR_USER.name))}</b></span>
         <div><b>${esc(JR_USER.name)}</b><small>@${esc(JR_USER.username)} · <em class="jr-role">${esc(tx('role'+jrRole()[0].toUpperCase()+jrRole().slice(1)))}</em></small></div></div>
-      <div class="jr-set-btns"><button class="mini" data-act="security">${esc(tx('security'))}</button>${jrRole()==='admin'?`<button class="mini" data-act="accounts">${esc(tx('accounts'))}</button>`:''}<button class="mini jr-ae-del" data-act="signout">${esc(tx('signOut'))}</button></div></section>`:''}
+      <div class="jr-set-btns"><button class="mini" data-act="security">${esc(tx('security'))}</button>${jrRole()==='admin'?`<button class="mini" data-act="accounts">${esc(tx('accounts'))}</button><button class="mini" data-act="devices">${esc(tx('devices'))}</button>`:''}<button class="mini jr-ae-del" data-act="signout">${esc(tx('signOut'))}</button></div></section>`:''}
     <section class="jr-set-sec"><h3>${esc(tx('setAppearance'))}</h3>
       ${row(tx('themeTitle'),`<div class="jr-themes">${JR_THEMES.map(([k,n,bg,ac])=>`<button type="button" class="jr-theme${curTheme===k?' on':''}" data-set="theme" data-v="${k}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${curTheme===k}"><i style="background:linear-gradient(135deg,${bg} 50%,${ac} 50%)"></i><span>${esc(n)}</span></button>`).join('')}</div>`)}
       ${row(tx('glassTitle'),chips('glass',jrPref('yai_glass','full'),[['full',tx('glassFull')],['soft',tx('glassSoft')],['solid',tx('glassSolid')]]),tx('glassHint'))}
@@ -3321,6 +3392,7 @@ function jrSettings(){
     if(a==='close') dismiss(ov);
     else if(a==='security'){ dismiss(ov); jrSecurity(); }
     else if(a==='accounts'){ dismiss(ov); jrAccounts(); }
+    else if(a==='devices'){ dismiss(ov); jrDevices(); }
     else if(a==='signout'){ dismiss(ov); jrSignOut(); }
     else if(a==='ics') jrExportIcs();
     else if(a==='json') jrExportJson();
@@ -3980,9 +4052,9 @@ function renderCalendar(opt={}){
   document.querySelectorAll('.jr-ghost').forEach(g=>{ g.getAnimations?.().forEach(a=>a.cancel()); g.remove(); });
   let ghost=null, off=0;
   if(opt.dir && grid.animate && !K_REDUCED.matches && grid.offsetParent){
-    const m=new DOMMatrixReadOnly(getComputedStyle(grid).transform==='none'?undefined:getComputedStyle(grid).transform);
+    const tf=getComputedStyle(grid).transform, m=new DOMMatrixReadOnly(tf==='none'?undefined:tf);
     off=opt.axis==='y'?m.m42:m.m41;                                   // where the finger left the month
-    grid.getAnimations?.().forEach(a=>{ if(a.id==='jr-slide') a.cancel(); });
+    jrGridSlide?.cancel(); jrGridSlide=null;
     if(!JR_LITE && !rapid){                                           // the old month carries on from there as a copy
       ghost=grid.cloneNode(true); ghost.removeAttribute('id'); ghost.classList.remove('wave'); ghost.classList.add('jr-ghost');
       ghost.setAttribute('aria-hidden','true'); ghost.inert=true;
@@ -4016,9 +4088,9 @@ function renderCalendar(opt={}){
     const y=opt.axis==='y', size=y?grid.offsetHeight:grid.offsetWidth, far=Math.min(y?110:120, size*.24);
     const mv=v=>y?`translate3d(0,${v.toFixed(1)}px,0)`:`translate3d(${v.toFixed(1)}px,0,0)`;
     const ease='cubic-bezier(.2,.85,.25,1)', dur=JR_LITE||rapid?240:360;
-    grid.getAnimations?.().forEach(a=>{ if(a.id==='jr-slide') a.cancel(); });
+    jrGridSlide?.cancel();   // kept in a variable: asking the grid for its animations makes the browser restyle the page first
     // lighter slide (no fade): only movement, which the phone's graphics chip does on its own
-    const a=grid.animate(JR_LITE||rapid?[{transform:mv(opt.dir*far*.85)},{transform:'none'}]
+    const a=jrGridSlide=grid.animate(JR_LITE||rapid?[{transform:mv(opt.dir*far*.85)},{transform:'none'}]
       :[{transform:mv(opt.dir*far*.85),opacity:0},{opacity:.85,offset:.45},{transform:'none',opacity:1}],{duration:dur,easing:ease}); a.id='jr-slide';
     // safety net: when the slide has finished no drag offset may survive on the month (unless a new drag has already taken it over)
     a.finished.then(()=>{ if(!grid.classList.contains('jr-dragging')){ grid.style.transform=''; grid.style.opacity=''; } },()=>{});
@@ -4038,6 +4110,7 @@ function renderCalendar(opt={}){
   jrRenderUpNext();
 }
 
+var jrGridSlide=null;     // the month's running slide-in, if any (see renderCalendar)
 // Lays out the titles in the day squares. Runs after every render and whenever the grid changes size.
 // A one-day event stays inside its own day: a long title wraps onto more lines (between words), and ends "…"
 // when the square has no more room — it never runs into the next days, where it would look like it lasts
@@ -4048,47 +4121,81 @@ function jrFitCells(){
   const grid=document.getElementById('jr-cal-grid'); if(!grid) return;
   const cells=[...grid.querySelectorAll('.jr-cal-day')];
   grid.querySelectorAll('.jr-ev-gap').forEach(g=>g.remove());
+  // Measured in batches (all writes, then all reads) so the browser lays the month out a handful of times, not once per
+  // event: reading a size right after a change forces a fresh layout, and doing that per event made every swipe stall.
+  // 1. reset every square and event (writes only)
+  const sq=cells.map(cell=>{
+    const pv=cell.querySelector('.jr-preview'); if(!pv) return null;
+    const evs=[...pv.querySelectorAll('.jr-ev')];
+    pv.classList.remove('tight');
+    for(const e of evs){
+      e.hidden=false;
+      jrSetTitle(e, (+e.dataset.span && e.classList.contains('cont-l') ? '↳ ' : '')+e.dataset.t);
+      e.classList.remove('cut','clamp','wrap','hy'); e.style.webkitLineClamp=''; e.style.fontSize='';
+    }
+    return {pv, evs};
+  });
+  // 2. read the squares' sizes and the events' text styles (one layout)
+  const geo=cells.map(cell=>({left:cell.offsetLeft, w:cell.offsetWidth}));
+  for(let i=0;i<cells.length;i++){ const q=sq[i]; if(!q) continue;
+    q.pad=parseFloat(getComputedStyle(cells[i]).paddingLeft)||0;
+    q.gap=parseFloat(getComputedStyle(q.pv).rowGap)||0;
+    q.h=q.pv.clientHeight; q.laneH=q.evs[0].offsetHeight || 16;
+    q.cs=q.evs.map(e=>{ const c=getComputedStyle(e); return {fontSize:c.fontSize, paddingLeft:c.paddingLeft, paddingRight:c.paddingRight,
+      borderLeftWidth:c.borderLeftWidth, borderRightWidth:c.borderRightWidth, fontWeight:c.fontWeight, fontFamily:c.fontFamily, letterSpacing:c.letterSpacing}; });
+  }
+  // 3. each event's room (its own day, never the next ones; a multi-day bar exactly from this square to its last one in the
+  //    row) and the text size its longest word needs (writes only)
+  for(let i=0;i<cells.length;i++){ const q=sq[i]; if(!q) continue;
+    const c=i%7, room=geo[i].w-2*q.pad;
+    q.room=room; q.pv.style.setProperty('--room', room+'px');
+    q.evs.forEach((e,k)=>{
+      const span=+e.dataset.span||0; let w=room;
+      if(span){ const last=geo[i+Math.min(span,7-c)-1]||geo[i]; w=last.left+geo[i].w-q.pad-(geo[i].left+q.pad); e.style.width=w+'px'; }
+      jrFitWords(e, w, q.cs[k]);
+    });
+  }
+  // 4. longer than its room: wrap at the edge (one read, then writes)
+  const over=sq.map(q=>q && q.evs.map(e=>e.scrollWidth>e.clientWidth+1));
+  sq.forEach((q,i)=>q && q.evs.forEach((e,k)=>{ if(over[i][k]) e.classList.add('wrap'); }));
+  // 5. how many lines each event takes now (one read)
+  const tall=sq.map(q=>q && q.evs.map(e=>e.offsetHeight));
+  // 6. a title on more than one line may have to get smaller to fit its square (step 7 below): its height at every smaller size
+  //    (.5px steps down to 7px), measured for all such events together, one layout per size instead of one per event and size
+  const steps=new Map(), cand=[];
+  sq.forEach((q,i)=>q && q.evs.forEach((e,k)=>{
+    const fs=parseFloat(e.style.fontSize)||parseFloat(q.cs[k].fontSize);
+    if(fs>7 && Math.round((tall[i][k]+q.gap)/(q.laneH+q.gap))>1){ cand.push({e, fs, was:e.style.fontSize}); steps.set(e, []); }
+  }));
+  for(let live=cand; live.length; live=live.filter(c=>c.fs>7)){
+    for(const c of live){ c.fs=Math.max(7, c.fs-.5); c.e.style.fontSize=c.fs+'px'; }
+    for(const c of live) steps.get(c.e).push({fs:c.fs, h:c.e.offsetHeight});
+  }
+  for(const c of cand) c.e.style.fontSize=c.was;
+  // 7. place the events, week row by week row
   const laneOf={};                                  // laneOf[event id] = the line its bar had in the row above
   for(let r=0; r<cells.length; r+=7){
     const busy=[];                                   // busy[lane] = first column where that lane is free again
     for(let c=0; c<7 && r+c<cells.length; c++){
-      const cell=cells[r+c], pv=cell.querySelector('.jr-preview'); if(!pv) continue;
-      const evs=[...pv.querySelectorAll('.jr-ev')], more=cell.querySelector('.jr-more');
-      const pad=parseFloat(getComputedStyle(cell).paddingLeft)||0, colW=cell.offsetWidth;
-      const room=colW-2*pad;                                          // its own day, never the next ones
-      pv.classList.remove('tight');
-      pv.style.setProperty('--room', room+'px');
-      evs.forEach(e=>{ e.hidden=false; e.classList.remove('wrap'); });
-      const gap=parseFloat(getComputedStyle(pv).rowGap)||0;
-      const laneH=evs[0].offsetHeight || 16, lanes=Math.max(1, Math.floor((pv.clientHeight+gap)/(laneH+gap)));
+      const cell=cells[r+c], q=sq[r+c]; if(!q) continue;
+      const {evs, gap, laneH}=q, more=cell.querySelector('.jr-more');
+      const lanes=Math.max(1, Math.floor((q.h+gap)/(laneH+gap)));
       let lane=0, shown=0;
       const firstFree=(from, n)=>{ let at=from; while(at<from+64 && [...Array(n).keys()].some(k=>(busy[at+k]||0)>c)) at++; return at; };
-      for(const e of evs){
+      for(const [k,e] of evs.entries()){
         const span=+e.dataset.span||0;
-        // lays the event out with its WHOLE title (never initials): a title longer than its room goes onto more lines, a one-day
+        // laid out above with its WHOLE title (never initials): a title longer than its room goes onto more lines, a one-day
         // event as well as a multi-day bar
-        const fitAs=()=>{
-          jrSetTitle(e, (span && e.classList.contains('cont-l') ? '↳ ' : '')+e.dataset.t);
-          e.classList.remove('cut','clamp','wrap'); e.style.webkitLineClamp='';
-          let w=room;
-          // a multi-day bar is locked to its days: exactly from this square to its last one in the row
-          if(span){ const last=cells[r+c+span-1]||cell; w=last.offsetLeft+colW-pad-(cell.offsetLeft+pad); e.style.width=w+'px'; }
-          jrFitWords(e, w);
-          if(e.scrollWidth>e.clientWidth+1) e.classList.add('wrap');     // longer than the room left: wrap at the edge
-          return Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
-        };
-        let lines=fitAs();
+        let lines=Math.max(1, Math.round((tall[r+c][k]+gap)/(laneH+gap)));
         // a bar carrying on from the row above goes on the same line it had there (if that line is near the top)
         const want=span && e.classList.contains('cont-l') ? laneOf[e.dataset.id] : undefined;
         const place=()=>want!=null && want<=2 ? firstFree(Math.max(lane,want), 1) : firstFree(lane, lines);
         // not enough rows for all its lines: make the text a little smaller, step by step (down to 7px), so the whole title
         // still shows — before anything is cut
         if(lines>1 && place()+lines>lanes){
-          let fs=parseFloat(getComputedStyle(e).fontSize);
-          while(fs>7 && place()+lines>lanes && lines>1){
-            fs=Math.max(7, fs-.5); e.style.fontSize=fs+'px';
-            lines=Math.max(1, Math.round((e.offsetHeight+gap)/(laneH+gap)));
-          }
+          const st=steps.get(e)||[]; let n=0;
+          while(n<st.length && place()+lines>lanes && lines>1){ lines=Math.max(1, Math.round((st[n].h+gap)/(laneH+gap))); n++; }
+          if(n) e.style.fontSize=st[n-1].fs+'px';
         }
         let at=place();
         // still no room for all its lines (a tiny square, a very long title): as many lines as there are, the last ending "…";
@@ -4249,10 +4356,10 @@ function jrSetTitle(e, text){
 // An event's text, made just small enough that its longest word fits its day whole (never below 8.5px), so words
 // break only at spaces. Most titles keep the size the square gives them (see "event text scales").
 const jrMeasure=document.createElement('canvas').getContext('2d');
-function jrFitWords(e, room){
+function jrFitWords(e, room, cs){                  // cs: its computed style, when the caller read it already (no extra layout)
   e.style.fontSize=''; e.classList.remove('hy');
   if(JR_NOSPACE.test(e.dataset.t||'')) return;      // no spaces to break at: it wraps wherever it must
-  const cs=getComputedStyle(e), fs=parseFloat(cs.fontSize);
+  cs=cs||getComputedStyle(e); const fs=parseFloat(cs.fontSize);
   const avail=room-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-parseFloat(cs.borderLeftWidth)-parseFloat(cs.borderRightWidth)-1;
   if(avail<=0) return;
   jrMeasure.font=`${cs.fontWeight} ${fs}px ${cs.fontFamily}`;

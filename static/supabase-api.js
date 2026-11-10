@@ -45,6 +45,8 @@
     if (path === "/api/totp/confirm" && method === "POST") return rpc(origin, "yai_totp_confirm", { p_token: token, p_code: body.code ?? "" });
     if (path === "/api/totp/disable" && method === "POST") return rpc(origin, "yai_totp_disable", { p_token: token, p_password: body.password ?? "" });
     if (path === "/api/audit") return rpc(origin, "yai_audit", { p_token: token });
+    if (path === "/api/devices") return rpc(origin, "yai_devices", { p_token: token });
+    if (path === "/api/ping" && method === "POST") return rpc(origin, "yai_ping", { p_token: token, p_info: body ?? {} });
     if (path === "/api/logout") return rpc(origin, "yai_logout", { p_token: token });
     if (path === "/api/me") return rpc(origin, "yai_me", { p_token: token });
     if (path === "/api/users" && method === "GET") return rpc(origin, "yai_users", { p_token: token });
