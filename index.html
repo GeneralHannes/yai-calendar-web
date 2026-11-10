@@ -3185,8 +3185,8 @@ function jrScanStart(files){
   // the pill shows the progress, then "finished, tap to see"; tapping it brings the sheet back. Stop really cancels.
   const pillMsg=()=>{ if(!pill) return; pill.classList.toggle('done',!busy);
     pill.innerHTML=(busy?'<span class="jr-spin" aria-hidden="true"></span>':'<span class="jr-scan-dot" aria-hidden="true"></span>')+`<span>${esc(busy?lastMsg:tx('scanReady'))}</span>`; };
-  const hide=()=>{ if(pill) return; ov.style.display='none'; pill=document.createElement('button'); pill.type='button'; pill.id='jr-scan-pill';
-    pill.onclick=()=>{ pill.remove(); pill=null; ov.style.display=''; }; document.body.appendChild(pill); pillMsg(); };
+  const hide=()=>{ if(pill) return; ov.style.display='none'; ov.className='jr-scan-tucked'; pill=document.createElement('button'); pill.type='button'; pill.id='jr-scan-pill';
+    pill.onclick=()=>{ pill.remove(); pill=null; ov.className='modal-ov'; ov.style.display=''; }; document.body.appendChild(pill); pillMsg(); };
   const settle=()=>{ busy=false; pillMsg(); };
   ov.onclick=e=>{ if(e.target===ov) (busy?hide:close)(); };
   let langs; try{ langs=JSON.parse(localStorage.getItem('yai_ocr_langs')); }catch(_){} if(!Array.isArray(langs)||!langs.length) langs=['en',JR_LANG].filter((v,i,a)=>a.indexOf(v)===i);
@@ -4913,7 +4913,7 @@ if("serviceWorker" in navigator&&window.isSecureContext&&!/[?&]nosw\b/.test(loca
   addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){r.update().catch(function(){});}).catch(function(){});});
   /* nothing the person could lose by the page reloading right now */
   function kSafe(){
-    if(document.querySelector(".modal-ov:not([data-k-leaving]),#pin-ov,#pw-ov,.jr-pop")) return false;          /* a form, sheet or pop-up is open */
+    if(document.querySelector(".modal-ov:not([data-k-leaving]),#pin-ov,#pw-ov,.jr-pop,#jr-scan-pill")) return false;   /* a form, sheet, pop-up or tucked-away photo scan is open */
     if(typeof JR_EVDRAG!=="undefined"&&JR_EVDRAG) return false;                                              /* an event is being dragged */
     if(performance.now()-kInput<1500) return false;                                                          /* a tap or key a moment ago */
     var f=document.querySelectorAll("input:not([type=checkbox]):not([type=radio]):not([type=search]):not([type=hidden]),textarea");
