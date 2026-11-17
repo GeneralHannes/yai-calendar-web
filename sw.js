@@ -1,8 +1,9 @@
 // Yai Calendar — offline app shell, served at /sw.js.
 // The page opens at once from the device and is refreshed in the background; a new version shows
-// "New version — tap to reload". Fonts never change under their URL, so they're kept. /api/* is never cached.
+// "New version — tap to reload". Fonts and the page's styles/script (static/app.<hash>.css|js: a new version is a new name)
+// never change under their URL, so they're kept. /api/* is never cached.
 
-const SHELL = "yai-shell-v150";            // bump to make every device drop its copy
+const SHELL = "yai-shell-v151";            // bump to make every device drop its copy
 // Paths are taken from the worker's own scope, so it works at "/" and under a sub-path (GitHub Pages).
 const BASE = new URL(self.registration.scope).pathname;
 const PAGES = [BASE, BASE + "journal"];
@@ -10,7 +11,11 @@ const PAGES = [BASE, BASE + "journal"];
 self.addEventListener("install", (e) => {
   e.waitUntil((async () => {
     const c = await caches.open(SHELL);
-    await Promise.all(PAGES.map((p) => fetch(p, { cache: "no-cache" }).then((r) => r.ok && c.put(p, r)).catch(() => {})));
+    await Promise.all(PAGES.map((p) => fetch(p, { cache: "no-cache" }).then(async (r) => {
+      if (!r.ok) return;
+      await c.put(p, r.clone());
+      await keepParts(c, await r.text());
+    }).catch(() => {})));
     await self.skipWaiting();
   })());
 });
@@ -27,7 +32,7 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET" || url.origin !== location.origin) return;
   if (url.pathname.startsWith("/api/") || url.pathname === BASE + "sw.js") return;
   if (req.mode === "navigate" && PAGES.includes(url.pathname)) return e.respondWith(page(e, url.pathname));
-  if (url.pathname.startsWith(BASE + "static/fonts/")) return e.respondWith(kept(req));
+  if (url.pathname.startsWith(BASE + "static/fonts/") || url.pathname.startsWith(BASE + "static/app.")) return e.respondWith(kept(req));
 });
 
 async function page(e, path) {
@@ -37,6 +42,8 @@ async function page(e, path) {
     if (r.ok) {
       const before = hit && hit.headers.get("etag");
       await c.put(path, r.clone());
+      // its styles/script too, so it works offline from the first time it's shown (not awaited: the page itself is never held up)
+      r.clone().text().then((html) => keepParts(c, html)).catch(() => {});
       if (before && before !== r.headers.get("etag")) {
         for (const w of await self.clients.matchAll({ type: "window" }))
           if (new URL(w.url).pathname === path) w.postMessage({ type: "odin:updated" });
@@ -46,6 +53,12 @@ async function page(e, path) {
   });
   if (hit) { e.waitUntil(net.catch(() => {})); return hit; }
   try { return await net; } catch { return new Response("Offline — and this page isn't on this device yet.", { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } }); }
+}
+
+// the styles and script a page names (static/app.<hash>.css|js), fetched into the cache if they aren't there yet
+async function keepParts(c, html) {
+  const parts = [...new Set(html.match(/static\/app\.[0-9a-f]+\.(?:css|js)/g) || [])].map((p) => BASE + p);
+  await Promise.all(parts.map(async (p) => { if (!(await c.match(p))) { const r = await fetch(p); if (r.ok) await c.put(p, r); } }));
 }
 
 async function kept(req) {
