@@ -3,7 +3,7 @@
 // "New version — tap to reload". Fonts and the page's styles/script (static/app.<hash>.css|js: a new version is a new name)
 // never change under their URL, so they're kept. /api/* is never cached.
 
-const SHELL = "yai-shell-v151";            // bump to make every device drop its copy
+const SHELL = "yai-shell-v152";            // bump to make every device drop its copy
 // Paths are taken from the worker's own scope, so it works at "/" and under a sub-path (GitHub Pages).
 const BASE = new URL(self.registration.scope).pathname;
 const PAGES = [BASE, BASE + "journal"];
