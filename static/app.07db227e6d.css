@@ -1213,6 +1213,24 @@ border:1px solid var(--glass-line); background:color-mix(in srgb,var(--k-bg3) 40
 .jr-rep-week h3 em { font-style:normal; font-weight:600; color:var(--muted); flex:none; }
 .jr-rep-week.busy h3 em { color:var(--accent); }
 .jr-rep-week .jr-up-ev { width:100%; }
+.jr-rep-mode { margin:0 0 .8rem; }
+.jr-rep-sum { margin:0 0 .2rem; font-size:1.05rem; font-weight:700; color:var(--ink); }
+.jr-rep-row { all:unset; box-sizing:border-box; cursor:pointer; display:grid; grid-template-columns:minmax(3.2rem,max-content) minmax(0,max-content) minmax(0,1fr); align-items:baseline; column-gap:.7rem;
+padding:.42rem .55rem; border-radius:10px; border-left:3px solid var(--accent); font-size:.88rem; }
+@supports (grid-template-columns:subgrid) {
+.jr-rep-week:has(.jr-rep-row) { display:grid; grid-template-columns:max-content max-content minmax(0,1fr); }
+.jr-rep-week:has(.jr-rep-row) > h3 { grid-column:1 / -1; }
+.jr-rep-row { grid-column:1 / -1; grid-template-columns:subgrid; }
+}
+.jr-rep-row:hover, .jr-rep-row:focus-visible { background:color-mix(in srgb,var(--accent) 9%,transparent); outline:none; }
+.jr-rep-d { font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.jr-rep-t { font-size:.8rem; font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums; }
+.jr-rep-title { font-weight:600; color:var(--ink); overflow-wrap:anywhere; }
+.jr-rep-title em { font-style:normal; font-size:.74rem; font-weight:700; color:var(--k-bad); white-space:nowrap; margin-left:.15rem; }
+.jr-rep-title i { font-style:normal; color:var(--k-good,var(--accent)); }
+.jr-rep-row.done .jr-rep-title, .jr-rep-row.st-cancelled .jr-rep-title { color:var(--muted); text-decoration:line-through; }
+.jr-rep-row.st-cancelled .jr-rep-title em { color:var(--muted); }
+.jr-rep-row.done .jr-rep-title i, .jr-rep-row.st-cancelled .jr-rep-title em { display:inline-block; text-decoration:none; }
 .modal-card.jr-ae { background:linear-gradient(180deg, color-mix(in srgb,var(--k-act) 36%,transparent) 0, color-mix(in srgb,var(--k-act) 10%,transparent) 11rem, transparent 20rem), var(--gl-fill), color-mix(in srgb,var(--k-bg2) 93%,transparent);
 transition:box-shadow .4s; }
 .jr-ae.wash::before { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; background:radial-gradient(120% 60% at 50% 0%, color-mix(in srgb,var(--k-act) 55%,transparent), transparent 70%); animation:aeWash .7s ease-out both; }
