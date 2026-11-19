@@ -35,7 +35,7 @@ try{var t=localStorage.getItem("sk_theme");document.documentElement.setAttribute
   (localStorage `sk_token`) and the same visual language.
 -->
 <link rel="preload" href="static/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="static/app.e0d14e8ee6.css">
+<link rel="stylesheet" href="static/app.3222a75e0f.css">
 <script>
 /* Embed mode (src/modules/apps): opened as ?embed=1 inside another app's frame
    (Odin's Vault's tab, or any future host), this page drops its own app
@@ -81,6 +81,7 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
       <section class="jr-top" aria-label="Month" data-i18n-aria="monthAria">
         <div class="jr-cal-head">
           <h2 class="jr-month"><span id="jr-cal-month"></span> <span class="jr-year" id="jr-cal-year"></span></h2>
+          <button type="button" class="jr-gear jr-rep-btn" onclick="jrReport()" title="Summary of the next 6 weeks" aria-label="Summary of the next 6 weeks" data-i18n-title="repTip" data-i18n-aria="repTip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg></button>
           <button type="button" class="jr-gear" onclick="jrSettings()" title="Settings" aria-label="Settings" data-i18n-title="settings" data-i18n-aria="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
         </div>
         <div class="jr-cal-dow" id="jr-cal-dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
@@ -101,7 +102,7 @@ if(/[?&]embed=1\b/.test(location.search) && window.top!==window) document.docume
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="static/app.5010fad554.js"></script>
+<script src="static/app.01d61c572f.js"></script>
 <script>/* offline app shell (static/sw.js) and staying current. The installed app (home screen, Android wrapper) is often brought back to the
    front rather than opened anew, so: look for a new version on every open and every return to the front; and when one is ready,
    apply it WITHOUT being asked at a moment where nothing can be lost — just opened or returned and not touched yet, or while the app
